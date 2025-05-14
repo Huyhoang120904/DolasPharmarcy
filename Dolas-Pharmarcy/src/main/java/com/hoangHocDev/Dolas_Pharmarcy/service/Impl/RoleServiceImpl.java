@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,8 +32,8 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Set<RoleReponse> findAll() {
         Set<RoleReponse> reponses = new HashSet<>(roleRepository.findAll()
-                            .stream().map(roleMapper::toRoleRepose)
-                            .toList());
+                .stream().map(roleMapper::toRoleRepose)
+                .toList());
         return reponses;
     }
 
@@ -53,12 +54,14 @@ public class RoleServiceImpl implements RoleService {
 
         Role role = roleMapper.toRole(request);
 
-        if (roleRepository.existsById(request.getRoleName())) {
+        if (roleRepository.existsById(request.getRolename())) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
 
-        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.getPermissions())) ;
-        role.setPermissions(permissions);
+        if (!CollectionUtils.isEmpty(request.getPermissions())) {
+            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(request.getPermissions())) ;
+            role.setPermissions(permissions);
+        }
 
         role = roleRepository.save(role);
         RoleReponse reponse = roleMapper.toRoleRepose(role);

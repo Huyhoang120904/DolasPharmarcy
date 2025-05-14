@@ -14,3 +14,9 @@ spring:
       ddl-auto: update
     show-sql: true
     database-platform: org.hibernate.dialect.MariaDBDialect
+
+
+jwt:
+  signerKey: yKWttABa6sa3DNeMYl5ipwCdw2FhJ2jYQZZnFmVdcjRiVXSrf+0mGrOqFnGbo8Qm
+  validDuration: 300
+  refreshableDuration: 420

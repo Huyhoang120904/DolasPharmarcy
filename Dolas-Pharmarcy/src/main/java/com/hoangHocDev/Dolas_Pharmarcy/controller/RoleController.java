@@ -35,7 +35,7 @@ public class RoleController {
     }
 
     @PostMapping
-    public ApiResponse<RoleReponse> getByRoleId(@RequestParam RoleRequest request){
+    public ApiResponse<RoleReponse> getByRoleId(@RequestBody RoleRequest request){
         return ApiResponse.<RoleReponse>builder()
                 .result(roleService.createRole(request))
                 .build();

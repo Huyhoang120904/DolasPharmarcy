@@ -2,11 +2,7 @@ package com.hoangHocDev.Dolas_Pharmarcy.entity;
 
 import java.util.Set;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,16 +16,16 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@FieldDefaults(level =  AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class Role {
 
     @Id
-    String roleName;
+    String rolename;
     String description;
 
     @ManyToMany
-    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role"), inverseJoinColumns =  @JoinColumn(name = "permission"))
+    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role"), inverseJoinColumns = @JoinColumn(name = "permission"))
     Set<Permission> permissions;
 
 }
