@@ -1,44 +1,40 @@
 package com.hoangHocDev.Dolas_Pharmarcy.configuration;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Slf4j
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = {"/users/register", "/auth/**"};
-    private final String[] ADMIN_ENDPOINTS = {"/roles/**", "/permissions/**"};
-
-
+    private final String[] PUBLIC_ENDPOINTS = { "/users/register", "/auth/**" };
+    private final String[] ADMIN_ENDPOINTS = { "/roles/**", "/permissions/**" };
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomJwtDecoder customJwtDecoder) throws Exception {
-        return httpSecurity.authorizeHttpRequests((requests) ->
-                                            requests.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                                                    .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
-                                                    .anyRequest().authenticated())
-                        .oauth2ResourceServer(oath2 -> oath2.jwt(jwtConfigurer ->
-                                jwtConfigurer
-                                        .decoder(customJwtDecoder)
-                                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-//                                .authenticationEntryPoint( new JwtAuthenticationEntryPoint())
+    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomJwtDecoder customJwtDecoder)
+            throws Exception {
+        return httpSecurity.authorizeHttpRequests((requests) -> requests.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
+                .anyRequest().authenticated())
+                .oauth2ResourceServer(oath2 -> oath2.jwt(jwtConfigurer -> jwtConfigurer
+                        .decoder(customJwtDecoder)
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
 
-                        )
-                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Add the CORS configuration
+                .csrf(csrf -> csrf.disable()) // Disable CSRF only if it's not required
                 .build();
     }
 
@@ -53,16 +49,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    CorsFilter corsFilter(){
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedHeader("*");
-        configuration.addAllowedOrigin("*");
-        configuration.addAllowedMethod("*");
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOrigin("http://localhost:5173");
+        corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
-        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**",configuration);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
 
-        return new CorsFilter(urlBasedCorsConfigurationSource);
+        return source;
     }
 
 }

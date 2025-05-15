@@ -107,10 +107,7 @@ function UserCrediential({ loginPage }) {
             <Form.Item
               name="email"
               label="Email"
-              rules={[
-                { required: true, message: "Vui lòng nhập email" },
-                { type: "email", message: "Email không hợp lệ" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập email" }]}
             >
               <Input
                 prefix={<MailOutlined className="site-form-item-icon" />}

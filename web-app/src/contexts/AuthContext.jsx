@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { UserService } from "../api-services/UserService";
+import { AuthService } from "../api-services/AuthService";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -15,35 +17,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log(user);
-
   // Login function
   const login = async (username, password) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${BASE_URL}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: username, password }),
-      });
+      const authResponse = await AuthService.login(username, password);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
+      console.log("Auth: ", authResponse);
 
-      const data = await response.json();
+      const useReponse = await UserService.getMyInfo(authResponse.result.token);
+
+      console.log("User: ", useReponse);
 
       // Store token in localStorage
-      localStorage.setItem("token", data.token);
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", authResponse.result.token);
 
-      setUser(data.user);
+      setUser(useReponse.result);
       setIsAuthenticated(true);
 
       return { success: true };
