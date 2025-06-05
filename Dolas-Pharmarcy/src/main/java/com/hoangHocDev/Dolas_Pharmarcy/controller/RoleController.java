@@ -21,29 +21,29 @@ public class RoleController {
     private final RoleService roleService;
 
     @GetMapping
-    public ApiResponse<Set<RoleReponse>> getAll(){
+    public ApiResponse<Set<RoleReponse>> getRole(){
         return ApiResponse.<Set<RoleReponse>>builder()
                 .result(roleService.findAll())
                 .build();
     }
 
-    @GetMapping("/{role}")
-    public ApiResponse<RoleReponse> getByRoleId(@PathVariable String role){
+    @GetMapping("/{roleId}")
+    public ApiResponse<RoleReponse> getRoleById(@PathVariable String roleId){
         return ApiResponse.<RoleReponse>builder()
-                .result(roleService.findRoleByName(role))
+                .result(roleService.findRoleByName(roleId))
                 .build();
     }
 
     @PostMapping
-    public ApiResponse<RoleReponse> getByRoleId(@RequestBody RoleRequest request){
+    public ApiResponse<RoleReponse> createRole(@RequestBody RoleRequest request){
         return ApiResponse.<RoleReponse>builder()
                 .result(roleService.createRole(request))
                 .build();
     }
 
-    @DeleteMapping("/{role}")
-    public void deleteRole(@PathVariable String role){
-        roleService.delete(role);
+    @DeleteMapping("/{roleId}")
+    public void deleteRole(@PathVariable String roleId){
+        roleService.delete(roleId);
     }
 
 }

@@ -4,6 +4,7 @@ import com.hoangHocDev.Dolas_Pharmarcy.dto.request.IntrospectTokenRequest;
 import com.hoangHocDev.Dolas_Pharmarcy.dto.response.IntrospectTokenResponse;
 import com.hoangHocDev.Dolas_Pharmarcy.service.AuthenticationService;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Objects;
 
+@Slf4j
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
 
@@ -33,11 +35,13 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
         try {
             IntrospectTokenRequest request = IntrospectTokenRequest.builder().token(token).build();
-            IntrospectTokenResponse reponse = authenticationService.introspect(request);
+            IntrospectTokenResponse response = authenticationService.introspect(request);
 
-            if (!reponse.isValid()) {
+            if (!response.isValid()) {
                 throw new JwtException("Token invalid");
             }
+
+            log.info("{}", response);
 
         } catch (JwtException e) {
             e.printStackTrace();

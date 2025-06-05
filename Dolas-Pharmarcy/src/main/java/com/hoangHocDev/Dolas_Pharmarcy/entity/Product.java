@@ -2,6 +2,7 @@ package com.hoangHocDev.Dolas_Pharmarcy.entity;
 
 import com.hoangHocDev.Dolas_Pharmarcy.entity.enums.ProductStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,12 +15,15 @@ import java.util.List;
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "uni_slug", columnNames = "slug")
+})
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-
+    @NotNull
     String name;
     String sku;
     String origin;
@@ -29,12 +33,15 @@ public class Product {
     String description;
     String usageInstruction;
 
+    @NotNull
+    String slug;
+
     boolean requiresPrescription;
 
     @Enumerated(EnumType.STRING)
     ProductStatus productStatus;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     List<Image> images;
 
     @ManyToOne
@@ -45,12 +52,12 @@ public class Product {
     @JoinColumn(name = "target_id")
     Target target;
 
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     List<Variant> variants;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "catergory_id")
-    Catergory catergory;
+    Category category;
 
     @OneToOne
     Promotion promotion;

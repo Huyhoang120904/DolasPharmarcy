@@ -19,14 +19,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Slf4j
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = { "/users/register", "/auth/**" };
-    private final String[] ADMIN_ENDPOINTS = { "/roles/**", "/permissions/**" };
+    private final String[] PUBLIC_ENDPOINTS = { "/users/**", "/auth/**" };
+    private final String[] ADMIN_ENDPOINTS = { "/roles/**","/categories/**", "/permissions/**", "/users"};
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomJwtDecoder customJwtDecoder)
             throws Exception {
-        return httpSecurity.authorizeHttpRequests((requests) -> requests.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
+        return httpSecurity.authorizeHttpRequests((requests) -> requests
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                 .anyRequest().authenticated())
                 .oauth2ResourceServer(oath2 -> oath2.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(customJwtDecoder)

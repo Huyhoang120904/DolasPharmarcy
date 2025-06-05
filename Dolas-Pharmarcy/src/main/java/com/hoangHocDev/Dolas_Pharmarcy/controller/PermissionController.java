@@ -18,7 +18,7 @@ public class PermissionController {
     PermissionService permissionService;
 
     @GetMapping
-    public ApiResponse<Page<PermissionResponse>> getAllPermission(@RequestParam(defaultValue = "0") int page,
+    public ApiResponse<Page<PermissionResponse>> getPermissionByPage(@RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "10") int size ){
         return ApiResponse.<Page<PermissionResponse>>builder()
                 .result(permissionService.findAllPagePermission(page, size))
@@ -26,7 +26,7 @@ public class PermissionController {
     }
 
     @GetMapping("/{role}")
-    public ApiResponse<Page<PermissionResponse>> getAllPermission(@PathVariable String role, @RequestParam(defaultValue = "0") int page,
+    public ApiResponse<Page<PermissionResponse>> getPermissionByRoleAndPage(@PathVariable String role, @RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "10") int size ){
         return ApiResponse.<Page<PermissionResponse>>builder()
                 .result(permissionService.findAllPagePermissionByRole( role ,page, size))
@@ -40,9 +40,9 @@ public class PermissionController {
                 .build();
     }
 
-    @DeleteMapping("/{perrmision}")
-    public void deletePermission(@RequestParam String perrmision){
-        permissionService.delete(perrmision);
+    @DeleteMapping("/{perrmisionId}")
+    public void deletePermission(@PathVariable String perrmisionId){
+        permissionService.delete(perrmisionId);
     }
 
 }

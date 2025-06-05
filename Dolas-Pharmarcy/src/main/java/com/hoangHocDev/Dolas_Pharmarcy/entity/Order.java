@@ -1,6 +1,7 @@
 package com.hoangHocDev.Dolas_Pharmarcy.entity;
 
 import com.hoangHocDev.Dolas_Pharmarcy.entity.enums.OrderStatus;
+import com.hoangHocDev.Dolas_Pharmarcy.entity.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +28,9 @@ public class Order {
     double tax;
     @Enumerated(EnumType.STRING)
     OrderStatus orderStatus;
+
+    @Enumerated(EnumType.STRING)
+    PaymentMethod paymenyMethod;
 
     @Embedded
     Address address;

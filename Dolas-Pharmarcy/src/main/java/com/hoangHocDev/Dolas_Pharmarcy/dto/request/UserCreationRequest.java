@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,8 +18,11 @@ public class UserCreationRequest {
     @NotNull
     String username;
 
-    //work: custom validation in the future
     @Size(min = 8)
     @NotNull
     String password;
+
+    String gender;
+    String fullName;
+    LocalDate dob;
 }

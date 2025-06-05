@@ -22,6 +22,4 @@ public class Image {
     String url;
     String alt;
     boolean isPrimary;
-
-
 }

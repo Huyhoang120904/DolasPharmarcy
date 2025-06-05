@@ -20,12 +20,10 @@ public class Promotion {
     String id;
     String promotionName;
     String code;
-
     LocalDate startDate;
     LocalDate endDate;
-
     double discountAmount;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     PromotionType promotionType;
 }

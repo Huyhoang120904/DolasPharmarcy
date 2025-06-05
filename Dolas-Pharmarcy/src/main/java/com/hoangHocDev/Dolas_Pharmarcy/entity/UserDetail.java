@@ -1,5 +1,6 @@
 package com.hoangHocDev.Dolas_Pharmarcy.entity;
 
+import com.hoangHocDev.Dolas_Pharmarcy.entity.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,10 +24,13 @@ public class UserDetail {
     @OneToOne
     UserEntity userEntity;
 
-
     String fullName;
     LocalDate dob;
+
     boolean verificationStatus;
+
+    @Enumerated(EnumType.STRING)
+    Gender gender;
 
     @Embedded
     Address address;

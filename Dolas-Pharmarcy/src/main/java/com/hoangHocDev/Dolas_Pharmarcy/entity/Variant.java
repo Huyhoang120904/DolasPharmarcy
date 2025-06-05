@@ -13,16 +13,16 @@ import lombok.experimental.FieldDefaults;
 @Builder
 public class Variant {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-
 
     String name;
     double price;
     int stock;
     String unit;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "product_id", nullable = false)
     Product product;
 
 }

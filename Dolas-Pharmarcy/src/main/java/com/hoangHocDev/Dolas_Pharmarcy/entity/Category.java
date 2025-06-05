@@ -14,23 +14,27 @@ import java.util.List;
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class Catergory {
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    String id;
     String name;
     String description;
+    String slug;
     boolean isActive;
-    int totalProducts;
+
+    @OneToOne
+    Image image;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    Catergory parentCatergory;
+    Category parentCategory;
 
-    @OneToMany(mappedBy = "parentCatergory")
-    List<Catergory> catergoryChilrens;
+    @OneToMany(mappedBy = "parentCategory")
+    List<Category> categoryChildrens;
 
-    @OneToMany(mappedBy = "catergory")
+    @OneToMany(mappedBy = "category")
     List<Product> products;
 
 }

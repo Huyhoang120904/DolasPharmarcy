@@ -8,9 +8,8 @@ import com.hoangHocDev.Dolas_Pharmarcy.service.UserEntityService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -20,9 +19,9 @@ public class UserEntityController {
     UserEntityService userEntityService;
 
     @GetMapping
-    public ApiResponse<List<UserResponse>> findAll() {
-        return ApiResponse.<List<UserResponse>>builder()
-                .result(userEntityService.getAll())
+    public ApiResponse<Page<UserResponse>> findAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .result(userEntityService.getAll(page, size))
                 .build();
     }
 
@@ -34,6 +33,7 @@ public class UserEntityController {
     }
 
 
+
     @PostMapping("/register")
     public ApiResponse<UserResponse> createUser(@RequestBody UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
@@ -42,16 +42,15 @@ public class UserEntityController {
     }
 
     @PutMapping
-    public ApiResponse<UserResponse> createUser(@RequestBody UserUpdateRequest request) {
+    public ApiResponse<UserResponse> updateUser(@RequestBody UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userEntityService.updateUser(request))
                 .build();
     }
 
     @DeleteMapping("/{userId}")
-    public ApiResponse createUser(@RequestParam String userId) {
+    public ApiResponse deleteUser(@PathVariable String userId) {
         userEntityService.delete(userId);
-
         return ApiResponse.builder()
                 .build();
     }

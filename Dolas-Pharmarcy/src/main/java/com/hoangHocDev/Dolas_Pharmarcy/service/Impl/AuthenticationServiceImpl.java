@@ -22,7 +22,12 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,14 +39,15 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     UserEntityRepository userEntityRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final InvalidTokenRepository invalidTokenRepository;
+    PasswordEncoder passwordEncoder;
+    InvalidTokenRepository invalidTokenRepository;
 
     @Value("${jwt.signerKey}")
     @NonFinal
@@ -57,6 +63,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public IntrospectTokenResponse introspect(IntrospectTokenRequest request) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null) {
+            for (GrantedAuthority authority : authentication.getAuthorities()) {
+                log.info("Role: {}", authority.getAuthority());
+            }
+        }
+
         boolean isValid = true;
         try {
             var token = verifyToken(request.getToken(), false);
@@ -73,8 +88,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         UserEntity userEntity = userEntityRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        boolean authenticated = passwordEncoder.matches(userEntity.getPassword(), passwordEncoder.encode(request.getPassword()));
-
+        boolean authenticated = passwordEncoder.matches(request.getPassword(), userEntity.getPassword());
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
@@ -164,7 +178,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String jit = signedJWT.getJWTClaimsSet().getJWTID();
         if (invalidTokenRepository.existsById(jit)) {
-            throw  new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
         return signedJWT;

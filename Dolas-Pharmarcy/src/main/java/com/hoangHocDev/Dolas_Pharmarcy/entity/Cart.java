@@ -19,6 +19,6 @@ public class Cart {
     @OneToOne
     UserDetail userDetail;
 
-    @OneToMany()
+    @OneToMany(cascade = CascadeType.ALL)
     List<OrderItem> orderItems;
 }
