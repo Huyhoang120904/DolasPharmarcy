@@ -38,7 +38,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleReponse findRoleByName(String role) {
+    public RoleReponse findByName(String role) {
         if (!roleRepository.existsById(role)) {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
         }

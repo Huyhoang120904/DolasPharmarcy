@@ -63,22 +63,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public IntrospectTokenResponse introspect(IntrospectTokenRequest request) {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         if (authentication != null) {
             for (GrantedAuthority authority : authentication.getAuthorities()) {
                 log.info("Role: {}", authority.getAuthority());
             }
         }
-
         boolean isValid = true;
         try {
             var token = verifyToken(request.getToken(), false);
         } catch (ParseException | JOSEException | AppException e) {
             isValid = false;
         }
-
         return IntrospectTokenResponse.builder().isValid(isValid).build();
     }
 

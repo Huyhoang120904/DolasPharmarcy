@@ -10,9 +10,9 @@ import java.util.List;
 
 @Service
 public interface UserEntityService {
-    Page<UserResponse> getAll(int page, int size);
-    UserResponse getMyInfo();
-    UserResponse getUserById(String id);
+    Page<UserResponse> findAll(int page, int size);
+    UserResponse findMyInfo();
+    UserResponse findUserById(String id);
     UserResponse createUser(UserCreationRequest request);
     UserResponse updateUser(UserUpdateRequest request);
     void delete(String id);

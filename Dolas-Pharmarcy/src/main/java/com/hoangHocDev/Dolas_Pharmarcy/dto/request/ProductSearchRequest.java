@@ -1,18 +1,16 @@
 package com.hoangHocDev.Dolas_Pharmarcy.dto.request;
 
-import com.hoangHocDev.Dolas_Pharmarcy.entity.*;
+import com.hoangHocDev.Dolas_Pharmarcy.entity.Target;
 import com.hoangHocDev.Dolas_Pharmarcy.entity.enums.ProductStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProductCreationRequest {
+public class ProductSearchRequest {
     String productName;
     String sku;
     String origin;
@@ -22,13 +20,15 @@ public class ProductCreationRequest {
     String description;
     String usageInstruction;
     String slug;
-    boolean requiresPrescription;
+    Boolean requiresPrescription;
     ProductStatus productStatus;
-    List<ImageRequest> images;
-    Target target;
-    List<VariantRequest> variants;
+    String supplierName;
+    String targetName;
+    String categoryName;
 
-    String supplierId;
-    String categoryId;
-    String promotionId;
+    Double discountAmountFrom;
+    Double discountAmountTo;
+
+    Double priceFrom;
+    Double priceTo;
 }

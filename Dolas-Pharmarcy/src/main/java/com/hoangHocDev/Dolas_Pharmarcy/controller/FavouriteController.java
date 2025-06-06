@@ -19,7 +19,7 @@ public class FavouriteController {
     @GetMapping
     public ApiResponse<FavouriteResponse> getFavourite(){
         return ApiResponse.<FavouriteResponse>builder()
-                .result(favouriteService.getFavouriteList())
+                .result(favouriteService.findFavouriteList())
                 .build();
     }
 

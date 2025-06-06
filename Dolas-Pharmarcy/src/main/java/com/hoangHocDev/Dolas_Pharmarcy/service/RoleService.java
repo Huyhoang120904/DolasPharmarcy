@@ -11,10 +11,7 @@ import java.util.Set;
 @Service
 public interface RoleService {
     Set<RoleReponse> findAll();
-
-    RoleReponse findRoleByName(String role);
-
+    RoleReponse findByName(String role);
     RoleReponse createRole(RoleRequest request);
-
     void delete(String roleName);
 }

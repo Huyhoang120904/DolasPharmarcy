@@ -1,6 +1,7 @@
 package com.hoangHocDev.Dolas_Pharmarcy.dto.response;
 
 import com.hoangHocDev.Dolas_Pharmarcy.dto.request.ImageRequest;
+import com.hoangHocDev.Dolas_Pharmarcy.entity.Category;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,10 +11,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryResponse {
-    String name;
+    String categoryName;
     String description;
     String slug;
     boolean isActive;
-    ImageRequest imageRequest;
-    String parentCatergoryId;
+    ImageRequest image;
+    Category parentCategory;
 }

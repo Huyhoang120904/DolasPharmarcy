@@ -6,7 +6,6 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +21,8 @@ public class Supplier {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    String name;
+    @Column(name = "name")
+    String supplierName;
     String code;
     String contactName;
     String email;

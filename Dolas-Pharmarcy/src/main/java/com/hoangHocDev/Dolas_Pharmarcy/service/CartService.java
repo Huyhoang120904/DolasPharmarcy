@@ -9,6 +9,6 @@ public interface CartService {
     CartResponse addToCart(CartRequest request);
     CartResponse removeFromCart(String orderItemId);
     void clearCart();
-    CartResponse getMyCart();
+    CartResponse findMyCart();
     CartResponse updateQuantity(String orderItemId, CartRequest request);
 }

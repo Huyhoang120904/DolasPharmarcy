@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SupplierRequest {
-    String name;
+    String supplierName;
     String code;
     String contactName;
     String email;

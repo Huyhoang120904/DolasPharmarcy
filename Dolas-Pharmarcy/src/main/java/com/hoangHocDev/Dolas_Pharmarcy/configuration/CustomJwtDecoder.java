@@ -41,8 +41,6 @@ public class CustomJwtDecoder implements JwtDecoder {
                 throw new JwtException("Token invalid");
             }
 
-            log.info("{}", response);
-
         } catch (JwtException e) {
             e.printStackTrace();
         }

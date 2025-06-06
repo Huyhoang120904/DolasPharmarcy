@@ -30,7 +30,7 @@ public class RoleController {
     @GetMapping("/{roleId}")
     public ApiResponse<RoleReponse> getRoleById(@PathVariable String roleId){
         return ApiResponse.<RoleReponse>builder()
-                .result(roleService.findRoleByName(roleId))
+                .result(roleService.findByName(roleId))
                 .build();
     }
 

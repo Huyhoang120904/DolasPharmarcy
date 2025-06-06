@@ -43,14 +43,14 @@ public class UserEntityServiceImpl implements UserEntityService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<UserResponse> getAll(int page, int size) {
+    public Page<UserResponse> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<UserEntity> pageUsers = userEntityRepository.findAll(pageable);
         return pageUsers.map(userEntityMapper::toUserResponse);
     }
 
     @Override
-    public UserResponse getMyInfo() {
+    public UserResponse findMyInfo() {
         var contextHolder = SecurityContextHolder.getContext();
         String name = contextHolder.getAuthentication().getName();
 
@@ -60,9 +60,8 @@ public class UserEntityServiceImpl implements UserEntityService {
 
     @Override
     @PostAuthorize("returnObject.username == authentication.name")
-    public UserResponse getUserById(String id) {
+    public UserResponse findUserById(String id) {
         UserEntity userEntity = userEntityRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
         return userEntityMapper.toUserResponse(userEntity);
     }
 

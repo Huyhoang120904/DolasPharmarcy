@@ -8,12 +8,18 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {
+        ImageMapper.class,
+        PromotionMapper.class,
+        CategoryMapper.class,
+        SupplierMapper.class,
+        VariantMapper.class
+})
 public interface ProductMapper {
-    Product toProduct(ProductUpdateRequest updateRequest);
-    Product toProduct(ProductCreationRequest creationRequest);
+    Product toProduct(ProductUpdateRequest request);
+    Product toProduct(ProductCreationRequest request);
 
-    ProductResponse toReponse(Product product);
+    ProductResponse toResponse(Product product);
 
     void updateProduct(ProductUpdateRequest request, @MappingTarget Product product);
 }

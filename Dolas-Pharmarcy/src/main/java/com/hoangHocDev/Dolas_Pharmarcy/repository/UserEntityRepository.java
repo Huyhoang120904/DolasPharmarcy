@@ -11,7 +11,5 @@ import java.util.Optional;
 
 @Repository
 public interface UserEntityRepository extends JpaRepository<UserEntity, String> {
-    Page<UserEntity> findAllBy(Pageable pageable);
-
     Optional<UserEntity> findByUsername(@NotNull String username);
 }

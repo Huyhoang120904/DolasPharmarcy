@@ -50,7 +50,7 @@ public class FavouriteServiceImpl implements FavouriteService {
     }
 
     @Override
-    public FavouriteResponse getFavouriteList() {
+    public FavouriteResponse findFavouriteList() {
         return favouritesMapper.toFavouriteResponse(getFavourite());
     }
 

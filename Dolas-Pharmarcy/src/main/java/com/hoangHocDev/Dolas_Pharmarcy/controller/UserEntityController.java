@@ -21,14 +21,14 @@ public class UserEntityController {
     @GetMapping
     public ApiResponse<Page<UserResponse>> findAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return ApiResponse.<Page<UserResponse>>builder()
-                .result(userEntityService.getAll(page, size))
+                .result(userEntityService.findAll(page, size))
                 .build();
     }
 
     @GetMapping("/my-info")
     public ApiResponse<UserResponse> myInfo() {
         return ApiResponse.<UserResponse>builder()
-                .result(userEntityService.getMyInfo())
+                .result(userEntityService.findMyInfo())
                 .build();
     }
 

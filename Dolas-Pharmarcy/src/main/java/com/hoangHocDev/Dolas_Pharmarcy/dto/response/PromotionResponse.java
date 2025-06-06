@@ -15,12 +15,8 @@ import java.time.LocalDate;
 public class PromotionResponse {
     String promotionName;
     String code;
-
     LocalDate startDate;
     LocalDate endDate;
-
     double discountAmount;
-
-    @Enumerated
     PromotionType promotionType;
 }

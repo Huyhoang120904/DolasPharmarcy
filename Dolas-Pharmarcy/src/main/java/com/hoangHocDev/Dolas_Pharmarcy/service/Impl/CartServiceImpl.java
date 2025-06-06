@@ -78,7 +78,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponse getMyCart() {
+    public CartResponse findMyCart() {
         Cart cart = getCart();
         return cartMapper.toReponse(cart);
     }

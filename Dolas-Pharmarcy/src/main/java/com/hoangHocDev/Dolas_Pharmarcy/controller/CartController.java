@@ -22,7 +22,7 @@ public class CartController {
     @GetMapping
     public ApiResponse<CartResponse> getCart() {
         return ApiResponse.<CartResponse>builder()
-                .result(cartService.getMyCart())
+                .result(cartService.findMyCart())
                 .build();
     }
 

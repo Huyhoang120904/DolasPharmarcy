@@ -18,7 +18,8 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    String name;
+    @Column(name = "name")
+    String categoryName;
     String description;
     String slug;
     boolean isActive;

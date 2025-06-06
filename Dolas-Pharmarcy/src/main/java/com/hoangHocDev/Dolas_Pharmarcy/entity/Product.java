@@ -24,7 +24,8 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     @NotNull
-    String name;
+    @Column(name = "name")
+    String productName;
     String sku;
     String origin;
     String warning;

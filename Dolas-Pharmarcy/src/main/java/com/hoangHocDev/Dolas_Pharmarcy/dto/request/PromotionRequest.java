@@ -18,6 +18,5 @@ public class PromotionRequest {
     LocalDate startDate;
     LocalDate endDate;
     double discountAmount;
-    @Enumerated
     PromotionType promotionType;
 }

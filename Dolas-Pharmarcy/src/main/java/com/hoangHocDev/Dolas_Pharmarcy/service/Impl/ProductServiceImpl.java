@@ -1,13 +1,11 @@
 package com.hoangHocDev.Dolas_Pharmarcy.service.Impl;
 
 import com.hoangHocDev.Dolas_Pharmarcy.dto.request.ProductCreationRequest;
+import com.hoangHocDev.Dolas_Pharmarcy.dto.request.ProductSearchRequest;
 import com.hoangHocDev.Dolas_Pharmarcy.dto.request.ProductUpdateRequest;
 import com.hoangHocDev.Dolas_Pharmarcy.dto.request.VariantRequest;
 import com.hoangHocDev.Dolas_Pharmarcy.dto.response.ProductResponse;
-import com.hoangHocDev.Dolas_Pharmarcy.dto.response.VariantResponse;
-import com.hoangHocDev.Dolas_Pharmarcy.entity.Category;
-import com.hoangHocDev.Dolas_Pharmarcy.entity.Product;
-import com.hoangHocDev.Dolas_Pharmarcy.entity.Variant;
+import com.hoangHocDev.Dolas_Pharmarcy.entity.*;
 import com.hoangHocDev.Dolas_Pharmarcy.exception.AppException;
 import com.hoangHocDev.Dolas_Pharmarcy.exception.ErrorCode;
 import com.hoangHocDev.Dolas_Pharmarcy.mapper.ImageMapper;
@@ -15,14 +13,13 @@ import com.hoangHocDev.Dolas_Pharmarcy.mapper.ProductMapper;
 import com.hoangHocDev.Dolas_Pharmarcy.mapper.VariantMapper;
 import com.hoangHocDev.Dolas_Pharmarcy.repository.*;
 import com.hoangHocDev.Dolas_Pharmarcy.service.ProductService;
+import com.hoangHocDev.Dolas_Pharmarcy.service.specifications.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
 
     CategoryRepository categoryRepository;
     PromotionRepository promotionRepository;
-   SupplierRepository supplierRepository;
+    SupplierRepository supplierRepository;
     ProductRepository productRepository;
     ProductMapper productMapper;
     ImageRepository imageRepository;
@@ -40,17 +37,17 @@ public class ProductServiceImpl implements ProductService {
     VariantMapper variantMapper;
 
     @Override
-    public ProductResponse getProductBySlug(String slug) {
+    public ProductResponse findProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-        return productMapper.toReponse(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
-    public Page<ProductResponse> getProductByPage(int page, int size) {
+    public Page<ProductResponse> findProductByPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> pageProducts = productRepository.findAll(pageable);
-        return pageProducts.map(productMapper::toReponse);
+        return pageProducts.map(productMapper::toResponse);
     }
 
     @Override
@@ -60,22 +57,22 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryRepository.findById(creationRequest.getCategoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-//        Promotion promotion = promotionRepository.findById(creationRequest.getCategoryId())
-//                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-//
-//        Supplier supplier= supplierRepository.findById(creationRequest.getCategoryId())
-//                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-//
-//        Variant variant = variantRepository.findById(creationRequest.getCategoryId())
-//                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        Promotion promotion = promotionRepository.findById(creationRequest.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        Supplier supplier = supplierRepository.findById(creationRequest.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        Variant variant = variantRepository.findById(creationRequest.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         product.setCategory(category);
-//        product.setSupplier(supplier);
-//        product.getVariants().add(variant);
-//        product.setPromotion(promotion);
+        product.setSupplier(supplier);
+        product.getVariants().add(variant);
+        product.setPromotion(promotion);
 
         product = productRepository.save(product);
-        return productMapper.toReponse(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -98,7 +95,7 @@ public class ProductServiceImpl implements ProductService {
 //        product.setPromotion(promotion);
 
         product = productRepository.save(product);
-        return productMapper.toReponse(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -114,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
         variant.setProduct(product);
         product.getVariants().add(variant);
         product = productRepository.save(product);
-        return productMapper.toReponse(product);
+        return productMapper.toResponse(product);
     }
 
     @Override
@@ -129,7 +126,16 @@ public class ProductServiceImpl implements ProductService {
 
         product = productRepository.save(product);
 
-        return productMapper.toReponse(product);
+        return productMapper.toResponse(product);
+    }
+
+    @Override
+    public Page<ProductResponse> findAll(ProductSearchRequest request,int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return productRepository.findAll(ProductSpecification.getSpecification(request), pageable)
+                .map(productMapper::toResponse);
     }
 
 //    @Override
