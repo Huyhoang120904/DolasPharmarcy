@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductResponse {
+    String id;
     String productName;
     String sku;
     String origin;
@@ -21,10 +22,12 @@ public class ProductResponse {
     String description;
     String usageInstruction;
     String slug;
+
     boolean requiresPrescription;
     ProductStatus productStatus;
     List<ImageResponse> images;
 
+    BrandResponse brand;
 
     PromotionResponse promotion;
 

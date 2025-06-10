@@ -61,8 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Page<CategoryResponse> findByPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<CategoryResponse> findByPage(Pageable pageable) {
         return categoryRepository.findAll(pageable)
                 .map(categoryMapper::toCatergoryResponse);
     }

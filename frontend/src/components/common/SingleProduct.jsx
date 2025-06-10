@@ -9,10 +9,11 @@ import { useAuth } from "../../contexts/AuthContext"; // Import useAuth
 import { HeartFilled, HeartOutlined } from "@ant-design/icons";
 
 const SingleProduct = ({ product }) => {
-  const hasDiscount = product.discount && product.discount.value > 0;
-  const discountedPrice = hasDiscount
-    ? product.discountedPrice
-    : product.basePrice;
+  const hasDiscount = product.promotion && product.promotion.discountAmount > 0;
+  const price = hasDiscount
+    ? product?.variants[0]?.price * (1 - product.promotion.discountAmount / 100)
+    : product?.variants[0]?.price;
+
   const nav = useNavigate();
   const [api, context] = useNotification();
   const { favList, toggleFavourite } = useFav();
@@ -22,7 +23,8 @@ const SingleProduct = ({ product }) => {
 
   useEffect(() => {
     setIsCurrentlyFavourited(
-      favList.items && favList.items.some((favItem) => favItem.id === product.id)
+      favList.items &&
+        favList.items.some((favItem) => favItem.id === product.id)
     );
   }, [favList, product.id]);
 
@@ -52,7 +54,8 @@ const SingleProduct = ({ product }) => {
     } else {
       api.warning({
         message: "Vui lòng đăng nhập!",
-        description: "Bạn cần đăng nhập để thêm sản phẩm vào danh mục yêu thích.",
+        description:
+          "Bạn cần đăng nhập để thêm sản phẩm vào danh mục yêu thích.",
         duration: 2,
       });
       // Removed the navigation to the login page here
@@ -90,7 +93,7 @@ const SingleProduct = ({ product }) => {
       {context}
       {hasDiscount && (
         <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded">
-          -{product.discount.value}%
+          -{product.promotion.discountAmount}%
         </div>
       )}
       {/* Favorite Button */}
@@ -108,30 +111,24 @@ const SingleProduct = ({ product }) => {
       <div className="relative w-48 h-55 mb-4 mt-6 overflow-hidden rounded-lg">
         <img
           src={product.images[0]?.url}
-          alt={product.name}
+          alt={product.productName}
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-120"
         />
       </div>
       {/* Product Name with Fixed Height */}
       <h3 className="text-base font-bold text-gray-800 mb-2 line-clamp-2 min-h-[3rem]">
-        {product.name}
+        {product.productName}
       </h3>
       {/* Pricing */}
       <div className="mt-1 flex items-center space-x-4">
         <span className="text-red-600 text-lg font-bold">
-          {product.salePrice
-            ? new Intl.NumberFormat("vi-VN").format(
-                parseFloat(product.salePrice).toFixed(0)
-              )
-            : new Intl.NumberFormat("vi-VN").format(
-                parseFloat(product.basePrice).toFixed(0)
-              )}
+          {new Intl.NumberFormat("vi-VN").format(parseFloat(price).toFixed(2))}
           <span className="text-lg font-medium ml-1">₫</span>
         </span>
-        {product.salePrice && (
+        {product.promotion && (
           <span className="line-through text-sm text-gray-500">
             {new Intl.NumberFormat("vi-VN").format(
-              parseFloat(product.basePrice).toFixed(0)
+              parseFloat(product.variants[0].price).toFixed(0)
             )}
             <span className="text-xs">₫</span>
           </span>
@@ -139,7 +136,7 @@ const SingleProduct = ({ product }) => {
       </div>
       {/* Sold Count */}
       <p className="text-gray-600 text-sm mb-4 font-semibold">
-        Đã bán {product.stock.total}
+        Đã bán {product.stock}
       </p>
       {/* Buy Button */}
       <AddToCart item={product} handleAddToCart={handleAddToCartItem} />

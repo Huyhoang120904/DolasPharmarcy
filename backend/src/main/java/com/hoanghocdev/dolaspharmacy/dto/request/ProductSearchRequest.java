@@ -1,6 +1,7 @@
 package com.hoanghocdev.dolaspharmacy.dto.request;
 
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -24,6 +25,10 @@ public class ProductSearchRequest {
     String supplierName;
     String targetName;
     String categoryName;
+    String brandName;
+
+    Long stockFrom;
+    Long stockTo;
 
     Double discountAmountFrom;
     Double discountAmountTo;

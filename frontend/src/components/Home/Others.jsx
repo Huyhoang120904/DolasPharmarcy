@@ -6,12 +6,15 @@ import img3 from "../../img/Header/imgDataOthers/image3.png";
 import img4 from "../../img/Header/imgDataOthers/image4.png";
 import { Link } from "react-router-dom";
 import queryString from "query-string";
+import { CategoryService } from "../../api-services/CategoryService";
 
 const Others = () => {
-  const [dataCategory, setDataCategory] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [categoryIndex, setCategoryIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 8;
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   const dataOthers = [
     {
       img: img1,
@@ -64,16 +67,24 @@ const Others = () => {
   ];
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/categories`)
-      .then((res) => res.json())
-      .then((data) => {
-        setDataCategory(data);
-      })
-      .catch((err) => console.error("Error fetching categories:", err));
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const reponse = await CategoryService.getCatgories();
+        console.log("Categories reponse: ", reponse);
+        setCategories(reponse.result.content);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
   }, []);
 
   const handleCategoryNext = () => {
-    if (categoryIndex + itemsPerPage < dataCategory.length) {
+    if (categoryIndex + itemsPerPage < categories.length) {
       setCategoryIndex(categoryIndex + 1);
     }
   };
@@ -83,6 +94,8 @@ const Others = () => {
       setCategoryIndex(categoryIndex - 1);
     }
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
@@ -106,11 +119,11 @@ const Others = () => {
                 }%)`,
               }}
             >
-              {dataCategory.map((catergory) => {
+              {categories.map((catergory) => {
                 const categoryName = catergory.name;
                 return (
                   <div
-                    key={catergory.id}
+                    key={catergory.slug}
                     className="flex-shrink-0 flex flex-col items-center justify-center"
                     style={{
                       width: `${100 / itemsPerPage}%`,
@@ -132,7 +145,7 @@ const Others = () => {
                         className="text-sm text-gray-700 mt-2 text-center leading-tight px-2"
                         style={{ minHeight: "2.5rem", maxWidth: "100px" }}
                       >
-                        {catergory.name}
+                        {catergory.categoryName}
                       </p>
                     </a>
                   </div>
@@ -164,7 +177,7 @@ const Others = () => {
               </button>
             </div>
           )}
-          {categoryIndex + itemsPerPage < dataCategory.length && (
+          {categoryIndex + itemsPerPage < categories.length && (
             <div className="absolute top-1/2 transform -translate-y-1/2 right-0">
               <button
                 dir="rtl"

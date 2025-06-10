@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import img1 from "../../img/Header/imgCategory/image1.png";
 import img2 from "../../img/Header/imgCategory/image2.png";
 import img3 from "../../img/Header/imgCategory/image3.png";
@@ -15,57 +15,9 @@ import img2a from "../../img/Header/imgDiscount/image2.png";
 import img3a from "../../img/Header/imgDiscount/image3.png";
 import img4a from "../../img/Header/imgDiscount/image4.png";
 import { Link } from "react-router-dom";
+import { CategoryService } from "../../api-services/CategoryService";
 
 const Category = () => {
-  const categories = [
-    {
-      name: "Quà Tặng Sức Khỏe",
-      img: img1,
-      link: "/product?categoryName=Thuốc+kê+đơn",
-    },
-    {
-      name: "Thiết Bị Y Tế",
-      img: img2,
-      link: "/product?categoryName=Thuốc+không+kê+đơn",
-    },
-    {
-      name: "Khuyến Mãi Hot",
-      img: img3,
-      link: "/product?categoryName=Vitamin+%26+Thực+phẩm+chức+năng",
-    },
-    {
-      name: "Vitamin & Khoáng Chất",
-      img: img4,
-      link: "/product?categoryName=Chăm+sóc+cá+nhân",
-    },
-    {
-      name: "Vitamin Cho U50+",
-      img: img5,
-      link: "/product?categoryName=Sơ+cứu",
-    },
-    {
-      name: "Vitamin Cho Mẹ",
-      img: img6,
-      link: "/product?categoryName=Sức+khỏe+trẻ+em+%26+Trẻ+sơ+sinh",
-    },
-    {
-      name: "Dưỡng Trắng Da",
-      img: img7,
-      link: "/product?categoryName=Vitamin+%26+Thực+phẩm+chức+năng",
-    },
-    {
-      name: "Ung Thư - Bướu",
-      img: img8,
-      link: "/product?categoryName=Chăm+sóc+cá+nhân",
-    },
-    { name: "Tăng Cân", img: img9, link: "/product?categoryName=Thuốc+kê+đơn" },
-    {
-      name: "Giảm Cân",
-      img: img10,
-      link: "/product?categoryName=Thuốc+kê+đơn",
-    },
-  ];
-
   const discount = [
     {
       name: "DOLA10",
@@ -101,12 +53,31 @@ const Category = () => {
     },
   ];
 
+  const [categories, setCategories] = useState([]);
   const [categoryIndex, setCategoryIndex] = useState(0);
   const [discountIndex, setDiscountIndex] = useState(0);
   const [copiedStates, setCopiedStates] = useState({});
   const [modalInfo, setModalInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 8;
   const discountItemsPerPage = 4;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const reponse = await CategoryService.getCatgories();
+        console.log("Categories reponse: ", reponse);
+        setCategories(reponse.result.content);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleCategoryNext = () => {
     if (categoryIndex + itemsPerPage < categories.length) {
@@ -148,6 +119,8 @@ const Category = () => {
     setModalInfo(null);
   };
 
+  if (loading) return <div>Loading...</div>;
+
   return (
     <>
       {/* Category Section */}
@@ -181,11 +154,11 @@ const Category = () => {
                   >
                     <img
                       src={category.img}
-                      alt={category.name}
+                      alt={category.categoryName}
                       className="w-20 h-20 transition-transform duration-300 ease-in-out transform hover:scale-90"
                     />
                     <p className="text-base text-gray-700 mt-3 text-center">
-                      {category.name}
+                      {category.categoryName}
                     </p>
                   </a>
                 </div>

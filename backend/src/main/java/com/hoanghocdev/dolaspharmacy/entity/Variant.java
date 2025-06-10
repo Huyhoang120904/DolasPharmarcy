@@ -21,7 +21,9 @@ public class Variant {
     int stock;
     String unit;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    Boolean isPrimary;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     Product product;
 

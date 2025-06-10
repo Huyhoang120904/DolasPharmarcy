@@ -98,7 +98,7 @@ const Footer = () => {
                   để bạn tìm kiếm những sản phẩm chất lượng nhất.
                 </p>
                 <div className="space-y-2">
-                  <p className="flex items-center">
+                  <div className="flex items-center">
                     <div className="text-[#1b74e7] mr-2">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -121,8 +121,8 @@ const Footer = () => {
                       </svg>
                     </div>
                     70 Lữ Gia, Phường 15, Quận 11, TP.HCM
-                  </p>
-                  <p className="flex items-center">
+                  </div>
+                  <div className="flex items-center">
                     <div className="text-[#1b74e7] mr-2">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -140,8 +140,8 @@ const Footer = () => {
                       </svg>
                     </div>
                     1900 6750
-                  </p>
-                  <p className="flex items-center">
+                  </div>
+                  <div className="flex items-center">
                     <div className="text-[#1b74e7] mr-2">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -159,7 +159,7 @@ const Footer = () => {
                       </svg>
                     </div>
                     support@sapo.vn
-                  </p>
+                  </div>
                 </div>
               </div>
 

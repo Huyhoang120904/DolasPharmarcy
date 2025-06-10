@@ -9,12 +9,13 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductSpecification {
 
@@ -26,6 +27,7 @@ public class ProductSpecification {
             addBooleanAndEnumPredicates(request, root, criteriaBuilder, predicates);
             addCategoryPredicate(request, root, criteriaBuilder, predicates);
             addSupplierPredicate(request, root, criteriaBuilder, predicates);
+            addBrandPredicate(request, root, criteriaBuilder, predicates);
             addPricePredicates(request, root, criteriaBuilder, predicates);
             addDiscountPredicates(request, root, criteriaBuilder, predicates);
 
@@ -37,7 +39,7 @@ public class ProductSpecification {
                                                   jakarta.persistence.criteria.Root<Product> root,
                                                   jakarta.persistence.criteria.CriteriaBuilder cb,
                                                   List<Predicate> predicates) {
-        addLikePredicate(request.getProductName(), "productName", root, cb, predicates);
+        addLikePredicate( request.getProductName(), "productName", root, cb, predicates);
         addLikePredicate(request.getSku(), "sku", root, cb, predicates);
         addLikePredicate(request.getOrigin(), "origin", root, cb, predicates);
         addLikePredicate(request.getWarning(), "warning", root, cb, predicates);
@@ -53,6 +55,9 @@ public class ProductSpecification {
                                          jakarta.persistence.criteria.CriteriaBuilder cb,
                                          List<Predicate> predicates) {
         if (value != null && !value.isEmpty()) {
+            log.info("DB Value: {}", cb.lower(root.get(field)));
+            log.info("Request value: {}", "%" + value.toLowerCase() + "%");
+
             predicates.add(cb.like(cb.lower(root.get(field)), "%" + value.toLowerCase() + "%"));
         }
     }
@@ -89,6 +94,16 @@ public class ProductSpecification {
         }
     }
 
+    private static void addBrandPredicate(ProductSearchRequest request,
+                                             jakarta.persistence.criteria.Root<Product> root,
+                                             jakarta.persistence.criteria.CriteriaBuilder cb,
+                                             List<Predicate> predicates) {
+        if (request.getBrandName() != null && !request.getBrandName().isEmpty()) {
+            Join<Product, Supplier> supplierJoin = root.join("brand", JoinType.LEFT);
+            predicates.add(cb.like(cb.lower(supplierJoin.get("brandName")), "%" + request.getBrandName().toLowerCase() + "%"));
+        }
+    }
+
     private static void addPricePredicates(ProductSearchRequest request,
                                            jakarta.persistence.criteria.Root<Product> root,
                                            jakarta.persistence.criteria.CriteriaBuilder cb,
@@ -101,6 +116,7 @@ public class ProductSpecification {
             if (request.getPriceTo() != null) {
                 predicates.add(cb.lessThanOrEqualTo(variantJoin.get("price"), request.getPriceTo()));
             }
+            predicates.add(cb.isTrue(variantJoin.get("isPrimary")));
         }
     }
 

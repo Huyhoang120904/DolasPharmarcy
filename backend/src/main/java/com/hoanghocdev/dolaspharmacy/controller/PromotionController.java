@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,15 +25,17 @@ public class PromotionController {
     PromotionService promotionService;
 
     @GetMapping
-    public ApiResponse<Page<PromotionResponse>> getPromotionByPage(@RequestParam(defaultValue = "0") int page,
-                                                                   @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<Page<PromotionResponse>> getPromotionByPage(@PageableDefault(page = 0, size = 16,
+                                                                    sort = "productName",
+                                                                    direction = Sort.Direction.ASC)
+                                                                   Pageable pageable) {
         return ApiResponse.<Page<PromotionResponse>>builder()
-                .result(promotionService.findByPage(page,size))
+                .result(promotionService.findByPage(pageable))
                 .build();
     }
 
     @GetMapping("/{promotionId}")
-    public  ApiResponse<PromotionResponse> getPromotionById(@PathVariable String promotionId) {
+    public ApiResponse<PromotionResponse> getPromotionById(@PathVariable String promotionId) {
         return ApiResponse.<PromotionResponse>builder()
                 .result(promotionService.findByID(promotionId))
                 .build();
@@ -47,7 +52,7 @@ public class PromotionController {
     public ApiResponse<PromotionResponse> updatePromotion(@PathVariable String promotionId,
                                                           @RequestBody @Valid PromotionRequest request) {
         return ApiResponse.<PromotionResponse>builder()
-                .result(promotionService.update(promotionId,request))
+                .result(promotionService.update(promotionId, request))
                 .build();
     }
 

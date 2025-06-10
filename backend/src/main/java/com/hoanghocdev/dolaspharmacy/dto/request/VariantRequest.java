@@ -25,4 +25,7 @@ public class VariantRequest {
     @Size(min = 1, max = 20, message = "Unit must be between 1 and 20 characters")
     @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "Unit can only contain letters and spaces")
     String unit;
+
+    @NotNull
+    Boolean isPrimary;
 }

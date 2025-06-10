@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +25,12 @@ public class CategoryController {
     CategoryService categoryService;
 
     @GetMapping
-    public ApiResponse<Page<CategoryResponse>> getCategoryByPage(@RequestParam(defaultValue = "0") int page
-            , @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<Page<CategoryResponse>> getCategoryByPage(@PageableDefault(page = 0, size = 16,
+                                                                        sort = "productName",
+                                                                        direction = Sort.Direction.ASC)
+                                                                        Pageable pageable) {
         return ApiResponse.<Page<CategoryResponse>>builder()
-                .result(categoryService.findByPage(page, size))
+                .result(categoryService.findByPage(pageable))
                 .build();
     }
 

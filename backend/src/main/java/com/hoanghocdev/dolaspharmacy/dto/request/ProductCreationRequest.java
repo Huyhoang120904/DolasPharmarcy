@@ -42,10 +42,19 @@ public class ProductCreationRequest {
     @Size(max = 1000, message = "Usage instruction cannot exceed 1000 characters")
     String usageInstruction;
 
+    @Size(max = 1000, message = "Brand name cannot exceed 1000 characters")
+    String brandName;
+
+    @Size(max = 1000, message = "Brand origin cannot exceed 1000 characters")
+    String brandOrigin;
+
     @NotBlank(message = "Slug is required")
     @Size(min = 3, max = 200, message = "Slug must be between 3 and 200 characters")
     @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Slug must be lowercase with hyphens only")
     String slug;
+
+    @Min(value = 0 , message = "Stock must be greater than 0")
+    Long stock;
 
     boolean requiresPrescription;
 

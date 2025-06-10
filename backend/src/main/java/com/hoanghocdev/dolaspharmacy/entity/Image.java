@@ -1,9 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,6 +17,10 @@ public class Image {
     String id;
 
     String url;
+
+    @Lob
+    byte[] imageData;
+
     String alt;
     boolean isPrimary;
 }

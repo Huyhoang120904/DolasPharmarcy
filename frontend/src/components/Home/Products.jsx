@@ -1,19 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SingleProduct from "../common/SingleProduct";
+import { ProductService } from "../../api-services/ProductService";
 
 const Products = ({ name }) => {
   const [products, setProducts] = useState([]);
   const [productIndex, setProductIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
   const itemsPerPage = 5;
 
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/products`)
-      .then((response) => response.json())
-      .then((data) => setProducts(data))
-      .catch((error) => console.error("Error fetching products:", error));
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await ProductService.getProducts();
+        console.log("Product: ", response.result.content);
+        setProducts(response.result.content);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   const handleProductNext = () => {
@@ -27,6 +40,8 @@ const Products = ({ name }) => {
       setProductIndex(productIndex - 1);
     }
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="mt-6">
@@ -45,9 +60,9 @@ const Products = ({ name }) => {
               transform: `translateX(-${productIndex * (100 / itemsPerPage)}%)`,
             }}
           >
-            {products.map((product, index) => (
+            {products?.map((product, index) => (
               <SingleProduct
-                key={product.id}
+                key={product.slug}
                 product={product}
                 className="w-screen"
               />

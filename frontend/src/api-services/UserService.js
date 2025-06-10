@@ -1,15 +1,9 @@
 import axios from "axios";
-import request from "../utils/axiosConfig";
-
-function getMyToken() {
-  return localStorage.getItem("token");
-}
+import request, { getMyToken } from "../utils/axiosConfig";
 
 export const UserService = {
   getMyInfo: async () => {
     try {
-      console.log(request);
-
       const response = await request.get("/users/my-info", {
         headers: {
           Authorization: `Bearer ${getMyToken()}`,

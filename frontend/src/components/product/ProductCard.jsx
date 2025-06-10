@@ -15,8 +15,20 @@ const ProductCard = ({
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [api, context] = useNotification();
+
+  const hasDiscount = product?.promotion ? true : false;
+
+  const basePrice = product?.variants.find((variant) => {
+    return variant.isPrimary;
+  });
+
+  console.log(`hasDiscount: ` + hasDiscount);
+
+  const price = hasDiscount
+    ? basePrice?.price * (1 - product.promotion.discountAmount / 100)
+    : basePrice?.price;
 
   function handleToggleFavourite(e) {
     e.stopPropagation();
@@ -50,20 +62,17 @@ const ProductCard = ({
       >
         {isFavourited ? <HeartFilled /> : <HeartOutlined />}
       </div>
-
       <div className="absolute top-2 left-2 z-10">
-        {product.discount && product.discount.value ? (
-          <BadgeDiscount discount={`${product.discount.value}%`} />
+        {product?.promotion && product.promotion.discountAmount > 0 ? (
+          <BadgeDiscount discount={`${product.promotion.discountAmount}%`} />
         ) : (
           ""
         )}
       </div>
-
       <div className="absolute bottom-4 right-4 z-10">
         <AddToCart item={product} handleAddToCart={handleAddToCart} />
       </div>
       {context}
-
       {loading ? (
         <div className="w-full">
           <div className="flex items-center justify-center h-[200px]">
@@ -93,32 +102,27 @@ const ProductCard = ({
         <>
           <div className="flex items-center justify-center h-[200px]">
             <img
-              src={product.images[0].url}
-              alt={product.name}
+              src={product?.images[0]?.url}
+              alt={product.productName}
               className="h-full object-contain hover:scale-110 transition-transform duration-500 ease-in-out"
               preview={false}
             />
           </div>
-
           <div className="flex flex-col justify-between px-3 py-2">
             <span className="text-[13px] font-semibold text-gray-800 ">
-              {product.name}
+              {product.productName}
             </span>
             <div className="mt-1">
               <span className="text-green-600 text-[16px] font-bold">
-                {product.salePrice
-                  ? new Intl.NumberFormat("vi-VN").format(
-                      parseFloat(product.salePrice).toFixed(0)
-                    )
-                  : new Intl.NumberFormat("vi-VN").format(
-                      parseFloat(product.basePrice).toFixed(0)
-                    )}
+                {new Intl.NumberFormat("vi-VN").format(
+                  parseFloat(price).toFixed(0)
+                )}
                 <span className="text-[13px] font-medium ml-1">₫</span>
               </span>
-              {product.salePrice && (
+              {product.promotion && (
                 <span className="block line-through text-[13px] text-gray-500">
                   {new Intl.NumberFormat("vi-VN").format(
-                    parseFloat(product.basePrice).toFixed(0)
+                    parseFloat(product.variants[0].price).toFixed(0)
                   )}
                   <span className="text-xs">₫</span>
                 </span>
@@ -127,14 +131,13 @@ const ProductCard = ({
           </div>
         </>
       )}
-
       {/* Hidden image to trigger loading state */}
       <img
-        src={product.images[0].url}
+        src={product?.images[0]?.url}
         alt="preload"
         style={{ display: "none" }}
         preview={false}
-        onLoad={() => setLoading(false)}
+        onLoad={() => {}}
       />
     </div>
   );

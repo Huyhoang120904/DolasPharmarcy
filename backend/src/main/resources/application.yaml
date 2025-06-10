@@ -5,7 +5,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mariadb://localhost:3307/dolaspharmarcy
+    url: jdbc:mariadb://localhost:3307/dolaspharmacy
     username: root
     password: 123
     driver-class-name: org.mariadb.jdbc.Driver
@@ -18,5 +18,5 @@ spring:
 
 jwt:
   signerKey: yKWttABa6sa3DNeMYl5ipwCdw2FhJ2jYQZZnFmVdcjRiVXSrf+0mGrOqFnGbo8Qm
-  validDuration: 300
+  validDuration: 30000
   refreshableDuration: 420

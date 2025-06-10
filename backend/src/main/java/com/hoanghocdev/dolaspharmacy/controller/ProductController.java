@@ -12,8 +12,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Base64;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
@@ -26,10 +34,12 @@ public class ProductController {
 
     //product
     @GetMapping
-    public ApiResponse<Page<ProductResponse>> getProductByPage(@RequestParam(defaultValue = "0") int page,
-                                                               @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<Page<ProductResponse>> getProductByPage(@PageableDefault(page = 0, size = 16,
+                                                                                sort = "productName",
+                                                                                direction = Sort.Direction.ASC)
+                                                                                Pageable pageable) {
         return ApiResponse.<Page<ProductResponse>>builder()
-                .result(productService.findProductByPage(page, size))
+                .result(productService.findProductByPage(pageable))
                 .build();
     }
 
@@ -49,10 +59,12 @@ public class ProductController {
 
     @PostMapping("/search")
     public ApiResponse<Page<ProductResponse>> searchProduct(@RequestBody ProductSearchRequest request,
-                                                            @RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "10") int size) {
+                                                            @PageableDefault(page = 0, size = 16,
+                                                                    sort = "productName",
+                                                                    direction = Sort.Direction.ASC)
+                                                                    Pageable pageable) {
         return ApiResponse.<Page<ProductResponse>>builder()
-                .result(productService.findAll(request, page, size))
+                .result(productService.findAll(request, pageable))
                 .build();
     }
 
@@ -68,6 +80,28 @@ public class ProductController {
     public ApiResponse deleteProduct(@PathVariable String productId) {
         productService.deleteProduct(productId);
         return ApiResponse.<ProductResponse>builder()
+                .build();
+    }
+    //with image
+
+    //Note: On the frontend, you'll use "data:image/jpeg;base64," + base64String to display images.
+    @GetMapping("/{productId}/images")
+    public ApiResponse<List<String>> getProductImageById(@PathVariable String productId) {
+        List<byte[]> images = productService.findImageByProductId(productId);
+        List<String> base64Images = images.stream()
+                .map(Base64.getEncoder()::encodeToString)
+                .toList();
+
+        return ApiResponse.<List<String>>builder()
+                .result(base64Images)
+                .build();
+    }
+
+    @PostMapping("/image")
+    public ApiResponse<ProductResponse> createProductWithProduct(@RequestPart @Valid ProductCreationRequest request,
+                                                                 @RequestPart Set<MultipartFile> imageFile) {
+        return ApiResponse.<ProductResponse>builder()
+                .result(productService.addNewProductWithImage(request, imageFile))
                 .build();
     }
 

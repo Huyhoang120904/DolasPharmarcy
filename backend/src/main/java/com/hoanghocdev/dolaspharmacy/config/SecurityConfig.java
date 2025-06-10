@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -28,17 +29,21 @@ public class SecurityConfig {
             "/suppliers/**",
             "/categories/**",
             "/promotions/**",
-            "/cart/**",
-            "/favourite/**",
             "/orders/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/swagger-resources/**",
             "/webjars/**",
+            "/brands/**"
     };
     private static final String[] ADMIN_ENDPOINTS = {
             "/roles/**", "/permissions/**", "/users/**"
+    };
+
+    private static final  String[] PERSONAL_ENDPOINTS = {
+            "/cart/**",
+            "/favourite/**",
     };
 
     @Bean

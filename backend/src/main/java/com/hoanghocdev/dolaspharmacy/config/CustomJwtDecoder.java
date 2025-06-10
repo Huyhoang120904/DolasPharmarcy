@@ -45,7 +45,7 @@ public class CustomJwtDecoder implements JwtDecoder {
             if (!response.isValid()) {
                 throw new JwtException("Token invalid");
             }
-        } catch (JwtException _){}
+        } catch (JwtException e){}
 
         if (Objects.isNull(decoder)) {
             SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");

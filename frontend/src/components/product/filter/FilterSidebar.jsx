@@ -10,11 +10,7 @@ const FilterSidebar = ({
   handleClearAllFilters,
 }) => {
   // Check if any filters are applied
-  const hasActiveFilters =
-    filter.priceRange.length !== 0 ||
-    filter.targeted.length !== 0 ||
-    filter.weight.length !== 0 ||
-    filter.brand.length !== 0;
+  const hasActiveFilters = filter.priceFrom;
 
   return (
     <div className="filter-sidebar">

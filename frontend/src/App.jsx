@@ -30,8 +30,8 @@ import QnA from "./pages/QnA";
 import Contact from "./pages/Contact";
 import ScrollToTop from "../src/components/common/ScrollToTop";
 import DashboardOrder from "./components/dashboard/DashboardOrder";
-import DashboardCustomer from "./components/dashboard/DashboardCustomer"; 
-import DashboardDocument from "./components/dashboard/DashboardDocument"; 
+import DashboardCustomer from "./components/dashboard/DashboardCustomer";
+import DashboardDocument from "./components/dashboard/DashboardDocument";
 import DashboardAnnoucement from "./components/dashboard/DashboardAnnoucement";
 import CustomerDetail from "./components/dashboard/CustomerDetail";
 
@@ -44,6 +44,11 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />, // Set the homepage as the default route
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "/homepage",
+        element: <Home />,
         errorElement: <ErrorPage />,
       },
       {

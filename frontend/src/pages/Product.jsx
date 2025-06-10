@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState } from "react";
 import { notification } from "antd";
 import queryString from "query-string";
-import { useSearchParams } from "react-router-dom";
+import { data, useSearchParams } from "react-router-dom";
 import { useFav } from "../contexts/FavouriteContext";
 import { useCart } from "../contexts/CartContext";
 
@@ -11,6 +11,7 @@ import CategorySection from "../components/product/CategorySection";
 import FilterSidebar from "../components/product/filter/FilterSidebar";
 import SortingHeader from "../components/product/SortingHeader";
 import ProductGrid from "../components/product/ProductGrid";
+import { ProductService } from "../api-services/ProductService";
 
 const Product = ({ promotion = false }) => {
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -19,144 +20,98 @@ const Product = ({ promotion = false }) => {
   const [catergories, setCatergories] = useState([]);
   const [branding, setBranding] = useState([]);
   const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState({
-    _page: 1,
-    _limit: 16,
-    _totalRows: 1,
-  });
+  const [pagination, setPagination] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
 
-  let initalFilter = {
-    _page: 1,
-    _limit: 16,
-    status: "active",
-    priceRange: [],
-    brand: [],
-    targeted: [],
-    weight: [],
-    categoryName: searchParams.get("categoryName") || "",
+  let initialFilter = {
+    page: 1,
+    size: 16,
+    totalPages: 1,
+    productName: null, // ProductName
+    sku: null, // SKU filter
+    origin: null, // Country of origin filter
+    warning: null, // Warning filter
+    ingredients: null, // Ingredients filter
+    dosage: null, // Dosage filter
+    description: null, // Description filter
+    usageInstruction: null, // Usage instruction filter
+    slug: null, // Slug filter
+    requiresPrescription: null, // Prescription requirement filter
+    productStatus: "ACTIVE", // Default Product status filter
+    supplierName: null, // Supplier name filter
+    targetName: null, // Target name filter
+    categoryName: searchParams.get("categoryName") || "", // Category name filter
+    stockFrom: null, // Minimum stock filter
+    stockTo: null, // Maximum stock filter
+    discountAmountFrom: null, // Minimum discount filter
+    discountAmountTo: null, // Maximum discount filter
+    priceFrom: null, // Minimum price filter
+    priceTo: null, // Maximum price filter,
   };
 
   if (promotion) {
-    initalFilter = {
-      ...initalFilter,
+    initialFilter = {
+      ...initialFilter,
       discount_ne: null,
     };
   }
 
-  if (!initalFilter.categoryName) {
-    delete initalFilter.categoryName;
+  if (!initialFilter.categoryName) {
+    delete initialFilter.categoryName;
   }
 
-  const [filter, setFilter] = useState(initalFilter);
+  const [filter, setFilter] = useState(initialFilter);
   const [activeSort, setActiveSort] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [api, contextHolder] = notification.useNotification();
+
   function handleChangeFilter(e, queryParam) {
-    setFilter({ ...filter, [queryParam]: e });
+    switch (queryParam) {
+      case "priceRange": {
+        if (e.length === 0) {
+          setFilter({ ...filter, priceTo: null, priceFrom: null });
+        }
+        if (e.includes("Dưới 100.000đ")) {
+          setFilter({ ...filter, priceTo: 100000 });
+        }
+        if (e.includes("100.000đ - 200.000đ")) {
+          setFilter({ ...filter, priceFrom: 100000, priceTo: 200000 });
+        }
+        if (e.includes("200.000đ - 300.000đ")) {
+          setFilter({ ...filter, priceFrom: 200000, priceTo: 300000 });
+        }
+        if (e.includes("300.000đ - 500.000đ")) {
+          setFilter({ ...filter, priceFrom: 300000, priceTo: 500000 });
+        }
+        if (e.includes("Trên 500.000đ")) {
+          setFilter({ ...filter, priceFrom: 500000 });
+        }
+        break;
+      }
+
+      case "brand": {
+        break;
+      }
+
+      case "targeted": {
+        break;
+      }
+
+      case "weight": {
+        break;
+      }
+    }
   }
 
   function handleChangeSort(name, order) {
-    setFilter({ ...filter, _sort: name, _order: order, _page: 1 });
+    setFilter({
+      ...filter,
+      sort: name + "," + order,
+      page: 1,
+    });
     setActiveSort({ sort_name: name, order: order });
   }
-
-  function handleDeleteFilter(queryParam, content) {
-    setFilter((prevFilter) => {
-      const updatedQueryParam = prevFilter[queryParam].filter(
-        (item) => item !== content
-      );
-      return {
-        ...prevFilter,
-        [queryParam]: updatedQueryParam,
-      };
-    });
-  }
-
-  function handleClearAllFilters() {
-    setFilter({
-      ...initalFilter,
-      _page: 1,
-    });
-    setActiveSort(null);
-  }
-
-  function handlePageChange(n) {
-    setPagination({ ...pagination, _page: n });
-    setFilter({ ...filter, _page: n });
-  }
-
-  function handleAddToCart(item) {
-    if (!item || !item.name) {
-      alert("Không thể thêm vào giỏ hàng!");
-      return;
-    }
-
-    if (item.variants) {
-      addToCart({ ...item, variant: item.variants[0] });
-    } else {
-      addToCart(item);
-    }
-
-    api.success({
-      message: "Thêm giỏ hàng thành công",
-      description: `${item.name} được thêm vào giỏ hàng thành công!`,
-      duration: 1.5,
-    });
-  }
-
-  function handleToggleFav(item) {
-    if (!item || !item.name) {
-      console.error("Invalid item passed to handleAddToCart:", item);
-      return;
-    }
-    toggleFavourite(item);
-  }
-
-  useEffect(() => {
-    fetch(BASE_URL + "/api/categories")
-      .then((res) => res.json())
-      .then((data) => {
-        setCatergories(data);
-      });
-  }, []);
-
-  useEffect(() => {
-    fetch(BASE_URL + "/api/brands")
-      .then((res) => res.json())
-      .then((data) => {
-        setBranding(data);
-      });
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    const params = queryString.stringify(filter);
-
-    fetch(`${BASE_URL}/api/products?${params}`)
-      .then((res) => res.json())
-      .then(({ body, pagination }) => {
-        setProducts(body);
-        setPagination(pagination);
-      })
-      .catch((e) => console.log(e))
-      .finally(() => setLoading(false));
-  }, [filter]);
-
-  // Update filter from URL params on initial load
-  useEffect(() => {
-    const urlSearchQuery = searchParams.get("q");
-    if (urlSearchQuery && urlSearchQuery !== filter.q) {
-      setFilter((prev) => ({ ...prev, q: urlSearchQuery }));
-    }
-  }, []);
-
-  // Update search params when filter changes
-  useEffect(() => {
-    const params = queryString.stringify(filter);
-    setSearchParams(params);
-  }, [filter, setSearchParams]);
 
   const filterArr = [
     {
@@ -193,12 +148,139 @@ const Product = ({ promotion = false }) => {
     },
   ];
 
+  function handleDeleteFilter(queryParam, content) {
+    setFilter((prevFilter) => {
+      const updatedQueryParam = prevFilter[queryParam].filter(
+        (item) => item !== content
+      );
+      return {
+        ...prevFilter,
+        [queryParam]: updatedQueryParam,
+      };
+    });
+  }
+
+  function handleClearAllFilters() {
+    setFilter({
+      ...initialFilter,
+      page: 1,
+    });
+    setActiveSort(null);
+  }
+
+  function handlePageChange(n) {
+    setPagination({ ...pagination, page: n });
+    setFilter({ ...filter, page: n });
+  }
+
+  function handleAddToCart(item) {
+    if (!item || !item.name) {
+      alert("Không thể thêm vào giỏ hàng!");
+      return;
+    }
+
+    if (item.variants) {
+      addToCart({ ...item, variant: item.variants[0] });
+    } else {
+      addToCart(item);
+    }
+
+    api.success({
+      message: "Thêm giỏ hàng thành công",
+      description: `${item.name} được thêm vào giỏ hàng thành công!`,
+      duration: 1.5,
+    });
+  }
+
+  function handleToggleFav(item) {
+    if (!item || !item.name) {
+      console.error("Invalid item passed to handleAddToCart:", item);
+      return;
+    }
+    toggleFavourite(item);
+  }
+
+  //initial load
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const reponse = await ProductService.getProducts(
+          queryString.stringify({ ...filter, page: filter.page - 1 })
+        );
+
+        const data = reponse.result;
+        setProducts(data.content);
+
+        setPagination({
+          page: data.pageable.pageNumber,
+          size: data.pageable.pageSize,
+          totalElements: data.totalElements,
+        });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  //search product
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log(filter);
+
+        setLoading(true);
+        const reponse = await ProductService.searchProducts(filter);
+
+        const data = reponse.result;
+        setProducts(data.content);
+
+        setPagination({
+          page: data.pageable.pageNumber,
+          size: data.pageable.pageSize,
+          totalElements: data.totalElements,
+        });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [filter]);
+
+  //brand
+  useEffect(() => {
+    fetch(BASE_URL + "/api/brands")
+      .then((res) => res.json())
+      .then((data) => {
+        setBranding(data);
+      });
+  }, []);
+
+  // Update filter from URL params on initial load
+  useEffect(() => {
+    const urlSearchQuery = searchParams.get("q");
+    if (urlSearchQuery && urlSearchQuery !== filter.q) {
+      setFilter((prev) => ({ ...prev, q: urlSearchQuery }));
+    }
+  }, []);
+
+  // Update search params when filter changes
+  useEffect(() => {
+    const params = queryString.stringify(filter);
+    setSearchParams(params);
+  }, [filter, setSearchParams]);
+
   const sortArr = [
-    { name: "Tên A-Z", order: "asc", sort_name: "name" },
-    { name: "Tên Z-A", order: "desc", sort_name: "name" },
-    { name: "Hàng mới", order: "desc", sort_name: "createdAt" },
-    { name: "Giá thấp đến cao", order: "asc", sort_name: "salePrice" },
-    { name: "Giá cao xuống thấp", order: "desc", sort_name: "salePrice" },
+    { name: "Tên A-Z", order: "ASC", sort_name: "productName" },
+    { name: "Tên Z-A", order: "DESC", sort_name: "productName" },
+    { name: "Hàng mới", order: "DESC", sort_name: "createdAt" },
+    { name: "Giá thấp đến cao", order: "ASC", sort_name: "salePrice" },
+    { name: "Giá cao xuống thấp", order: "DESC", sort_name: "salePrice" },
   ];
 
   return (

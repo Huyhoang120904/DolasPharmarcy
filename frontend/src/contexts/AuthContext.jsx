@@ -24,23 +24,15 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       const authResponse = await AuthService.login(username, password);
-
-      console.log("Auth: ", authResponse);
-
       const useReponse = await UserService.getMyInfo(authResponse.result.token);
-
-      console.log("User: ", useReponse);
-
       // Store token in localStorage
       localStorage.setItem("token", authResponse.result.token);
 
       setUser(useReponse.result);
       setIsAuthenticated(true);
-
       return { success: true };
     } catch (error) {
       console.log(error);
-
       setError(error.message || "Authentication failed");
       return { success: false, error: error.message };
     } finally {

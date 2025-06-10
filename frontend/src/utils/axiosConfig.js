@@ -4,14 +4,10 @@ const BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 axios.defaults.baseURL = BASE_URL;
 axios.defaults.headers.post["Content-type"] = "application/json";
-axios.defaults.headers.get["origin"] = "application/json";
 
 const request = axios.create({
   baseURL: BASE_URL,
   timeout: 5000,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 axios.interceptors.response.use(
@@ -26,3 +22,7 @@ axios.interceptors.response.use(
 );
 
 export default request;
+
+export function getMyToken() {
+  return localStorage.getItem("token");
+}

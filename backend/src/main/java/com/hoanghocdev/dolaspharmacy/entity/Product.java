@@ -56,6 +56,10 @@ public class Product {
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     List<Variant> variants;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "brand_id")
+    Brand brand;
+
     @ManyToOne
     @JoinColumn(name = "catergory_id")
     Category category;

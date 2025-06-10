@@ -3,6 +3,7 @@ package com.hoanghocdev.dolaspharmacy.dto.request;
 import com.hoanghocdev.dolaspharmacy.entity.Target;
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -43,10 +44,20 @@ public class ProductUpdateRequest {
     @Size(max = 1000, message = "Usage instruction must not exceed 1000 characters")
     String usageInstruction;
 
-    @NotNull(message = "Slug must not be null")
+
+
     @NotBlank(message = "Slug must not be blank")
     @Size(max = 200, message = "Slug must not exceed 200 characters")
     String slug;
+
+    @NotBlank(message = "Brand name must not be blank")
+    @Size(max = 1000, message = "Usage instruction must not exceed 1000 characters")
+    String brandName;
+
+    String brandOrigin;
+
+    @Min(value = 0 , message = "Stock must be greater than 0")
+    Long stock;
 
     boolean requiresPrescription;
 

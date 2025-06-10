@@ -13,7 +13,8 @@ import org.mapstruct.MappingTarget;
         PromotionMapper.class,
         CategoryMapper.class,
         SupplierMapper.class,
-        VariantMapper.class
+        VariantMapper.class,
+        BrandMapper.class
 })
 public interface ProductMapper {
     Product toProduct(ProductUpdateRequest request);

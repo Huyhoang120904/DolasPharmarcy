@@ -1,6 +1,5 @@
 package com.hoanghocdev.dolaspharmacy.dto.response;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -9,11 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class VariantResponse {
-    String id;
-    String name;
-    double price;
-    int stock;
-    String unit;
-    Boolean isPrimary;
+public class BrandResponse {
+    String brandName;
+    String brandOrigin;
 }

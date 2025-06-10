@@ -7,11 +7,13 @@ import img5 from "../../img/Header/imgSelection/Old.png";
 import SingleProduct from "../common/SingleProduct";
 import { Link } from "react-router-dom";
 import queryString from "query-string";
+import { CategoryService } from "../../api-services/CategoryService";
 
 const SelectionProduct = ({ name }) => {
-  const [category, setCategory] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [active, setActive] = useState(null);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const searchMost = [
     "Dầu cá",
@@ -24,34 +26,30 @@ const SelectionProduct = ({ name }) => {
     "Mất ngủ",
   ];
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const reponse = await CategoryService.getCatgories();
+        console.log("Categories reponse: ", reponse);
+        setCategories(reponse.result.content);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/categories`)
-      .then((response) => response.json())
-      .then((data) => {
-        setCategory(data);
-        console.log(category);
-        
-        if (data && data.length > 0) {
-          setActive(data[0].name);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
-  }, []);
-  
-  useEffect(() => {
     if (active) {
-      console.log(
+      fetch(
         `${BASE_URL}/api/products?${queryString.stringify({
           categoryName: active,
         })}`
-      );
-      
-      fetch(`${BASE_URL}/api/products?${queryString.stringify({
-          categoryName: active,
-        })}`)
+      )
         .then((response) => response.json())
         .then((data) => {
           setProducts(data);
@@ -68,7 +66,7 @@ const SelectionProduct = ({ name }) => {
     setActive(key);
   };
 
-  console.log(products);
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="my-14 px-4">
@@ -101,10 +99,10 @@ const SelectionProduct = ({ name }) => {
         <div className="col-span-4">
           {/* Nút danh mục */}
           <div className="flex gap-3 mb-6">
-            {category.slice(4, 6).map((item) => (
+            {categories.slice(0, 2).map((item) => (
               <button
-                key={item.id}
-                onClick={() => handleActive(item.name)}
+                key={item.slug}
+                onClick={() => handleActive(item.categoryName)}
                 className={`flex items-center px-4 py-4 rounded-sm cursor-pointer border border-blue-500 transition-colors  hover:bg-blue-600 hover:!text-white ${
                   active === item.name
                     ? "bg-blue-600 !text-white"
@@ -116,14 +114,14 @@ const SelectionProduct = ({ name }) => {
                   alt=""
                   className="w-[24px] h-[24px] object-cover rounded-full mr-2"
                 />
-                <span>{item.name}</span>
+                <span>{item.categoryName}</span>
               </button>
             ))}
           </div>
 
           {/* Lưới sản phẩm */}
           <div className="grid grid-cols-4 gap-20">
-            {products.slice(0,8).map((product) => (
+            {products.slice(0, 8).map((product) => (
               <SingleProduct key={product.id} product={product} />
             ))}
           </div>

@@ -48,9 +48,9 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
     @Override
-    public Page<PromotionResponse> findByPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return promotionRepository.findAll(pageable).map(promotionMapper::toPromotionResponse) ;
+    public Page<PromotionResponse> findByPage(Pageable pageable) {
+        return promotionRepository.findAll(pageable)
+                .map(promotionMapper::toPromotionResponse) ;
     }
 
     @Override

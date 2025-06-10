@@ -6,17 +6,24 @@ import com.hoanghocdev.dolaspharmacy.dto.request.ProductUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.VariantRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ProductResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Set;
 
 @Service
 public interface ProductService {
     ProductResponse findProductBySlug(String slug);
 
-    Page<ProductResponse> findProductByPage(int limit, int page);
+    Page<ProductResponse> findProductByPage(Pageable pageable);
 
-    ProductResponse updateProduct(String productId, ProductUpdateRequest updateRequest);
+    ProductResponse updateProduct(String productId, ProductUpdateRequest request);
 
-    ProductResponse addNewProduct(ProductCreationRequest updateRequest);
+    ProductResponse addNewProduct(ProductCreationRequest request);
+
+    ProductResponse addNewProductWithImage(ProductCreationRequest request, Set<MultipartFile> imageFile);
 
     void deleteProduct(String id);
 
@@ -24,5 +31,6 @@ public interface ProductService {
 
     ProductResponse deleteVariant(String productId, String variantId);
 
-    Page<ProductResponse> findAll(ProductSearchRequest request, int page, int size);
+    Page<ProductResponse> findAll(ProductSearchRequest request, Pageable pageable);
+    List<byte[]> findImageByProductId(String productId);
 }
