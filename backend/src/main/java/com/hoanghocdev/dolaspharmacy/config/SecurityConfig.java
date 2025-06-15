@@ -1,9 +1,12 @@
 package com.hoanghocdev.dolaspharmacy.config;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,39 +22,49 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class SecurityConfig {
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/users/my-info",
-            "/users/register",
-            "/auth/**",
-            "/products/**",
-            "/suppliers/**",
-            "/categories/**",
-            "/promotions/**",
-            "/orders/**",
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/swagger-resources/**",
-            "/webjars/**",
-            "/brands/**"
+    static String[] PUBLIC_GET_ENDPOINTS = {
+            "/products/**", "/suppliers/**",
+            "/categories/**", "/promotions/**",
+            "/brands/**", "/targets/**",
+            "/orders/**", "/v3/api-docs/**",
+            "/swagger-ui/**", "/swagger-ui.html",
+            "/swagger-resources/**", "/webjars/**",
+            "/users/me/**"
     };
-    private static final String[] ADMIN_ENDPOINTS = {
+
+    static String[] PUBLIC_POST_ENDPOINTS = {
+            "/auth/**",
+            "/products/search/**","/users/me/**"
+    };
+
+    static String[] PUBLIC_DELETE_ENDPOINTS = {
+            "/users/register", "/auth/**",
+            "/products/search/**","/users/me/**"
+    };
+
+    static String[] ADMIN_ENDPOINTS = {
             "/roles/**", "/permissions/**", "/users/**"
     };
 
-    private static final  String[] PERSONAL_ENDPOINTS = {
-            "/cart/**",
-            "/favourite/**",
+    static String[] PERSONAL_ENDPOINTS = {
+            "/cart/**", "/favourite/**",
     };
+
+    @Value("${spring.security.cors_url}")
+    @NonFinal
+    String CORS_URL;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomJwtDecoder customJwtDecoder)
             throws Exception {
         return httpSecurity
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll()
                         .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
@@ -75,7 +88,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:5173");
+        corsConfiguration.addAllowedOrigin(CORS_URL);
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowCredentials(true);

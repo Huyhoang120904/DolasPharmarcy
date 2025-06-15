@@ -20,15 +20,11 @@ const ProductCard = ({
 
   const hasDiscount = product?.promotion ? true : false;
 
-  const basePrice = product?.variants.find((variant) => {
-    return variant.isPrimary;
-  });
-
-  console.log(`hasDiscount: ` + hasDiscount);
+  const primaryVariant = product?.variants.find((variant) => variant.isPrimary);
 
   const price = hasDiscount
-    ? basePrice?.price * (1 - product.promotion.discountAmount / 100)
-    : basePrice?.price;
+    ? primaryVariant?.price * (1 - product.promotion.discountAmount / 100)
+    : primaryVariant?.price;
 
   function handleToggleFavourite(e) {
     e.stopPropagation();
@@ -40,11 +36,12 @@ const ProductCard = ({
       });
       return;
     }
-    handleToggleFav(product);
+
+    handleToggleFav(product.id);
   }
 
   function handleClick() {
-    navigate(`/product-detail/${product.id}`);
+    navigate(`/product-detail/${product.slug}`);
   }
 
   return (
@@ -122,7 +119,7 @@ const ProductCard = ({
               {product.promotion && (
                 <span className="block line-through text-[13px] text-gray-500">
                   {new Intl.NumberFormat("vi-VN").format(
-                    parseFloat(product.variants[0].price).toFixed(0)
+                    parseFloat(primaryVariant.price).toFixed(0)
                   )}
                   <span className="text-xs">₫</span>
                 </span>

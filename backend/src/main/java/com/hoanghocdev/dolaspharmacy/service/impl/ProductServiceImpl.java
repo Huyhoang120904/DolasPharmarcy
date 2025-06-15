@@ -42,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
     VariantRepository variantRepository;
     VariantMapper variantMapper;
     private final BrandRepository brandRepository;
+    private final TargetRepository targetRepository;
 
     @Override
     public ProductResponse findProductBySlug(String slug) {
@@ -73,14 +74,27 @@ public class ProductServiceImpl implements ProductService {
         Variant variant = variantRepository.findById(creationRequest.getCategoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
+        Target target = null;
+
+        if (targetRepository.findById(creationRequest.getTarget().getTargetName()).isPresent()) {
+            target = targetRepository.findById(creationRequest.getTarget().getTargetName()).get();
+        } else {
+            target = Target.builder()
+                    .targetName(creationRequest.getTarget().getTargetName())
+                    .description(creationRequest.getTarget().getDescription())
+                    .build();
+            target = targetRepository.save(target);
+        }
+        product.setTarget(target);
+
         Brand brand = null;
 
-        if (brandRepository.findById(creationRequest.getBrandName()).isPresent()) {
-            brand = brandRepository.findById(creationRequest.getBrandName()).get();
+        if (brandRepository.findById(creationRequest.getBrand().getBrandName()).isPresent()) {
+            brand = brandRepository.findById(creationRequest.getBrand().getBrandName()).get();
         } else {
             brand = Brand.builder()
-                    .brandName(creationRequest.getBrandName())
-                    .origin(creationRequest.getBrandOrigin())
+                    .brandName(creationRequest.getBrand().getBrandName())
+                    .origin(creationRequest.getBrand().getBrandOrigin())
                     .build();
             brand = brandRepository.save(brand);
         }
@@ -112,6 +126,10 @@ public class ProductServiceImpl implements ProductService {
         List<Variant> variants = creationRequest.getVariants().stream()
                 .map(variantMapper::toVariant).toList();
 
+        if (variants.stream().filter(Variant::getIsPrimary).count() != 1) {
+            throw new AppException(ErrorCode.INVALID_VARIANTS);
+        }
+
         List<Image> images = new ArrayList<>();
 
         imageFiles.forEach(imageFile -> {
@@ -125,14 +143,27 @@ public class ProductServiceImpl implements ProductService {
             }
         });
 
+        Target target = null;
+
+        if (targetRepository.findById(creationRequest.getTarget().getTargetName()).isPresent()) {
+            target = targetRepository.findById(creationRequest.getTarget().getTargetName()).get();
+        } else {
+            target = Target.builder()
+                    .targetName(creationRequest.getTarget().getTargetName())
+                    .description(creationRequest.getTarget().getDescription())
+                    .build();
+            target = targetRepository.save(target);
+        }
+        product.setTarget(target);
+
         Brand brand = null;
 
-        if (brandRepository.findById(creationRequest.getBrandName()).isPresent()) {
-            brand = brandRepository.findById(creationRequest.getBrandName()).get();
+        if (brandRepository.findById(creationRequest.getBrand().getBrandName()).isPresent()) {
+            brand = brandRepository.findById(creationRequest.getBrand().getBrandName()).get();
         } else {
             brand = Brand.builder()
-                    .brandName(creationRequest.getBrandName())
-                    .origin(creationRequest.getBrandOrigin())
+                    .brandName(creationRequest.getBrand().getBrandName())
+                    .origin(creationRequest.getBrand().getBrandOrigin())
                     .build();
             brand = brandRepository.save(brand);
         }
@@ -143,6 +174,7 @@ public class ProductServiceImpl implements ProductService {
         product.setPromotion(promotion);
 
         product.setVariants(variants);
+        updatePrimaryVariantPrice(product);
 
         product.setImages(images);
 
@@ -166,22 +198,43 @@ public class ProductServiceImpl implements ProductService {
         Supplier supplier = supplierRepository.findById(updateRequest.getCategoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
+        List<Variant> variants = updateRequest.getVariants().stream()
+                .map(variantMapper::toVariant).toList();
+
+        if (variants.stream().filter(Variant::getIsPrimary).count() != 1) {
+            throw new AppException(ErrorCode.INVALID_VARIANTS);
+        }
+
+        Target target = null;
+
+        if (targetRepository.findById(updateRequest.getTarget().getTargetName()).isPresent()) {
+            target = targetRepository.findById(updateRequest.getTarget().getTargetName()).get();
+        } else {
+            target = Target.builder()
+                    .targetName(updateRequest.getTarget().getTargetName())
+                    .description(updateRequest.getTarget().getDescription())
+                    .build();
+            target = targetRepository.save(target);
+        }
+        product.setTarget(target);
+
         Brand brand = null;
 
-        if (brandRepository.findById(updateRequest.getBrandName()).isPresent()) {
-            brand = brandRepository.findById(updateRequest.getBrandName()).get();
+        if (brandRepository.findById(updateRequest.getBrand().getBrandName()).isPresent()) {
+            brand = brandRepository.findById(updateRequest.getBrand().getBrandName()).get();
         } else {
             brand = Brand.builder()
-                    .brandName(updateRequest.getBrandName())
-                    .origin(updateRequest.getBrandOrigin())
+                    .brandName(updateRequest.getBrand().getBrandName())
+                    .origin(updateRequest.getBrand().getBrandOrigin())
                     .build();
             brand = brandRepository.save(brand);
         }
-        product.setBrand(brand);
 
+        product.setBrand(brand);
         product.setCategory(category);
         product.setSupplier(supplier);
         product.setPromotion(promotion);
+        product.setVariants(variants);
 
         product = productRepository.save(product);
         return productMapper.toResponse(product);
@@ -189,17 +242,31 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(String id) {
+        if(!productRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+        }
         promotionRepository.deleteById(id);
     }
 
     @Override
+    @Transactional(rollbackOn = AppException.class)
     public ProductResponse addVariant(String productId, VariantRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         Variant variant = variantMapper.toVariant(request);
         variant.setProduct(product);
+
+        if (variant.getIsPrimary())
+            product.getVariants().stream().forEach(v -> v.setIsPrimary(false));
+
         product.getVariants().add(variant);
+
+        if (product.getVariants().stream().filter(Variant::getIsPrimary).count() != 1) {
+            throw new AppException(ErrorCode.INVALID_VARIANTS);
+        }
+
         product = productRepository.save(product);
+
         return productMapper.toResponse(product);
     }
 
@@ -212,9 +279,14 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         product.getVariants().remove(variant);
+        variant.setProduct(null);
 
-        product = productRepository.save(product);
+        if (product.getVariants().stream().filter(Variant::getIsPrimary).count() != 1) {
+            throw new AppException(ErrorCode.PRIMARY_VARIANT_CANNOT_BE_DELETED);
+        }
 
+        variantRepository.save(variant);
+        productRepository.save(product);
         return productMapper.toResponse(product);
     }
 
@@ -231,6 +303,17 @@ public class ProductServiceImpl implements ProductService {
         return product.getImages().stream()
                 .map(Image::getImageData)
                 .toList();
+    }
+
+    public void updatePrimaryVariantPrice(Product product) {
+        product.setPrimaryVariantPrice(
+                product.getVariants().stream()
+                        .filter(v -> Boolean.TRUE.equals(v.getIsPrimary()))
+                        .map(Variant::getPrice)
+                        .findFirst()
+                        .orElse(null)
+        );
+        productRepository.save(product);
     }
 
 }

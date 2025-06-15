@@ -30,17 +30,11 @@ public class UserEntity {
     String username;
     String password;
 
-
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    LocalDateTime updatedAt;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role"))
     Set<Role> roles;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    UserDetail userDetail;
 
 }

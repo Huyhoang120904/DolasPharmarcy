@@ -3,10 +3,13 @@ package com.hoanghocdev.dolaspharmacy.controller;
 import com.hoanghocdev.dolaspharmacy.dto.request.AuthenticationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.IntrospectTokenRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.TokenRequest;
+import com.hoanghocdev.dolaspharmacy.dto.request.UserCreationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ApiResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.AuthenticationResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.IntrospectTokenResponse;
+import com.hoanghocdev.dolaspharmacy.dto.response.UserResponse;
 import com.hoanghocdev.dolaspharmacy.service.AuthenticationService;
+import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,11 +36,18 @@ public class AuthenticationController {
 
     AuthenticationService authenticationService;
 
+
     @PostMapping("/login")
     public ApiResponse<AuthenticationResponse> register(@RequestBody @Valid AuthenticationRequest request){
-        log.info("In login method!");
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.authenticate(request))
+                .build();
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<AuthenticationResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.register(request))
                 .build();
     }
 

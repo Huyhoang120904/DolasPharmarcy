@@ -18,7 +18,8 @@ import java.util.List;
 @Builder
 public class Target {
     @Id
-    String name;
+    String targetName;
+
     String description;
 
     @OneToMany(mappedBy = "target",fetch = FetchType.LAZY)

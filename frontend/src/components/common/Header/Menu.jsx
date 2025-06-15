@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 const Menu = () => {
   const location = useLocation();
   const [activeIndex, setActiveIndex] = useState(0);
-  
+
   const menuItems = [
     { title: "Trang chủ", path: "/" },
     { title: "Giới thiệu", path: "/about" },
@@ -16,7 +16,7 @@ const Menu = () => {
     { title: "Câu hỏi thường gặp", path: "/faq" },
     { title: "Liên hệ", path: "/contact" },
   ];
-  
+
   const subMenus = {
     "Sản phẩm": [
       { title: "Dược phẩm", path: "/product" },
@@ -30,7 +30,7 @@ const Menu = () => {
       { title: "Thông cáo báo chí", path: "/news" },
     ],
   };
-  
+
   useEffect(() => {
     const currentIndex = menuItems.findIndex(
       (item) =>
@@ -39,9 +39,9 @@ const Menu = () => {
     );
     if (currentIndex >= 0) setActiveIndex(currentIndex);
   }, [location.pathname]);
-  
+
   return (
-    <div className="relative my-4">
+    <div className="relative my-4 h-fit">
       <ul className="flex flex-wrap items-center gap-4 text-sm font-semibold relative z-10">
         {menuItems.map((item, index) => {
           const hasSubMenu = !!subMenus[item.title];
@@ -52,9 +52,11 @@ const Menu = () => {
                 relative cursor-pointer px-4 py-3
                 transition-all duration-300 ease-in-out
                 hover:bg-white hover:text-green-600 hover:rounded-xl hover:shadow-md
-                ${activeIndex === index
-                  ? "bg-white text-green-600 rounded-xl shadow-md"
-                  : "rounded-lg"}
+                ${
+                  activeIndex === index
+                    ? "bg-white text-green-600 rounded-xl shadow-md"
+                    : "rounded-lg"
+                }
               `}
               onClick={() => setActiveIndex(index)}
             >
@@ -65,19 +67,21 @@ const Menu = () => {
                     <ChevronDownIcon className="w-4 h-4 text-white-500 ml-1" />
                   )}
                 </Link>
-                
+
                 {hasSubMenu && (
                   <>
                     {/* This is the invisible connector that bridges the gap */}
                     <div className="absolute left-0 w-full h-2 top-full"></div>
-                    
-                    <div className="
+
+                    <div
+                      className="
                       absolute left-0 w-64 bg-white shadow-lg rounded-xl p-4
                       opacity-0 invisible 
                       group-hover:opacity-100 group-hover:visible
                       transition-all duration-300 ease-out z-50
                       mt-2 top-[calc(100%+8px)]
-                    ">
+                    "
+                    >
                       <ul className="space-y-2 text-gray-700">
                         {subMenus[item.title].map((sub, subIndex) => (
                           <li key={subIndex}>

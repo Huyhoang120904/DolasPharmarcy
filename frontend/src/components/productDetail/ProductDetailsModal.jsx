@@ -26,7 +26,7 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
       footer={[
         <button
           key="close"
-          className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300 font-medium"
+          className="px-6 py-2 bg-indigo-600 !text-white rounded-md hover:bg-indigo-700 transition-colors duration-300 font-medium"
           onClick={handleCancel}
         >
           Đóng
@@ -36,13 +36,15 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
       <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
         {/* Product Name Section */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 mb-6 rounded-lg border-l-4 border-indigo-500">
-          <h2 className="text-xl font-bold text-gray-800">{product.name}</h2>
+          <h2 className="text-xl font-bold text-gray-800 !mb-0">
+            {product.productName}
+          </h2>
         </div>
 
         {/* Basic Info Section */}
         <div className="mb-6">
-          <div className="flex items-center mb-3">
-            <InfoCircleOutlined className="text-indigo-600 mr-2" />
+          <div className="flex items-center !mb-3">
+            <InfoCircleOutlined className="text-indigo-600 mr-2 !mb-2" />
             <Title level={4} className="m-0 text-indigo-700">
               Thông tin cơ bản
             </Title>
@@ -67,46 +69,46 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
             </Descriptions.Item>
             <Descriptions.Item label="Thương hiệu">
               <span className="font-semibold text-indigo-600">
-                {product.brand}
+                {product.brand?.brandName}
               </span>
             </Descriptions.Item>
             <Descriptions.Item label="Xuất xứ">
               {product.origin}
             </Descriptions.Item>
             <Descriptions.Item label="Nhà sản xuất">
-              {product.manufacturerName}
+              {product.supplier?.supplierName}
             </Descriptions.Item>
             <Descriptions.Item label="Phân khúc giá">
               <Tag color="blue" className="rounded-md">
-                {product.priceRange}
+                {/* No priceRange in new object, leave blank or remove if not needed */}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Trọng lượng">
-              {product.weight}
+              {/* No weight in new object, leave blank or remove if not needed */}
             </Descriptions.Item>
             <Descriptions.Item label="Đối tượng sử dụng">
               <Tag color="purple" className="rounded-md">
-                {product.targeted}
+                {product.target?.targetName}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Tình trạng">
               <Tag
                 className="rounded-full px-3"
                 color={
-                  product.status === "active"
+                  product.productStatus === "ACTIVE"
                     ? "success"
-                    : product.status === "inactive"
+                    : product.productStatus === "INACTIVE"
                     ? "error"
                     : "processing"
                 }
               >
-                {product.status === "active"
+                {product.productStatus === "ACTIVE"
                   ? "Còn hàng"
-                  : product.status === "inactive"
+                  : product.productStatus === "INACTIVE"
                   ? "Ngừng kinh doanh"
-                  : product.status === "out_of_stock"
+                  : product.productStatus === "OUT_OF_STOCK"
                   ? "Hết hàng"
-                  : product.status}
+                  : product.productStatus}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Cần toa thuốc">
@@ -125,7 +127,7 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
         {/* Pharmaceutical Details */}
         <div className="mb-6 bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center mb-3">
-            <ShoppingOutlined className="text-indigo-600 mr-2" />
+            <ShoppingOutlined className="text-indigo-600 mr-2 !mb-2" />
             <Title level={4} className="m-0 text-indigo-700">
               Thông tin điều trị
             </Title>
@@ -146,7 +148,7 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
             <div>
               <h4 className="font-bold text-gray-700 mb-1">Cảnh báo:</h4>
               <p className="bg-gray-50 p-2 rounded text-red-600">
-                {product.warnings || "Không có cảnh báo đặc biệt"}
+                {product.warning || "Không có cảnh báo đặc biệt"}
               </p>
             </div>
           </div>
@@ -156,7 +158,7 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
         {product.variants && product.variants.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center mb-3">
-              <ShoppingOutlined className="text-indigo-600 mr-2" />
+              <ShoppingOutlined className="text-indigo-600 mr-2 !mb-2" />
               <Title level={4} className="m-0 text-indigo-700">
                 Các phiên bản sản phẩm
               </Title>
@@ -176,11 +178,13 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
                 key="name"
                 className="font-medium"
               />
+              {/* No SKU per variant in new object, remove or leave blank */}
               <Table.Column
                 title="Mã SKU"
                 dataIndex="sku"
                 key="sku"
                 className="font-mono text-xs"
+                render={() => product.sku}
               />
               <Table.Column
                 title="Giá"
@@ -216,7 +220,7 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
         )}
 
         {/* Discount Section */}
-        {product.discount && (
+        {product.promotion && (
           <div className="mb-6">
             <div className="flex items-center mb-3">
               <PercentageOutlined className="text-indigo-600 mr-2" />
@@ -232,34 +236,27 @@ function ProductDetailsModal({ isModalOpen, handleOk, handleCancel, product }) {
                 size="small"
               >
                 <Descriptions.Item
-                  label={<span className="font-medium">Loại giảm giá</span>}
+                  label={<span className="font-medium">Tên khuyến mãi</span>}
                 >
                   <Tag color="orange" className="rounded-md">
-                    {product.discount.type === "percentage"
-                      ? "Giảm theo phần trăm"
-                      : "Giảm giá cố định"}
+                    {product.promotion.promotionName}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item
                   label={<span className="font-medium">Giá trị giảm</span>}
                 >
                   <span className="text-red-600 font-bold">
-                    {product.discount.type === "percentage"
-                      ? `${product.discount.value}%`
-                      : `${new Intl.NumberFormat("vi-VN").format(
-                          product.discount.value
-                        )} ₫`}
+                    {product.promotion.discountAmount
+                      ? `${product.promotion.discountAmount}%`
+                      : ""}
                   </span>
                 </Descriptions.Item>
+                {/* No maxDiscountAmount in new object, leave blank or remove */}
                 <Descriptions.Item
-                  label={<span className="font-medium">Giảm tối đa</span>}
+                  label={<span className="font-medium">Loại khuyến mãi</span>}
                 >
-                  {product.discount.maxDiscountAmount > 0 ? (
-                    `${new Intl.NumberFormat("vi-VN").format(
-                      product.discount.maxDiscountAmount
-                    )} ₫`
-                  ) : (
-                    <span className="text-gray-500 italic">Không giới hạn</span>
+                  {product.promotion.promotionType || (
+                    <span className="text-gray-500 italic">Không xác định</span>
                   )}
                 </Descriptions.Item>
               </Descriptions>

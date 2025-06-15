@@ -42,12 +42,6 @@ public class ProductCreationRequest {
     @Size(max = 1000, message = "Usage instruction cannot exceed 1000 characters")
     String usageInstruction;
 
-    @Size(max = 1000, message = "Brand name cannot exceed 1000 characters")
-    String brandName;
-
-    @Size(max = 1000, message = "Brand origin cannot exceed 1000 characters")
-    String brandOrigin;
-
     @NotBlank(message = "Slug is required")
     @Size(min = 3, max = 200, message = "Slug must be between 3 and 200 characters")
     @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Slug must be lowercase with hyphens only")
@@ -65,7 +59,11 @@ public class ProductCreationRequest {
     @NotEmpty(message = "At least one image is required")
     List<ImageRequest> images;
 
-    Target target;
+    @Valid
+    BrandRequest brand;
+
+    @Valid
+    TargetRequest target;
 
     @Valid
     @NotEmpty(message = "At least one variant is required")

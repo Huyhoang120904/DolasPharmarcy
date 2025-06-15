@@ -5,7 +5,8 @@ import { useCart } from "../../contexts/CartContext";
 function AddToCart({ item, handleAddToCart }) {
   function onClickCart(e) {
     e.stopPropagation();
-    handleAddToCart(item);
+    const variant = item.variants.find((variant) => variant.isPrimary);
+    handleAddToCart({ product: item, variantId: variant.id, quantity: 1 });
   }
 
   return (

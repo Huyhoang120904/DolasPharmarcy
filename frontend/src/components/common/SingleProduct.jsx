@@ -67,16 +67,7 @@ const SingleProduct = ({ product }) => {
   }
 
   function handleAddToCartItem(item) {
-    if (!item || !item.name) {
-      alert("Không thể thêm vào giỏ hàng!");
-      return;
-    }
-
-    if (item.variants) {
-      addToCart({ ...item, variant: item.variants[0] });
-    } else {
-      addToCart(item);
-    }
+    addToCart(item);
 
     api.success({
       message: "Thêm giỏ hàng thành công",

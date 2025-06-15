@@ -42,11 +42,6 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public List<SupplierResponse> findAll() {
-        return List.of();
-    }
-
-    @Override
     public Page<SupplierResponse> findByPage(Pageable pageable) {
         return supplierRepository.findAll(pageable)
                 .map(supplierMapper::toSupplierResponse);

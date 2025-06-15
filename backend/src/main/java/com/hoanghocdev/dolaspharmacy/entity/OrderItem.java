@@ -12,7 +12,6 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Builder
 public class OrderItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;

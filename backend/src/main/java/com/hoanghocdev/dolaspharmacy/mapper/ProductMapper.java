@@ -14,7 +14,8 @@ import org.mapstruct.MappingTarget;
         CategoryMapper.class,
         SupplierMapper.class,
         VariantMapper.class,
-        BrandMapper.class
+        BrandMapper.class,
+        TargetMapper.class
 })
 public interface ProductMapper {
     Product toProduct(ProductUpdateRequest request);

@@ -1,6 +1,6 @@
 import React from "react";
 import ProductCard from "./ProductCard";
-import LoadingComponent from "../common/Loading/LoadingCompoent";
+import LoadingComponent from "../common/Loading/LoadingComponent";
 import ProductPagination from "./ProductPagination";
 import EmptyProducts from "./EmptyProducts";
 
@@ -29,11 +29,10 @@ const ProductGrid = ({
           {products.map((product) => {
             let isFavourited = false;
             if (
-              favList.items &&
-              favList.items.find((favItem) => favItem.id === product.id)
-            ) {
+              Array.isArray(favList) &&
+              favList.find((favItem) => favItem.id === product.id)
+            )
               isFavourited = true;
-            }
 
             return (
               <div

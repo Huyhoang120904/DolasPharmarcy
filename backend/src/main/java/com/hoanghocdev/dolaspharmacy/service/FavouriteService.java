@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface FavouriteService {
-    FavouriteResponse addFavourite(FavouriteRequest request);
-    FavouriteResponse removeFavourite(FavouriteRequest request);
+    FavouriteResponse toggleFavourite(String id);
     FavouriteResponse findFavouriteList();
 }

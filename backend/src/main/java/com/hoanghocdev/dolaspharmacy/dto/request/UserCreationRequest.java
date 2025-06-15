@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -13,7 +14,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
-
     @Size(min = 5, message = "Username must contains at least 5 character")
     @NotNull
     String username;
@@ -22,7 +22,6 @@ public class UserCreationRequest {
     @NotNull
     String password;
 
-    String gender;
-    String fullName;
-    LocalDate dob;
+    @Valid
+    UserDetailRequest userDetail;
 }

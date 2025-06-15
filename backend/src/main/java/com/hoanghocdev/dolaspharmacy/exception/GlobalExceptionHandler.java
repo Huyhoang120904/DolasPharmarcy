@@ -15,18 +15,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiResponse<Void>> handleOtherException(RuntimeException e) {
-
-        ErrorCode errorCode = ErrorCode.UNCATEGORIZED_EXCEPTION;
-
-        ApiResponse<Void> apiResponse = new ApiResponse<>();
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
-        apiResponse.setStatusCode(errorCode.getHttpStatus().value());
-
-        return ResponseEntity.status(errorCode.getHttpStatus()).body(apiResponse);
-    }
+//    @ExceptionHandler(value = RuntimeException.class)
+//    ResponseEntity<ApiResponse<Void>> handleOtherException(RuntimeException e) {
+//
+//        ErrorCode errorCode = ErrorCode.UNCATEGORIZED_EXCEPTION;
+//
+//        ApiResponse<Void> apiResponse = new ApiResponse<>();
+//        apiResponse.setCode(errorCode.getCode());
+//        apiResponse.setMessage(errorCode.getMessage());
+//        apiResponse.setStatusCode(errorCode.getHttpStatus().value());
+//
+//        return ResponseEntity.status(errorCode.getHttpStatus()).body(apiResponse);
+//    }
 
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiResponse<Void>> handleAppException(AppException e) {

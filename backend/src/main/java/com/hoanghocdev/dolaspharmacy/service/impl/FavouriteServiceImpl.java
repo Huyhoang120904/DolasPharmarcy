@@ -1,6 +1,5 @@
 package com.hoanghocdev.dolaspharmacy.service.impl;
 
-import com.hoanghocdev.dolaspharmacy.dto.request.FavouriteRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.FavouriteResponse;
 import com.hoanghocdev.dolaspharmacy.entity.Favourites;
 import com.hoanghocdev.dolaspharmacy.entity.Product;
@@ -9,7 +8,6 @@ import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.mapper.FavouritesMapper;
 import com.hoanghocdev.dolaspharmacy.repository.FavouritesRepository;
 import com.hoanghocdev.dolaspharmacy.repository.ProductRepository;
-import com.hoanghocdev.dolaspharmacy.repository.UserDetailRepository;
 import com.hoanghocdev.dolaspharmacy.service.FavouriteService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,38 +19,44 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor
 public class FavouriteServiceImpl implements FavouriteService {
-
-
    ProductRepository productRepository;
-    private final UserDetailRepository userDetailRepository;
-    private final FavouritesRepository favouritesRepository;
-    private final FavouritesMapper favouritesMapper;
+   FavouritesRepository favouritesRepository;
+   FavouritesMapper favouritesMapper;
 
     @Override
-    public FavouriteResponse addFavourite(FavouriteRequest request) {
-        Product product = productRepository.findById(request.getProductId())
+    public FavouriteResponse toggleFavourite(String id) {
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         Favourites favourites = getFavourite();
-        favourites.getProducts().add(product);
-        favourites = favouritesRepository.save(favourites);
-        return favouritesMapper.toFavouriteResponse(favourites);
-    }
 
-    @Override
-    public FavouriteResponse removeFavourite(FavouriteRequest request) {
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-        Favourites favourites = getFavourite();
-        favourites.getProducts().removeIf(item ->
-                item.getId().equals(product.getId()));
-        favourites = favouritesRepository.save(favourites);
-        return favouritesMapper.toFavouriteResponse(favourites);
+        if(favourites.getProducts().contains(product)) {
+            favourites = removeFavourite(product);
+        } else {
+            favourites = addFavourite(product);
+        }
+
+        return favouritesMapper.toResponse(favourites);
     }
 
     @Override
     public FavouriteResponse findFavouriteList() {
-        return favouritesMapper.toFavouriteResponse(getFavourite());
+        return favouritesMapper.toResponse(getFavourite());
     }
+
+    public Favourites addFavourite(Product product) {
+        Favourites favourites = getFavourite();
+        favourites.getProducts().add(product);
+        return favouritesRepository.save(favourites);
+    }
+
+
+    public Favourites removeFavourite(Product product) {
+        Favourites favourites = getFavourite();
+        favourites.getProducts().removeIf(item ->
+                item.getId().equals(product.getId()));
+        return favouritesRepository.save(favourites);
+    }
+
 
     public Favourites getFavourite(){
         SecurityContext context = SecurityContextHolder.getContext();

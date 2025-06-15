@@ -4,7 +4,6 @@ import "./FilterContent.css";
 
 function FilterContent({ filterObj, onChange, filtering }) {
   const [selectedValues, setSelectedValues] = useState([]);
-
   function handleChange(checkedValues) {
     onChange(checkedValues, filterObj.queryParam);
     setSelectedValues(checkedValues);

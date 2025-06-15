@@ -17,7 +17,9 @@ function OtherInfoCard({ userInfo }) {
             <Text type="secondary" className="block">
               Ngày Tạo Tài Khoản
             </Text>
-            <Text strong>{new Date(userInfo.createdAt).toLocaleString()}</Text>
+            <Text strong>
+              {new Date(userInfo.userDetail.createdAt).toLocaleString()}
+            </Text>
           </div>
         </Col>
         <Col xs={24} md={12}>
@@ -25,7 +27,9 @@ function OtherInfoCard({ userInfo }) {
             <Text type="secondary" className="block">
               Cập Nhật Gần Nhất
             </Text>
-            <Text strong>{new Date(userInfo.updatedAt).toLocaleString()}</Text>
+            <Text strong>
+              {new Date(userInfo.userDetail.updatedAt).toLocaleString()}
+            </Text>
           </div>
         </Col>
       </Row>

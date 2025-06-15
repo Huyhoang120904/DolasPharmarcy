@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -11,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartResponse {
-    UserDetailResponse userDetail;
-    List<OrderItemResponse> orderItems;
+    String id;
+    Set<OrderItemResponse> orderItems;
 }

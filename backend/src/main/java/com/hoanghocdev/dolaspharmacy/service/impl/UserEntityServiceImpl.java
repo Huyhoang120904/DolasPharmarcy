@@ -7,6 +7,7 @@ import com.hoanghocdev.dolaspharmacy.entity.*;
 import com.hoanghocdev.dolaspharmacy.entity.enums.Gender;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
+import com.hoanghocdev.dolaspharmacy.mapper.UserDetailMapper;
 import com.hoanghocdev.dolaspharmacy.mapper.UserEntityMapper;
 import com.hoanghocdev.dolaspharmacy.repository.*;
 import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
@@ -25,8 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -40,6 +42,7 @@ public class UserEntityServiceImpl implements UserEntityService {
     UserDetailRepository userDetailRepository;
     CartRepository cartRepository;
     FavouritesRepository favouritesRepository;
+    private final UserDetailMapper userDetailMapper;
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
@@ -54,13 +57,17 @@ public class UserEntityServiceImpl implements UserEntityService {
         var contextHolder = SecurityContextHolder.getContext();
         String name = contextHolder.getAuthentication().getName();
 
-        UserEntity userEntity = userEntityRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        UserEntity userEntity = userEntityRepository.findByUsername(name)
+                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+
         return userEntityMapper.toUserResponse(userEntity);
     }
 
     @Override
     @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse findUserById(String id) {
+
+
         UserEntity userEntity = userEntityRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         return userEntityMapper.toUserResponse(userEntity);
     }
@@ -80,21 +87,26 @@ public class UserEntityServiceImpl implements UserEntityService {
         roles.add(role);
         userEntity.setRoles(roles);
 
-        userEntity.setCreatedAt(LocalDateTime.now());
-
         userEntity = userEntityRepository.save(userEntity);
 
-        String fullName = request.getFullName();
-        LocalDate dob = request.getDob();
-        Gender gender = Gender.valueOf(request.getGender());
-        UserDetail userDetail = UserDetail.builder()
-                .userEntity(userEntity)
-                .fullName(fullName)
-                .gender(gender)
-                .dob(dob)
-                .build();
+        UserDetail userDetail = userDetailMapper.toUserDetail(request.getUserDetail());
+        userDetail.setUserEntity(userEntity);
+
+//        String fullName = request.getUserDetail().getFullName();
+//        LocalDate dob = request.getUserDetail().getDob();
+//        Gender gender = Gender.valueOf(request.getUserDetail().getGender());
+//        UserDetail userDetail = UserDetail.builder()
+//                .userEntity(userEntity)
+//                .fullName(fullName)
+//                .userEntity(userEntity)
+//                .gender(gender)
+//                .dob(dob)
+//                .build();
 
         userDetail = userDetailRepository.save(userDetail);
+
+        userEntity.setUserDetail(userDetail);
+        userEntity = userEntityRepository.save(userEntity);
 
         Cart cart = Cart.builder()
                 .userDetail(userDetail)
@@ -129,6 +141,9 @@ public class UserEntityServiceImpl implements UserEntityService {
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public void delete(String id) {
+        if (!userEntityRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+        }
         userEntityRepository.deleteById(id);
     }
 }

@@ -2,30 +2,35 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { PhoneIcon } from "@heroicons/react/20/solid";
 import { useNavigate } from "react-router-dom";
+import { UserService } from "../../../api-services/UserService";
 
 function UserInfo({ user }) {
-  const [userCurr, setUserCurr] = useState({});
+  // const [userCurr, setUserCurr] = useState({});
   const { logout } = useAuth();
 
   const nav = useNavigate();
 
   const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  useEffect(() => {
-    if (!user || !user.id) {
-      console.error("User or user.id is undefined");
-      return;
-    }
-    fetch(`${BASE_URL}/api/users/${user.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUserCurr(data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, [user]);
+  // useEffect(() => {
+  //   if (!user || !user.id) {
+  //     console.error("User or user.id is undefined");
+  //     return;
+  //   }
+  //   // fetch(`${BASE_URL}/api/users/${user.id}`)
+  //   //   .then((res) => res.json())
+  //   //   .then((data) => {
+  //   //     setUserCurr(data);
+  //   //   })
+  //   //   .catch((err) => {
+  //   //     console.error(err);
+  //   //   });
+
+  //   const fetchUser = async () => {
+  //     const userResponse = await UserService.getMyInfo();
+  //     setUserCurr(userCurr)
+  //   };
+  // }, [user]);
 
   function handleUserInfo() {
     navigate("/profile");

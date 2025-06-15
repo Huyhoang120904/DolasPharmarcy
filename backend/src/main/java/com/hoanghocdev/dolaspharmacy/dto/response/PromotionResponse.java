@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PromotionResponse {
+    String id;
     String promotionName;
     String code;
     LocalDate startDate;

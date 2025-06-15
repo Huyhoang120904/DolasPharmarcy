@@ -54,16 +54,16 @@ const Header = () => {
       });
   }, []);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      indexRef.current = (indexRef.current + 1) % textList.length;
-      setCurrentText(textList[indexRef.current]);
-      setShowEffect(true);
-      setTimeout(() => setShowEffect(false), 3000);
-    }, 3000);
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     indexRef.current = (indexRef.current + 1) % textList.length;
+  //     setCurrentText(textList[indexRef.current]);
+  //     setShowEffect(true);
+  //     setTimeout(() => setShowEffect(false), 3000);
+  //   }, 3000);
 
-    return () => clearInterval(intervalId);
-  }, [textList]);
+  //   return () => clearInterval(intervalId);
+  // }, [textList]);
 
   const nav = useNavigate();
 
@@ -189,7 +189,7 @@ const Header = () => {
                 </a>
 
                 <Badge
-                  count={favList.items ? favList.items.length : 0}
+                  count={favList ? favList.length : 0}
                   showZero={true}
                   color="green"
                 >
@@ -219,7 +219,7 @@ const Header = () => {
                   </svg>
                 </a>
                 <Badge
-                  count={cart.items ? cart.items.length : 0}
+                  count={cart ? cart.length : 0}
                   showZero={true}
                   color="green"
                 >

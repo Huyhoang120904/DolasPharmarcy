@@ -26,7 +26,6 @@ const { Title, Text } = Typography;
 function OrderHistory({ orders, loading }) {
   const navigate = useNavigate();
 
-  // Format currency
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",

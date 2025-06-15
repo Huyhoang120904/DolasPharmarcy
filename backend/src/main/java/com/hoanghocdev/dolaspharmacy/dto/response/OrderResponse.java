@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderResponse {
+    String id;
     String fullName;
     LocalDate receiveDate;
     String receiveTime;

@@ -12,9 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
-
+    String id;
     String username;
-    String password;
     List<RoleReponse> roles;
 
+    UserDetailResponse userDetail;
 }

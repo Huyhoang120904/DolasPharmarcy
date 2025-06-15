@@ -3,12 +3,16 @@ package com.hoanghocdev.dolaspharmacy.controller;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ApiResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.OrderResponse;
+import com.hoanghocdev.dolaspharmacy.entity.Order_;
 import com.hoanghocdev.dolaspharmacy.service.OrderService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +26,12 @@ public class OrderController {
     OrderService orderService;
 
     @GetMapping
-    public ApiResponse<Page<OrderResponse>> getOrderByPage(@RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<Page<OrderResponse>> getOrderByPage(@PageableDefault(page = 0, size = 16,
+                                                                    sort = Order_.FULL_NAME,
+                                                                    direction = Sort.Direction.ASC)
+                                                                    Pageable pageable) {
         return ApiResponse.<Page<OrderResponse>>builder()
-                .result(orderService.findOrderByPage(page, size))
+                .result(orderService.findOrderByPage(pageable))
                 .build();
     }
 
@@ -39,14 +45,14 @@ public class OrderController {
 
     @PutMapping("/{orderId}")
     public ApiResponse<OrderResponse> updateOrder(@PathVariable String orderId,
-                                                  @RequestBody @Valid OrderUpdateRequest request){
+                                                  @RequestBody @Valid OrderUpdateRequest request) {
         return ApiResponse.<OrderResponse>builder()
-                .result(orderService.updateOrder(orderId,request))
+                .result(orderService.updateOrder(orderId, request))
                 .build();
     }
 
     @DeleteMapping("/{orderId}")
-    public ApiResponse<OrderResponse> updateOrder(@PathVariable String orderId){
+    public ApiResponse<OrderResponse> updateOrder(@PathVariable String orderId) {
         orderService.deleteOrder(orderId);
         return ApiResponse.<OrderResponse>builder()
                 .build();

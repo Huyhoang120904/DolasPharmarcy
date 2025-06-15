@@ -8,7 +8,6 @@ import java.util.List;
 public interface BaseCRUDService<T, L> {
     void delete(String id);
     T create(L l);
-    List<T> findAll();
     Page<T> findByPage(Pageable pageable);
     T update(String id, L l);
     T findByID(String id);

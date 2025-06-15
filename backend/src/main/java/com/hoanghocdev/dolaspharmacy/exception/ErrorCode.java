@@ -10,15 +10,19 @@ public enum ErrorCode {
 
     // VAL: Validation
     INVALID_KEY(1001, "Invalid key provided.", HttpStatus.BAD_REQUEST),
+
     USERNAME_INVALID(1002, "Username must be at least {min} characters.", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1003, "Password must be at least {min} characters.", HttpStatus.BAD_REQUEST),
     INVALID_EMAIL(1004, "The email address provided is invalid.", HttpStatus.BAD_REQUEST),
     INVALID_DOB(1005, "Your age must be at least {min}.", HttpStatus.BAD_REQUEST),
     MALFORMED_REQUEST(1006, "The request format is invalid.", HttpStatus.BAD_REQUEST),
     MISSING_REQUIRED_FIELD(1007, "A required field is missing: {field}.", HttpStatus.BAD_REQUEST),
+    INVALID_VARIANTS(1008, "Invalid variants.", HttpStatus.BAD_REQUEST),
+    PRIMARY_VARIANT_CANNOT_BE_DELETED(1009, "Variant is a primary variant", HttpStatus.BAD_REQUEST),
+
 
     // AUT: Authentication & Authorization
-    UNAUTHENTICATED(1101, "You must be authenticated to perform this action.", HttpStatus.UNAUTHORIZED),
+    UNAUTHENTICATED(1101, "You are not authenticated!.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1102, "You do not have permission to access this resource.", HttpStatus.FORBIDDEN),
     TOKEN_DECODE_FAILED(1103, "Failed to decode the provided token.", HttpStatus.UNAUTHORIZED),
     TOKEN_GENERATE_FAILED(1104, "Could not generate authentication token.", HttpStatus.INTERNAL_SERVER_ERROR),

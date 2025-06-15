@@ -12,67 +12,80 @@ function ProductInformation({
   renderProductStatus,
   children,
 }) {
+  // Find the primary variant or the first variant if no primary exists
+  const primaryVariant =
+    product.variants?.find((v) => v.isPrimary) || product.variants?.[0];
+
+  // Calculate price based on selected variant or primary variant
+  const selectedVariant = product.variants?.find((v) => v.id === activeVariant);
+  const currentVariant = selectedVariant || primaryVariant;
+
+  // Calculate discount if promotion exists
+  const discount = product.promotion?.discountAmount || 0;
+  const originalPrice = currentVariant?.price || 0;
+  const discountedPrice = originalPrice - originalPrice * (discount / 100);
+
   return (
     <div className="col-span-1 md:col-span-4 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">{product.name}</h1>
+      <h1 className="text-3xl font-bold text-gray-800">
+        {product.productName}
+      </h1>
 
       <div className="flex flex-wrap gap-y-2 text-sm">
         <div className="flex items-center w-full sm:w-1/2">
           <span className="font-semibold text-gray-700 w-32">Thương hiệu:</span>
-          <span className="text-blue-700">{product.brand}</span>
+          <span className="text-blue-700">{product.brand?.brandName}</span>
         </div>
         <div className="flex items-center w-full sm:w-1/2">
           <span className="font-semibold text-gray-700 w-32">Loại:</span>
-          <span className="text-blue-700">{product.brand}</span>
+          <span className="text-blue-700">
+            {product.category?.categoryName}
+          </span>
         </div>
         <div className="flex items-center w-full sm:w-1/2">
           <span className="font-semibold text-gray-700 w-32">Tình trạng:</span>
-          {renderProductStatus(product.status)}
+          {renderProductStatus(product.productStatus)}
         </div>
         <div className="flex items-center w-full sm:w-1/2">
           <span className="font-semibold text-gray-700 w-32">Mã sản phẩm:</span>
           <span className="text-blue-700">{product.sku}</span>
+        </div>
+        <div className="flex items-center w-full sm:w-1/2">
+          <span className="font-semibold text-gray-700 w-32">Xuất xứ:</span>
+          <span className="text-blue-700">{product.origin}</span>
+        </div>
+        <div className="flex items-center w-full sm:w-1/2">
+          <span className="font-semibold text-gray-700 w-32">Liều lượng:</span>
+          <span className="text-blue-700">{product.dosage}</span>
         </div>
       </div>
 
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow p-5">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-blue-800 text-4xl font-bold">
-            {product.salePrice
-              ? new Intl.NumberFormat("vi-VN").format(
-                  parseFloat(product.salePrice).toFixed(0)
-                )
-              : new Intl.NumberFormat("vi-VN").format(
-                  parseFloat(product.basePrice).toFixed(0)
-                )}
+            {discount > 0
+              ? new Intl.NumberFormat("vi-VN").format(discountedPrice)
+              : new Intl.NumberFormat("vi-VN").format(originalPrice)}
             <span className="text-sm font-medium ml-1">₫</span>
           </span>
-          {product.discount && (
+          {discount > 0 && (
             <>
               <span className="line-through text-gray-500 text-lg">
-                {new Intl.NumberFormat("vi-VN").format(
-                  parseFloat(product.basePrice).toFixed(0)
-                )}
+                {new Intl.NumberFormat("vi-VN").format(originalPrice)}
                 <span className="text-xs">₫</span>
               </span>
               <span className="bg-red-600 !text-white text-xs px-3 py-1 rounded-full font-bold">
-                -
-                {Math.round(
-                  ((product.basePrice - product.salePrice) /
-                    product.basePrice) *
-                    100
-                )}
-                %
+                -{discount}%
               </span>
             </>
           )}
         </div>
-        {product.discount && (
+        {discount > 0 && (
           <div className="mt-3 flex items-center text-sm">
             <span className="text-gray-700 font-medium">Tiết kiệm: </span>
             <span className="text-red-600 font-semibold ml-2">
               {new Intl.NumberFormat("vi-VN").format(
-                parseFloat(product.basePrice - product.salePrice).toFixed(0)
+                originalPrice - discountedPrice
               )}
               <span className="text-xs">₫</span>
             </span>
@@ -85,7 +98,7 @@ function ProductInformation({
           <div className="font-medium text-gray-800">Loại sản phẩm:</div>
           <div className="flex space-x-3">
             {product.variants.map((vari) => {
-              let active = activeVariant === vari.name;
+              let active = activeVariant === vari.id;
               return (
                 <VariantCard
                   variant={vari}
@@ -127,28 +140,50 @@ function ProductInformation({
       {children}
 
       <div className="space-y-5">
-        <div className="rounded-lg overflow-hidden border-2 border-blue-600">
-          <div className="bg-blue-600 px-4 py-2 !text-white font-bold flex items-center gap-2">
-            <span className="text-xl">🎁</span> Khuyến mãi đặc biệt!!!
+        {product.promotion && (
+          <div className="rounded-lg overflow-hidden border-2 border-blue-600">
+            <div className="bg-blue-600 px-4 py-2 !text-white font-bold flex items-center gap-2">
+              <span className="text-xl">🎁</span>{" "}
+              {product.promotion.promotionName || "Khuyến mãi đặc biệt!!!"}
+            </div>
+            <div className="p-4 space-y-2 text-sm">
+              <div className="flex gap-2">
+                <span className="text-green-600 font-bold">✔</span>
+                <span>
+                  Giảm giá {product.promotion.discountAmount}% trực tiếp
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-green-600 font-bold">✔</span>
+                <span>Áp dụng Phiếu quà tặng/ Mã giảm giá theo ngành hàng</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-green-600 font-bold">✔</span>
+                <span>Giảm giá 10% khi mua từ 5 sản phẩm trở lên</span>
+              </div>
+            </div>
           </div>
-          <div className="p-4 space-y-2 text-sm">
-            <div className="flex gap-2">
-              <span className="text-green-600 font-bold">✔</span>
-              <span>Áp dụng Phiếu quà tặng/ Mã giảm giá theo ngành hàng</span>
+        )}
+
+        {product.warning && (
+          <div className="rounded-lg overflow-hidden border-2 border-amber-500">
+            <div className="bg-amber-500 px-4 py-2 !text-white font-bold flex items-center gap-2">
+              <span className="text-xl">⚠️</span> Lưu ý khi sử dụng
             </div>
-            <div className="flex gap-2">
-              <span className="text-green-600 font-bold">✔</span>
-              <span>Giảm giá 10% khi mua từ 5 sản phẩm trở lên</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="text-amber-500 font-bold">🎁</span>
-              <span>
-                Tặng 100.000₫ mua hàng tại website thành viên Dola Watch, áp
-                dụng khi mua Online tại Hồ Chí Minh và 1 số khu vực khác.
-              </span>
+            <div className="p-4 space-y-2 text-sm">
+              <div className="flex gap-2">
+                <span className="text-amber-600 font-bold">⚠️</span>
+                <span>{product.warning}</span>
+              </div>
+              {product.usageInstruction && (
+                <div className="flex gap-2">
+                  <span className="text-amber-600 font-bold">📝</span>
+                  <span>{product.usageInstruction}</span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
 
         <div className="rounded-lg overflow-hidden border-2 border-blue-600">
           <div className="bg-blue-600 px-4 py-2 !text-white font-bold flex items-center gap-2">
@@ -165,7 +200,7 @@ function ProductInformation({
                 >
                   <path
                     fillRule="evenodd"
-                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 10.586V7z"
                     clipRule="evenodd"
                   />
                 </svg>

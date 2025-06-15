@@ -118,16 +118,8 @@ function AddressModal({ visible, onCancel, onAddAddress, submitting }) {
   };
 
   // Handle form submission including all address fields
-  const handleSubmit = (values) => {
-    const addressData = {
-      ...values,
-      city: values.province,
-      state: values.district,
-      ward: values.ward,
-      street: values.address,
-      phone: values.phoneNumber,
-    };
-    onAddAddress(addressData);
+  const handleSubmit = async (values) => {
+    await onAddAddress(values);
   };
 
   return (
@@ -145,10 +137,17 @@ function AddressModal({ visible, onCancel, onAddAddress, submitting }) {
         onFinish={handleSubmit}
         onFinishFailed={handleAddressFailed}
         initialValues={{
-          type: "shipping",
           isPrimary: false,
         }}
       >
+        <Form.Item
+          name="name"
+          label="Tên"
+          rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+        >
+          <Input placeholder="Tên gợi nhớ địa chỉ" size="large" />
+        </Form.Item>
+
         <Row gutter={16}>
           <Col span={24}>
             <Form.Item
@@ -247,21 +246,6 @@ function AddressModal({ visible, onCancel, onAddAddress, submitting }) {
         >
           <Input placeholder="Số điện thoại liên hệ" size="large" />
         </Form.Item>
-
-        <Form.Item
-          name="type"
-          label="Loại địa chỉ"
-          rules={[{ required: true, message: "Vui lòng chọn loại địa chỉ!" }]}
-        >
-          <Select
-            placeholder="Chọn loại địa chỉ"
-            options={[
-              { value: "shipping", label: "Địa chỉ giao hàng" },
-              { value: "billing", label: "Địa chỉ thanh toán" },
-            ]}
-          />
-        </Form.Item>
-
         <Form.Item name="isPrimary" valuePropName="checked">
           <Checkbox>Đặt làm địa chỉ chính</Checkbox>
         </Form.Item>

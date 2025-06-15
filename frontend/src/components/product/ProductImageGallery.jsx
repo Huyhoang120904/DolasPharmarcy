@@ -25,8 +25,12 @@ function ProductImageGallery({ imgArr }) {
         className="main-swiper"
       >
         {imgArr.map((image, index) => (
-          <SwiperSlide key={index}>
-            <img src={image} alt={`Product image ${index + 1}`} />
+          <SwiperSlide key={index} className="flex justify-center items-center">
+            <img
+              src={image}
+              alt={`Product image ${index + 1}`}
+              className="mx-auto"
+            />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -44,12 +48,12 @@ function ProductImageGallery({ imgArr }) {
         {imgArr.map((image, index) => (
           <SwiperSlide
             key={index}
-            className="cursor-pointer transition-all duration-300 ease-in-out m-1"
+            className="cursor-pointer transition-all duration-300 ease-in-out m-1 flex justify-center items-center"
           >
             <img
               src={image}
               alt={`Product thumbnail ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover mx-auto"
             />
           </SwiperSlide>
         ))}

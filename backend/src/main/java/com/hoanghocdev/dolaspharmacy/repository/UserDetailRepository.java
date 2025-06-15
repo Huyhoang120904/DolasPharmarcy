@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserDetailRepository  extends JpaRepository<UserDetail, String> {
 
     @Query("select ud from UserDetail ud where ud.userEntity.username = :username")
-    UserDetail findByUsername(@Param("username") String usename);
+    Optional<UserDetail> findByUsername(@Param("username") String username);
 }

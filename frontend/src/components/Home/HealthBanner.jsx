@@ -1,27 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import img1 from '../../img/Header/BannerHealth1.png';
-import img2 from '../../img/Header/BannerHealth2.png';
+import React, { useState, useEffect } from "react";
+import img1 from "../../img/Header/BannerHealth1.png";
+import img2 from "../../img/Header/BannerHealth2.png";
 
 const HealthBanner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = [
-    { image: img1, link: '/shop/banner1' },
-    { image: img2, link: '/shop/banner2' },
+    { image: img1, link: "/shop/banner1" },
+    { image: img2, link: "/shop/banner2" },
   ];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prevSlide) =>
-        prevSlide === slides.length - 1 ? 0 : prevSlide + 1
-      );
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [slides.length]);
-
   const goToSlide = (index) => {
-    console.log('Button clicked, switching to slide:', index);
+    console.log("Button clicked, switching to slide:", index);
     setCurrentSlide(index);
   };
 
@@ -45,7 +35,7 @@ const HealthBanner = () => {
             key={index}
             onClick={() => goToSlide(index)}
             className={`w-4 h-4 rounded-full cursor-pointer ${
-              currentSlide === index ? 'bg-blue-600' : 'bg-gray-300'
+              currentSlide === index ? "bg-blue-600" : "bg-gray-300"
             } hover:bg-blue-400 transition`}
           />
         ))}

@@ -2,8 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { UserService } from "../api-services/UserService";
 import { AuthService } from "../api-services/AuthService";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 // Create the auth context
 const AuthContext = createContext();
 
@@ -22,12 +20,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-
       const authResponse = await AuthService.login(username, password);
-      const useReponse = await UserService.getMyInfo(authResponse.result.token);
       // Store token in localStorage
       localStorage.setItem("token", authResponse.result.token);
 
+      const useReponse = await UserService.getMyInfo();
       setUser(useReponse.result);
       setIsAuthenticated(true);
       return { success: true };
@@ -46,28 +43,19 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${BASE_URL}/api/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
+      const tokenResponse = await AuthService.register(userData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error);
-        throw new Error(errorData.error ? errorData.error : "Register failed");
-      }
-
-      const data = await response.json();
+      console.log(tokenResponse);
 
       // Store token in localStorage
-      localStorage.setItem("token", data.token);
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", tokenResponse.result.token);
 
-      setUser(data.user);
+      const userResponse = await UserService.getMyInfo();
+
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify(userResponse.result));
+
+      setUser(userResponse.result);
       setIsAuthenticated(true);
 
       return { success: true };
@@ -85,58 +73,47 @@ export const AuthProvider = ({ children }) => {
     if (!token) return false;
 
     try {
-      const response = await fetch(`${BASE_URL}/api/validate-token`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await AuthService.introspectToken();
 
-      if (!response.ok) {
-        // Token is invalid or expired
-        logout();
-        return false;
-      }
-
-      return true;
+      return response.result.valid;
     } catch (error) {
       console.error("Token validation error:", error);
-      logout();
       return false;
     }
   };
 
   // Logout function
-  const logout = () => {
+  const logout = async () => {
+    await AuthService.logout();
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("user");
     localStorage.removeItem("token");
-    localStorage.removeItem("cart");
   };
 
   // Check for existing session on component mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const fetchUser = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        try {
+          setLoading(true);
+          const validation = await validateToken();
 
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-
-        // Validate the token
-        validateToken().then((isValid) => {
-          if (!isValid) {
-            alert("Your session has expired. Please login again.");
+          if (!validation) {
+            throw new Error("");
+          } else {
+            const useReponse = await UserService.getMyInfo();
+            setUser(useReponse.result);
+            setIsAuthenticated(true);
           }
-        });
-      } catch (e) {
-        alert("Vui lòng đăng nhập lại");
-        logout();
+        } catch (e) {
+          console.log(e);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
+    };
+    fetchUser();
   }, []);
 
   const value = {

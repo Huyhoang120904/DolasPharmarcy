@@ -66,11 +66,10 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public void delete(String roleName) {
-        if (!roleRepository.existsById(roleName)) {
+    public void delete(String id) {
+        if (!roleRepository.existsById(id)) {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
         }
-
-        roleRepository.deleteById(roleName);
+        roleRepository.deleteById(id);
     }
 }

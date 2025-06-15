@@ -14,9 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FavouriteResponse {
-    @OneToOne
-    UserDetail userDetail;
-
-    @OneToMany()
-    List<Product> products;
+    String id;
+    List<ProductResponse> products;
 }

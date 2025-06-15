@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderItemResponse {
+    String id;
     double quantity;
     double finalPrice;
     VariantResponse variant;

@@ -7,9 +7,8 @@ function SuggestionField({ title, list }) {
       <div className="bg-blue-600 text-white p-3 rounded-t-[5px]">{title}</div>
       <div className="product-suggestion space-y-5">
         {list &&
-          list.map((item, index) => {
-            if (index < 5)
-              return <ProductSuggetionCard key={item.id} product={item} />;
+          list.slice(1, 6).map((item, index) => {
+            return <ProductSuggetionCard key={item.id} product={item} />;
           })}
       </div>
     </div>

@@ -5,6 +5,11 @@ import { UserOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 
 function BasicInfoCard({ userInfo }) {
+  const primaryAddress =
+    userInfo.userDetail.addresses.find((address) => address.primary) || null;
+
+  console.log(primaryAddress);
+
   return (
     <Card className="h-full shadow-md border-0 rounded-lg transition-all duration-300 hover:shadow-lg">
       <Title level={4} className="flex items-center gap-2 text-blue-700 mb-4">
@@ -16,27 +21,29 @@ function BasicInfoCard({ userInfo }) {
           <Text type="secondary" className="block">
             Email
           </Text>
-          <Text strong>{userInfo.email}</Text>
+          <Text strong>
+            {userInfo.userDetail.email
+              ? userInfo.userDetail.email
+              : "Chưa cập nhật email !"}
+          </Text>
         </div>
         <div className="bg-gray-50 p-3 rounded-md">
           <Text type="secondary" className="block">
             Họ và Tên
           </Text>
-          <Text strong>
-            {userInfo.firstName} {userInfo.lastName}
-          </Text>
+          <Text strong>{userInfo.userDetail.fullName}</Text>
         </div>
         <div className="bg-gray-50 p-3 rounded-md">
           <Text type="secondary" className="block">
             Số Điện Thoại
           </Text>
-          <Text strong>{userInfo.phone || "Chưa cập nhật"}</Text>
+          <Text strong>{primaryAddress?.phoneNumber || "Chưa cập nhật"}</Text>
         </div>
         <div className="bg-gray-50 p-3 rounded-md">
           <Text type="secondary" className="block">
             Ngày Sinh
           </Text>
-          <Text strong>{userInfo.dateOfBirth || "Chưa cập nhật"}</Text>
+          <Text strong>{userInfo.userDetail.dob || "Chưa cập nhật"}</Text>
         </div>
 
         <div className="bg-gray-50 p-3 rounded-md">
@@ -44,18 +51,12 @@ function BasicInfoCard({ userInfo }) {
             Trạng Thái Xác Minh
           </Text>
           <Text strong>
-            {userInfo.verificationStatus === "verified" ? (
+            {userInfo.userDetail.verificationStatus ? (
               <Tag color="green">Đã xác minh</Tag>
             ) : (
               <Tag color="orange">Chưa xác minh</Tag>
             )}
           </Text>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <Text type="secondary" className="block">
-            Lần Đăng Nhập Cuối
-          </Text>
-          <Text strong>{new Date(userInfo.lastLogin).toLocaleString()}</Text>
         </div>
       </div>
     </Card>

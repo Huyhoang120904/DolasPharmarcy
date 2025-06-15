@@ -12,6 +12,14 @@ export const ProductService = {
       console.log(error);
     }
   },
+  getProductsBySlug: async (slug) => {
+    try {
+      const response = await request.get(`/products/${slug}`);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
   searchProducts: async (filter) => {
     try {
       const searchRequest = {
@@ -26,7 +34,7 @@ export const ProductService = {
         slug: filter.slug || null, // Slug filter
         requiresPrescription: filter.requiresPrescription || null, // Prescription requirement filter
         productStatus: filter.productStatus || null, // Product status filter
-
+        brandName: filter.brandName || null, //Brand name filter
         supplierName: filter.supplierName || null, // Supplier name filter
         targetName: filter.targetName || null, // Target name filter
         categoryName: filter.categoryName || null, // Category name filter
@@ -41,7 +49,6 @@ export const ProductService = {
         priceTo: filter.priceTo || null, // Maximum price filter
       };
 
-      // Define pagination and sorting settings
       const pagination = {
         page: filter.page - 1, // page
         size: filter.size, // Number of items per page

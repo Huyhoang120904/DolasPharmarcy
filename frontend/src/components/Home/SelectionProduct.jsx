@@ -31,7 +31,6 @@ const SelectionProduct = ({ name }) => {
       try {
         setLoading(true);
         const reponse = await CategoryService.getCatgories();
-        console.log("Categories reponse: ", reponse);
         setCategories(reponse.result.content);
       } catch (error) {
         console.error("Error fetching categories:", error);

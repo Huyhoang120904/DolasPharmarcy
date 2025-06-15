@@ -9,18 +9,19 @@ import { useAuth } from "../contexts/AuthContext";
 import { Breadcrumb } from "antd";
 
 // Import new components
-import InfoCard from "../components/productDetail/InfoCard";
 import SuggestionField from "../components/productDetail/SuggestionField";
 import ProductDetailsModal from "../components/productDetail/ProductDetailsModal";
 import ProductInformation from "../components/productDetail/ProductInformation";
 import ProductActions from "../components/productDetail/ProductActions";
 import ProductSidebar from "../components/productDetail/ProductSidebar";
 import ProductDescription from "../components/productDetail/ProductDescription";
+import { ProductService } from "../api-services/ProductService";
+import { UserService } from "../api-services/UserService";
 
 function ProductDetail() {
-  const { id } = useParams();
-  const { user, isAuthenticated } = useAuth();
-  const { toggleFavourite } = useFav();
+  const { slug } = useParams();
+  const { isAuthenticated } = useAuth();
+  const { favList, toggleFavourite } = useFav();
   const { addToCartWithDetail } = useCart();
   const [product, setProduct] = useState({});
   const [suggest, setSuggestion] = useState([]);
@@ -28,8 +29,8 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [toggle, setToggle] = useState(true);
   const [showMore, setShowMore] = useState(false);
-  const [fav, setFav] = useState(false);
-  const [activeVariant, setActiveVariant] = useState("");
+
+  const [activeVariant, setActiveVariant] = useState();
   const [api, contextHolder] = notification.useNotification();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const imageArr = product.images
@@ -39,56 +40,53 @@ function ProductDetail() {
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/products/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProduct(data);
-      })
-      .catch((e) => console.log(e))
-      .finally(() => {});
-  }, [id]);
+    const fetchProduct = async () => {
+      try {
+        const productResponse = await ProductService.getProductsBySlug(slug);
+        setProduct(productResponse.result);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchProduct();
+  }, [slug]);
 
+  const [fav, setFav] = useState(
+    isAuthenticated ? (favList ? favList.includes(product) : false) : false
+  );
+
+  const primaryVariant =
+    product.variants?.find((v) => v.isPrimary) || product.variants?.[0];
+  // Calculate price based on selected variant or primary variant
+  const selectedVariant = product.variants?.find((v) => v.id === activeVariant);
+  const currentVariant = selectedVariant || primaryVariant;
+
+  //recommendation need working
   useEffect(() => {
-    if (user && isAuthenticated) {
-      fetch(`${BASE_URL}/api/favourites?userId=${user.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data[0].items) {
-            const exist = data[0].items.find((item) => {
-              console.log("list id: ", item.id);
-              console.log("product id: ", id);
-              return item.id === id;
-            });
-            if (exist) {
-              setFav(true);
-            }
-          }
-        })
-        .catch((e) => console.log(e))
-        .finally(() => {});
+    if (product.category) {
+      // fetch(`${BASE_URL}/api/products?${categoryParam}`)
+      //   .then((res) => res.json())
+      //   .then((data) => setSuggestion(data));
+      // fetch(`${BASE_URL}/api/products?${pricingParam}`)
+      //   .then((res) => res.json())
+      //   .then((data) => setSamePricing(data));
+
+      const fetchReconmmendations = async () => {
+        const sameCategory = await ProductService.searchProducts({
+          categoryName: product.category.categoryName,
+        });
+
+        setSuggestion(sameCategory.result.content);
+
+        const samePrice = await ProductService.searchProducts({
+          priceTo: Number.parseInt(currentVariant.price) + 200000,
+        });
+        setSamePricing(samePrice.result.content);
+      };
+
+      fetchReconmmendations();
     }
-  }, [id]);
-
-  useEffect(() => {
-    if (product.category && product.priceRange) {
-      const categoryParam = queryString.stringify({
-        category: product.category,
-      });
-
-      fetch(`${BASE_URL}/api/products?${categoryParam}`)
-        .then((res) => res.json())
-        .then((data) => setSuggestion(data));
-
-      const pricingParam = queryString.stringify({
-        category: product.category,
-        priceRange: product.priceRange,
-      });
-
-      fetch(`${BASE_URL}/api/products?${pricingParam}`)
-        .then((res) => res.json())
-        .then((data) => setSamePricing(data));
-    }
-  }, [product.category, product.priceRange]);
+  }, [product.category, product.activeVariant]);
 
   const infoCardData = [
     {
@@ -128,30 +126,23 @@ function ProductDetail() {
   }
 
   function handleFav() {
-    if (!product || !product.name) {
-      alert("Invalid item passed to handleAddToCart:", item);
-      return;
-    }
-
-    toggleFavourite(product);
+    toggleFavourite(product.id);
     setFav(!fav);
   }
 
   function handleAddToCart(item) {
-    if (!item || !item.name) {
+    if (!item || !item.productName) {
       alert("Không thể thêm vào giỏ hàng!");
       return;
     }
 
-    if (item.status === "inactive") {
+    if (item.productStatus === "inactive") {
       api.warning({
         message: "Sản phẩm không hoạt động",
         duration: 2,
       });
       return;
     }
-
-    console.log(!product.variants.length == 0);
 
     if (!product.variants.length == 0) {
       if (!activeVariant) {
@@ -168,19 +159,17 @@ function ProductDetail() {
       quantity: quantity,
       variant: product.variants.find((vari) => activeVariant === vari.name),
     };
-
-    console.log(updatedItem);
     addToCartWithDetail(updatedItem);
 
     api.success({
       message: "Thêm giỏ hàng thành công",
-      description: `${item.name} được thêm vào giỏ hàng thành công!`,
+      description: `${item.productName} được thêm vào giỏ hàng thành công!`,
       duration: 2,
     });
   }
 
   function handleClickVari(vari) {
-    setActiveVariant(vari.name);
+    setActiveVariant(vari.id);
   }
 
   function renderProductStatus(status) {
@@ -234,7 +223,7 @@ function ProductDetail() {
               Sản phẩm
             </a>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>{product.name}</Breadcrumb.Item>
+          <Breadcrumb.Item>{product.productName}</Breadcrumb.Item>
         </Breadcrumb>
 
         <div className="bg-white shadow-md rounded-lg p-8 mb-10">
@@ -243,7 +232,7 @@ function ProductDetail() {
 
             {/* Product Image Gallery */}
             <div className="col-span-1 md:col-span-3 img-slide">
-              <div className="product-page sticky top-5">
+              <div className="product-page sticky top-5 w-full max-w-xs md:max-w-full mx-auto">
                 <ProductImageGallery imgArr={imageArr} />
               </div>
             </div>

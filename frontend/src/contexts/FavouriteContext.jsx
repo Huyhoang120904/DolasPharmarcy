@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import queryString from "query-string";
 import { useNavigate } from "react-router-dom";
+import { UserService } from "../api-services/UserService";
 
 const FavContext = createContext();
 
@@ -12,67 +13,27 @@ export const useFav = () => useContext(FavContext);
 const FavProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
 
-  const [favList, setFavList] = useState({});
+  const [favList, setFavList] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const userId = { userId: user.id };
-
       const fetchCart = async () => {
-        try {
-          const response = await fetch(
-            `${BASE_URL}/api/favourites?${queryString.stringify(userId)}`
-          );
-          if (!response.ok) {
-            throw new Error("Failed to fetch cart data");
-          }
-          const data = await response.json();
-
-          setFavList(data[0]);
-        } catch (error) {
-          console.error("Error fetching cart:", error);
-          setFavList({});
-        }
+        const favResponse = await UserService.getFavourite();
+        setFavList(favResponse.result.products);
       };
       fetchCart();
     } else {
-      setFavList({});
+      setFavList([]);
     }
   }, [isAuthenticated, user]);
 
-  const toggleFavourite = async (item) => {
+  const toggleFavourite = async (productId) => {
     try {
-      const currentItems = favList.items;
+      const response = await UserService.toogleFavourites(productId);
 
-      const existingItemIndex = currentItems.findIndex(
-        (favItem) => favItem.id === item.id
-      );
-      let updatedItems = currentItems;
+      console.log(response.result.products);
 
-      if (existingItemIndex >= 0) {
-        updatedItems = currentItems.filter((favItem) => favItem.id !== item.id);
-      } else {
-        updatedItems.push(item);
-      }
-
-      const token = localStorage.getItem("token");
-
-      const updatedFavList = { ...favList, items: updatedItems };
-      const response = await fetch(`${BASE_URL}/api/favourites/${favList.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedFavList),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to favourite list on server");
-      }
-
-      const serverFavList = await response.json();
-      setFavList(serverFavList);
+      setFavList(response.result.products);
     } catch (err) {
       console.error(err);
     }

@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -39,6 +42,14 @@ public class Product {
 
     boolean requiresPrescription;
 
+    Double primaryVariantPrice;
+
+    @CreationTimestamp
+    LocalDateTime createdDate;
+
+    @UpdateTimestamp
+    LocalDateTime lastModifiedDate;
+
     @Enumerated(EnumType.STRING)
     ProductStatus productStatus;
 
@@ -66,4 +77,15 @@ public class Product {
 
     @OneToOne
     Promotion promotion;
+
+    public void setVariants(List<Variant> variants) {
+        this.variants = variants;
+        this.setPrimaryVariantPrice(
+                this.getVariants().stream()
+                        .filter(v -> Boolean.TRUE.equals(v.getIsPrimary()))
+                        .map(Variant::getPrice)
+                        .findFirst()
+                        .orElse(null)
+        );
+    }
 }

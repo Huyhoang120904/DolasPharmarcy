@@ -5,6 +5,8 @@ import { EnvironmentOutlined } from "@ant-design/icons";
 const { Text, Paragraph } = Typography;
 
 function AddressCard({ address, onDelete, loading }) {
+  console.log(`addressId`, address.id);
+
   return (
     <Card
       className="h-full shadow-sm border border-gray-200 rounded-lg transition-all duration-300 hover:shadow-md"
@@ -14,10 +16,10 @@ function AddressCard({ address, onDelete, loading }) {
         <div className="flex items-center gap-2">
           <EnvironmentOutlined className="text-blue-500" />
           <Text strong className="capitalize">
-            {address.type}
+            {address.name}
           </Text>
         </div>
-        {address.isPrimary && (
+        {address.primary && (
           <Tag color="blue" className="px-2 py-0.5">
             Địa chỉ chính
           </Tag>
@@ -25,21 +27,12 @@ function AddressCard({ address, onDelete, loading }) {
       </div>
 
       <Divider className="my-2" />
-
-      <Paragraph className="mb-1">
-        <Text strong>
-          {address.firstName} {address.lastName}
-        </Text>
-      </Paragraph>
+      <Paragraph className="mb-1 text-gray-600">{address.address}</Paragraph>
       <Paragraph className="mb-1 text-gray-600">
-        {address.street}, {address.ward}, {address.state}
-      </Paragraph>
-      <Paragraph className="mb-1 text-gray-600">
-        {address.city}, {address.postalCode || ""}
-        {address.country ? `, ${address.country}` : ""}
+        {address.district}, {address.ward}, {address.province}
       </Paragraph>
       <Paragraph className="mb-3 text-gray-600">
-        <strong>SĐT:</strong> {address.phone}
+        <strong>SĐT:</strong> {address.phoneNumber}
       </Paragraph>
 
       <div className="flex justify-end">

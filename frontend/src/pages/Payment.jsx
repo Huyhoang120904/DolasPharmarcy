@@ -297,7 +297,7 @@ function Payment() {
     // Use validated values from form.onFinish parameter
     const order = {
       ...values,
-      items: cart.items,
+      items: cart,
       userId: user ? user.id : "Khách vãng lai",
       paymentMethod: paymentMethod,
       status: "pending",
@@ -332,7 +332,7 @@ function Payment() {
       const publicKey = import.meta.env.VITE_PUBLIC_MAIL_KEY;
 
       // Format the individual items properly for Handlebars template
-      const formattedItems = cart.items.map((item) => {
+      const formattedItems = cart.map((item) => {
         // Ensure the image URL is valid
         const imageUrl = item.images[0].url
           ? item.images[0].url
@@ -714,10 +714,10 @@ function Payment() {
           </Card>
           <Card>
             <Title level={4}>{`Đơn hàng (${
-              cart.items ? cart.items.length : 0
+              cart ? cart.length : 0
             } sản phẩm)`}</Title>
             <div className="mt-4">
-              {cart.items && <PaymentProductsList products={cart.items} />}
+              {cart && <PaymentProductsList products={cart} />}
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

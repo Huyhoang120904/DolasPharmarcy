@@ -29,6 +29,9 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public void delete(String id) {
+        if (!promotionRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+        }
         promotionRepository.deleteById(id);
     }
 
@@ -37,14 +40,6 @@ public class PromotionServiceImpl implements PromotionService {
         Promotion promotion = promotionMapper.toPromotion(promotionRequest);
         promotion = promotionRepository.save(promotion);
         return promotionMapper.toPromotionResponse(promotion);
-    }
-
-    @Override
-    public List<PromotionResponse> findAll() {
-        List<Promotion> promotions = promotionRepository.findAll();
-        return promotions.stream()
-                .map(promotionMapper::toPromotionResponse)
-                .collect(Collectors.toList());
     }
 
     @Override

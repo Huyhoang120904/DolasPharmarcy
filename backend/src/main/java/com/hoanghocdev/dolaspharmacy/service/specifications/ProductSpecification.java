@@ -1,12 +1,8 @@
 package com.hoanghocdev.dolaspharmacy.service.specifications;
 
 import com.hoanghocdev.dolaspharmacy.dto.request.ProductSearchRequest;
-import com.hoanghocdev.dolaspharmacy.entity.Product;
-import com.hoanghocdev.dolaspharmacy.entity.Supplier;
-import com.hoanghocdev.dolaspharmacy.entity.Variant;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
+import com.hoanghocdev.dolaspharmacy.entity.*;
+import jakarta.persistence.criteria.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +21,7 @@ public class ProductSpecification {
 
             addSimpleStringPredicates(request, root, criteriaBuilder, predicates);
             addBooleanAndEnumPredicates(request, root, criteriaBuilder, predicates);
-            addCategoryPredicate(request, root, criteriaBuilder, predicates);
-            addSupplierPredicate(request, root, criteriaBuilder, predicates);
-            addBrandPredicate(request, root, criteriaBuilder, predicates);
+            addInListPredicates(request, root, criteriaBuilder, predicates);
             addPricePredicates(request, root, criteriaBuilder, predicates);
             addDiscountPredicates(request, root, criteriaBuilder, predicates);
 
@@ -39,9 +33,8 @@ public class ProductSpecification {
                                                   jakarta.persistence.criteria.Root<Product> root,
                                                   jakarta.persistence.criteria.CriteriaBuilder cb,
                                                   List<Predicate> predicates) {
-        addLikePredicate( request.getProductName(), "productName", root, cb, predicates);
+        addLikePredicate(request.getProductName(), "productName", root, cb, predicates);
         addLikePredicate(request.getSku(), "sku", root, cb, predicates);
-        addLikePredicate(request.getOrigin(), "origin", root, cb, predicates);
         addLikePredicate(request.getWarning(), "warning", root, cb, predicates);
         addLikePredicate(request.getIngredients(), "ingredients", root, cb, predicates);
         addLikePredicate(request.getDosage(), "dosage", root, cb, predicates);
@@ -49,6 +42,20 @@ public class ProductSpecification {
         addLikePredicate(request.getUsageInstruction(), "usageInstruction", root, cb, predicates);
         addLikePredicate(request.getSlug(), "slug", root, cb, predicates);
     }
+
+    private static void addInListPredicates(ProductSearchRequest request,
+                                                  jakarta.persistence.criteria.Root<Product> root,
+                                                  jakarta.persistence.criteria.CriteriaBuilder cb,
+                                                  List<Predicate> predicates) {
+        addCategoryPredicate(request, root, cb, predicates);
+        addSupplierPredicate(request, root, cb, predicates);
+        addBrandPredicate(request, root, cb, predicates);
+        addTargetPredicate(request, root, cb, predicates);
+        addOriginPredicate(request, root, cb, predicates);
+    }
+
+
+
 
     private static void addLikePredicate(String value, String field,
                                          jakarta.persistence.criteria.Root<Product> root,
@@ -84,13 +91,19 @@ public class ProductSpecification {
         }
     }
 
+    private static void addOriginPredicate(ProductSearchRequest request, Root<Product> root, CriteriaBuilder cb, List<Predicate> predicates) {
+        if (request.getSupplierName() != null && !request.getSupplierName().isEmpty()) {
+            predicates.add(root.get(Product_.origin).in(request.getOrigin()));
+        }
+    }
+
     private static void addSupplierPredicate(ProductSearchRequest request,
                                              jakarta.persistence.criteria.Root<Product> root,
                                              jakarta.persistence.criteria.CriteriaBuilder cb,
                                              List<Predicate> predicates) {
         if (request.getSupplierName() != null && !request.getSupplierName().isEmpty()) {
             Join<Product, Supplier> supplierJoin = root.join("supplier", JoinType.LEFT);
-            predicates.add(cb.like(cb.lower(supplierJoin.get("supplierName")), "%" + request.getSupplierName().toLowerCase() + "%"));
+            predicates.add(supplierJoin.get(Supplier_.supplierName).in(request.getSupplierName()));
         }
     }
 
@@ -99,8 +112,18 @@ public class ProductSpecification {
                                              jakarta.persistence.criteria.CriteriaBuilder cb,
                                              List<Predicate> predicates) {
         if (request.getBrandName() != null && !request.getBrandName().isEmpty()) {
-            Join<Product, Supplier> supplierJoin = root.join("brand", JoinType.LEFT);
-            predicates.add(cb.like(cb.lower(supplierJoin.get("brandName")), "%" + request.getBrandName().toLowerCase() + "%"));
+            Join<Product, Brand> brandJoin = root.join("brand", JoinType.LEFT);
+            predicates.add(brandJoin.get(Brand_.brandName).in(request.getBrandName()));
+        }
+    }
+
+    private static void addTargetPredicate(ProductSearchRequest request,
+                                          jakarta.persistence.criteria.Root<Product> root,
+                                          jakarta.persistence.criteria.CriteriaBuilder cb,
+                                          List<Predicate> predicates) {
+        if (request.getTargetName() != null && !request.getTargetName().isEmpty()) {
+            Join<Product, Target> targetJoin = root.join("target", JoinType.LEFT);
+            predicates.add(targetJoin.get(Target_.targetName).in(request.getTargetName()));
         }
     }
 

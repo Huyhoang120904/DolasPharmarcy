@@ -6,21 +6,17 @@ import { useCart } from "../../../contexts/CartContext";
 import CartItem from "./CartItem";
 
 export default function CartButton() {
-  const { cart, removeItemFromCart } = useCart();
-
-  const cartItems = cart.items ? cart.items : [];
+  const { cart, removeItemFromCart, cartLoading } = useCart();
 
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
-  const total = cartItems.reduce((acc, item) => {
-    const price = item.salePrice || item.basePrice;
-    return acc + item.quantity * price;
-  }, 0);
-
-  const items = cartItems.map((item) => ({
-    key: item.id,
-    label: <CartItem item={item} removeItemFromCart={removeItemFromCart} />,
-  }));
+  let items = [];
+  if (Array.isArray(cart)) {
+    items = cart.map((item) => ({
+      key: item.id,
+      label: <CartItem item={item} removeItemFromCart={removeItemFromCart} />,
+    }));
+  }
 
   const nav = useNavigate();
 
@@ -40,6 +36,13 @@ export default function CartButton() {
     boxShadow: "none",
   };
 
+  const total = 0;
+  // cart?.reduce((acc, item) => {
+  //   return (acc += item.quantity * item.variant.price);
+  // }, 0) || 0;
+
+  if (cartLoading) return <div>Loading...</div>;
+
   return (
     <>
       <Dropdown
@@ -50,13 +53,13 @@ export default function CartButton() {
         dropdownRender={(menu) => (
           <div className="p-2 min-w-[300px] ring-1 ring-blue-700 rounded-md bg-white">
             <div className="text-lg font-semibold mb-2 px-2">Giỏ hàng</div>
-            {cartItems.length > 0 ? (
+            {cart.length > 0 ? (
               <>
                 {React.cloneElement(menu, { style: menuStyle })}
                 <Divider style={{ margin: "8px 0" }} />
                 <div className="flex justify-between my-2 px-2">
                   <span className="font-medium">Tổng cộng:</span>
-                  <span className="font-bold">
+                  <span className="font-bold text-green-500">
                     {new Intl.NumberFormat("vi-VN").format(total)}đ
                   </span>
                 </div>

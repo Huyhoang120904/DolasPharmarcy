@@ -1,18 +1,24 @@
 package com.hoanghocdev.dolaspharmacy.config;
 
+import com.hoanghocdev.dolaspharmacy.dto.request.UserCreationRequest;
+import com.hoanghocdev.dolaspharmacy.dto.request.UserDetailRequest;
 import com.hoanghocdev.dolaspharmacy.entity.*;
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
+import com.hoanghocdev.dolaspharmacy.exception.AppException;
+import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.repository.*;
+import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,11 +34,12 @@ public class DataMockRunner {
     UserEntityRepository userEntityRepository;
     VariantRepository variantRepository;
     BrandRepository brandRepository;
+    UserEntityService userEntityService;
 
     @Bean
-    public CommandLineRunner mockData() {
+    public CommandLineRunner mockData(PasswordEncoder passwordEncoder) {
         return args -> {
-            Faker faker = new Faker();
+            Faker faker = new Faker(new Locale("vi"));
             Random random = new Random();
 
             // Avoid duplicate mock
@@ -54,56 +61,68 @@ public class DataMockRunner {
             categories = categoryRepository.saveAll(categories);
 
             // --- Suppliers ---
-            List<Supplier> suppliers = IntStream.range(0, 5)
-                    .mapToObj(i -> Supplier.builder().supplierName(faker.company().name()).build())
+            List<String> supplierNames = Arrays.asList(
+                    "Công ty Dược Hậu Giang",
+                    "Công ty Traphaco",
+                    "Công ty Dược Sài Gòn",
+                    "Công ty Dược OPC",
+                    "Công ty Dược Mediplantex"
+            );
+            List<Supplier> suppliers = supplierNames.stream()
+                    .map(name -> Supplier.builder().supplierName(name).build())
                     .collect(Collectors.toList());
             suppliers = supplierRepository.saveAll(suppliers);
 
             // --- Targets ---
-            List<String> targetNames = Arrays.asList("Adults", "Children", "Elderly", "Pregnant Women", "Athletes");
+            List<String> targetNames = Arrays.asList("Người lớn", "Trẻ em", "Người cao tuổi", "Phụ nữ mang thai", "Vận động viên");
             List<Target> targets = targetNames.stream()
-                    .map(name -> Target.builder().name(name).build())
+                    .map(name -> Target.builder().targetName(name).build())
                     .collect(Collectors.toList());
             targets = targetRepository.saveAll(targets);
 
             // --- Promotions ---
             List<Promotion> promotions = Arrays.asList(
-                    Promotion.builder().promotionName("Summer Sale").discountAmount(10.0).build(),
-                    Promotion.builder().promotionName("Back to School").discountAmount(15.0).build(),
-                    Promotion.builder().promotionName("Flash Sale").discountAmount(20.0).build(),
-                    Promotion.builder().promotionName("New Year Sale").discountAmount(5.0).build()
+                    Promotion.builder().promotionName("Khuyến mãi hè").discountAmount(10.0).build(),
+                    Promotion.builder().promotionName("Mua 1 tặng 1").discountAmount(15.0).build(),
+                    Promotion.builder().promotionName("Giảm giá sốc cuối tuần").discountAmount(20.0).build(),
+                    Promotion.builder().promotionName("Tết sale").discountAmount(5.0).build()
             );
             promotions = promotionRepository.saveAll(promotions);
             List<Promotion> availablePromotions = new ArrayList<>(promotions);
 
             // --- Brands ---
             Set<String> brandNames = new HashSet<>(Arrays.asList(
-                    "TC Pharma", "Sebamed", "La Beauté", "Fobelife", "NeoAqua", "Kutieskin", "VITADAIRY",
-                    "Good Health", "Blackmores", "KenKan", "Pharma World", "Vitabiotics", "OCAVILL",
-                    "Phytextra", "OMEXXEL", "Vitatree", "Livespo", "Traphaco", "Vesta", "Jpanwell",
-                    "Vitamins For Life", "Pharvina", "GINIC"
+                    "Dược Hậu Giang", "Traphaco", "OPC", "Mediplantex", "Imexpharm", "Pymepharco", "Domesco",
+                    "DHG Pharma", "Nam Dược", "Pharimexco", "Sao Thái Dương", "Vimedimex", "Mekophar",
+                    "Vidipha", "Stada Việt Nam", "Savi Pharm", "Boston Việt Nam", "Công ty Dược Hà Nội"
             ));
-
             List<Brand> brands = brandNames.stream()
-                    .filter(brandName -> !brandRepository.existsById(brandName)) // Avoid duplicates in DB
+                    .filter(brandName -> !brandRepository.existsById(brandName))
                     .map(name -> Brand.builder()
                             .brandName(name)
-                            .origin(faker.address().country())
+                            .origin("Việt Nam")
                             .build())
                     .collect(Collectors.toList());
             brands = brandRepository.saveAll(brands);
 
             // --- Products ---
             int productCount = 40;
+            List<String> productNames = Arrays.asList(
+                    "Paracetamol 500mg", "Vitamin C 1000mg", "C sủi", "Dầu gió xanh", "Nước muối sinh lý",
+                    "Siro ho Prospan", "Thuốc nhỏ mắt V.Rohto", "Kem chống nắng Anessa", "Sữa rửa mặt Senka",
+                    "Kem đánh răng P/S", "Băng cá nhân Urgo", "Khẩu trang y tế", "Nước súc miệng Listerine",
+                    "Thuốc đau dạ dày Yumangel", "Men tiêu hóa Bio-acimin", "Viên sủi Berocca",
+                    "Thuốc bổ máu Ferrovit", "Thuốc cảm Coldi-B", "Thuốc dị ứng Telfast", "Thuốc ho Bảo Thanh"
+            );
             for (int i = 1; i <= productCount; i++) {
-                String productName = faker.commerce().productName() + " " + faker.number().digits(2);
+                String productName = productNames.get(random.nextInt(productNames.size())) + " " + faker.number().digits(2);
                 String sku = "SKU-" + String.format("%04d", i);
-                String origin = faker.address().country();
-                String warning = faker.lorem().sentence();
-                String ingredients = faker.food().ingredient() + ", " + faker.food().ingredient();
+                String origin = "Việt Nam";
+                String warning = "Đọc kỹ hướng dẫn sử dụng trước khi dùng.";
+                String ingredients = "Thành phần: " + faker.food().ingredient() + ", " + faker.food().ingredient();
                 String dosage = faker.number().numberBetween(10, 1000) + "mg";
-                String description = faker.lorem().paragraph(2);
-                String usageInstruction = "Use as directed. " + faker.lorem().sentence();
+                String description = "Sản phẩm " + productName + " giúp tăng cường sức khỏe. " + faker.lorem().sentence();
+                String usageInstruction = "Dùng theo chỉ định của bác sĩ hoặc dược sĩ.";
                 String slug = productName.toLowerCase().replaceAll("[^a-z0-9]+", "-") + "-" + sku.toLowerCase();
                 boolean requiresPrescription = i % 4 == 0;
                 ProductStatus status = (i % 7 == 0) ? ProductStatus.OUT_OF_STOCK : ProductStatus.ACTIVE;
@@ -136,8 +155,81 @@ public class DataMockRunner {
                         .brand(randomBrand)
                         .promotion(assignedPromotion)
                         .build();
-                product = productRepository.save(product);
+
+                // --- Variants: 1-3 per product ---
+                int variantCount = 1 + random.nextInt(3);
+                List<Variant> variants = new ArrayList<>();
+                for (int v = 0; v < variantCount; v++) {
+                    int rawPrice = faker.number().numberBetween(10000, 5000000); // 10,000 - 500,000 VND
+                    int roundedPrice = (rawPrice / 10000) * 10000;
+                    Variant variant = Variant.builder()
+                            .name("Hộp " + (10 + random.nextInt(40)) + " viên")
+                            .price(roundedPrice)
+                            .stock(faker.number().numberBetween(0, 300))
+                            .product(product)
+                            .isPrimary(variants.isEmpty())
+                            .build();
+                    variants.add(variant);
+                }
+                product.setVariants(variants);
+
+                List<Image> images = new ArrayList<>();
+                // --- Images: 1-2 per product ---
+                int imageCount = 1 + random.nextInt(2);
+                for (int img = 0; img < imageCount; img++) {
+                    Image image = Image.builder()
+                            .url("https://picsum.photos/seed/" + product.getSku() + img + "/300/300")
+                            .build();
+                    images.add(image);
+                }
+                product.setImages(images);
+
+                productRepository.save(product);
             }
+
+            //Roles
+            if (roleRepository.findAll().isEmpty()) {
+                Role admin = Role.builder().rolename("ADMIN").build();
+                roleRepository.save(admin);
+
+                Role user = Role.builder().rolename("USER").build();
+                roleRepository.save(user);
+            }
+
+            Role admin = roleRepository.findByRolename("ADMIN");
+            Set<Role> adminRole = new HashSet<>();
+            adminRole.add(admin);
+
+            Role user = roleRepository.findByRolename("USER");
+            Set<Role> userRole = new HashSet<>();
+            userRole.add(user);
+
+            // --- Users ---
+            List<UserCreationRequest> userRequests = Arrays.asList(
+                    UserCreationRequest.builder().username("admin").password("admin123")
+                            .userDetail(UserDetailRequest.builder()
+                                    .fullName("Quản trị viên")
+                                    .email("foxminer246@gmail.com")
+                                    .dob(LocalDate.of(2004, 9 , 12))
+                                    .gender("MALE").build())
+                            .build(),
+                    UserCreationRequest.builder().username("huyhoang").password("huyhoang123")
+                            .userDetail(UserDetailRequest.builder()
+                                    .fullName("Nguyễn Huy Hoàng")
+                                    .email("imanoskun11@gmail.com")
+                                    .dob(LocalDate.of(2004, 9 , 12))
+                                    .gender("FEMALE").build())
+                            .build()
+                    );
+            for (UserCreationRequest req : userRequests) {
+                userEntityService.createUser(req);
+            }
+
+            UserEntity adminUser = userEntityRepository.findByUsername("admin")
+                    .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+            adminUser.setRoles(adminRole);
+
+            userEntityRepository.save(adminUser);
         };
     }
 }

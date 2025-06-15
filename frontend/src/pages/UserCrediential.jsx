@@ -1,7 +1,16 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import { Form, Input, Button, Tabs, Divider, message } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  Tabs,
+  Divider,
+  message,
+  DatePicker,
+  Radio,
+} from "antd";
 import {
   MailOutlined,
   LockOutlined,
@@ -21,7 +30,15 @@ function UserCrediential({ loginPage }) {
   const nav = useNavigate();
   const { user, isAuthenticated } = useAuth();
 
-  if (isAuthenticated && user.role.toLowerCase() !== "admin") {
+  const isAdmin = user?.roles
+    ? user.roles.find((role) => role.rolename.toLowerCase() === "admin")
+    : false;
+
+  if (isAuthenticated && !isAdmin) {
+    nav("/");
+  }
+
+  if (isAuthenticated && isAdmin) {
     nav("/");
   }
 
@@ -40,18 +57,6 @@ function UserCrediential({ loginPage }) {
 
   const handleSubmit = async (values) => {
     const result = await login(values.email, values.password);
-    if (!result.success) {
-      message.error(result.error || "Đăng nhập thất bại");
-    } else {
-      message.success("Đăng nhập thành công!");
-      // Chuyển hướng đến /dashboard nếu là admin, hoặc /homepage nếu không
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (storedUser.role === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/homepage");
-      }
-    }
   };
 
   const handleRegister = async (values) => {
@@ -61,11 +66,17 @@ function UserCrediential({ loginPage }) {
     }
 
     const userData = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
+      username: values.username,
       password: values.password,
+      userDetail: {
+        email: values.email,
+        fullName: values.fullName,
+        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        gender: values.gender,
+      },
     };
+
+    console.log(userData);
 
     const result = await register(userData);
     if (!result.success) {
@@ -195,62 +206,104 @@ function UserCrediential({ loginPage }) {
             onFinish={handleRegister}
             scrollToFirstError
           >
-            <div className="grid grid-cols-2 gap-4">
-              <Form.Item
-                name="firstName"
-                label="Họ"
-                rules={[{ required: true, message: "Vui lòng nhập họ" }]}
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Họ"
-                  size="large"
-                />
-              </Form.Item>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Left Column */}
+              <div>
+                <Form.Item
+                  name="username"
+                  label="Tên đăng nhập"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên đăng nhập" },
+                  ]}
+                >
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="Tên đăng nhập"
+                    size="large"
+                  />
+                </Form.Item>
 
-              <Form.Item
-                name="lastName"
-                label="Tên"
-                rules={[{ required: true, message: "Vui lòng nhập tên" }]}
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Tên"
-                  size="large"
-                />
-              </Form.Item>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập email" },
+                    { type: "email", message: "Email không hợp lệ" },
+                  ]}
+                >
+                  <Input
+                    prefix={<MailOutlined />}
+                    placeholder="Email"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="password"
+                  label="Mật khẩu"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập mật khẩu" },
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="Mật khẩu"
+                    size="large"
+                    iconRender={(visible) =>
+                      visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                    }
+                  />
+                </Form.Item>
+              </div>
+
+              {/* Right Column */}
+              <div>
+                <Form.Item
+                  name="fullName"
+                  label="Họ và tên"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập họ và tên" },
+                  ]}
+                >
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="Họ và tên"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="dob"
+                  label="Ngày sinh"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn ngày sinh" },
+                  ]}
+                >
+                  <DatePicker
+                    placeholder="Chọn ngày sinh"
+                    size="large"
+                    style={{ width: "100%" }}
+                    format="DD/MM/YYYY"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="gender"
+                  label="Giới tính"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn giới tính" },
+                  ]}
+                >
+                  <Radio.Group>
+                    <Radio value="MALE">Nam</Radio>
+                    <Radio value="FEMALE">Nữ</Radio>
+                    <Radio value="OTHER">Khác</Radio>
+                  </Radio.Group>
+                </Form.Item>
+              </div>
             </div>
 
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Vui lòng nhập email" },
-                { type: "email", message: "Email không hợp lệ" },
-              ]}
-            >
-              <Input
-                prefix={<MailOutlined />}
-                placeholder="Email"
-                size="large"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="password"
-              label="Mật khẩu"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Mật khẩu"
-                size="large"
-                iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                }
-              />
-            </Form.Item>
-
+            {/* Full Width for Confirm Password */}
             <Form.Item
               name="confirmPassword"
               label="Xác nhận mật khẩu"
@@ -299,7 +352,7 @@ function UserCrediential({ loginPage }) {
 
   return (
     <div className="flex items-center justify-center py-10 pt-40 bg-gray-50 transition-all duration-300">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-sm">
+      <div className="w-full max-w-xl p-8 bg-white rounded-lg shadow-sm">
         <Tabs
           activeKey={activeTab}
           onChange={handleTabChange}

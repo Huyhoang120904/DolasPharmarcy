@@ -4,29 +4,35 @@ import { useNavigate } from "react-router-dom";
 export default function CartItem({ item, removeItemFromCart }) {
   const nav = useNavigate();
 
+  const hasDiscount = item.variant.product?.promotion ? true : false;
+
+  const price = hasDiscount
+    ? item.variant?.price *
+      (1 - item.variant.product.promotion.discountAmount / 100)
+    : item.variant?.price;
+
   return (
     <div className="flex items-center justify-between py-2 w-full">
       <div
         className="flex items-center"
-        onClick={() => nav("/product-detail/" + item.productId)}
+        onClick={() => nav("/product-detail/" + item.variant.product.productId)}
       >
         <img
-          src={item.images[0].url}
-          alt={item.name}
+          src={item.variant.product.images[0].url}
+          alt={item.variant.product.productName}
           className="w-10 h-10 object-cover mr-2 rounded"
         />
         <div className="flex flex-col">
-          <span className="font-medium">{item.name}</span>
+          <span className="font-medium">
+            {item.variant.product.productName}
+          </span>
           <div className="flex text-sm gap-2 items-center">
             <span className="font-semibold text-blue-700">
               SL: {item.quantity}
             </span>
             <span className="text-gray-400">|</span>
             <span className="font-semibold text-emerald-600">
-              {new Intl.NumberFormat("vi-VN").format(
-                item.salePrice ? item.salePrice : item.basePrice
-              )}
-              đ
+              {new Intl.NumberFormat("vi-VN").format(price)}đ
             </span>
           </div>
         </div>
@@ -53,31 +59,6 @@ export default function CartItem({ item, removeItemFromCart }) {
           />
         </svg>
       </button>
-    </div>
-  );
-}
-
-// Cart Item Skeleton Component
-export function CartItemSkeleton() {
-  return (
-    <div className="flex items-center justify-between py-2 w-full animate-pulse">
-      <div className="flex items-center">
-        {/* Skeleton for image */}
-        <div className="w-10 h-10 bg-gray-200 rounded mr-2"></div>
-        <div className="flex flex-col">
-          {/* Skeleton for name */}
-          <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
-          <div className="flex text-sm gap-2 items-center">
-            {/* Skeleton for quantity */}
-            <div className="h-3 bg-gray-200 rounded w-10"></div>
-            <span className="text-gray-200">|</span>
-            {/* Skeleton for price */}
-            <div className="h-3 bg-gray-200 rounded w-16"></div>
-          </div>
-        </div>
-      </div>
-      {/* Skeleton for delete button */}
-      <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
     </div>
   );
 }

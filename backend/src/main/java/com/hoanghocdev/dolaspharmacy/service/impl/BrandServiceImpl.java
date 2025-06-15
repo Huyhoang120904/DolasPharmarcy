@@ -26,9 +26,10 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public void delete(String id) {
-        Brand brand = brandRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-        brandRepository.delete(brand);
+       if (!brandRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+       }
+        brandRepository.deleteById(id);
     }
 
     @Override
@@ -36,14 +37,6 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = brandMapper.toBrand(request);
         Brand savedBrand = brandRepository.save(brand);
         return brandMapper.toResponse(savedBrand);
-    }
-
-    @Override
-    public List<BrandResponse> findAll() {
-        List<Brand> brands = brandRepository.findAll();
-        return brands.stream()
-                .map(brandMapper::toResponse)
-                .toList();
     }
 
     @Override

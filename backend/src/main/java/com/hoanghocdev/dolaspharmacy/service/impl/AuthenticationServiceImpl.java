@@ -3,6 +3,7 @@ package com.hoanghocdev.dolaspharmacy.service.impl;
 import com.hoanghocdev.dolaspharmacy.dto.request.AuthenticationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.IntrospectTokenRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.TokenRequest;
+import com.hoanghocdev.dolaspharmacy.dto.request.UserCreationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.AuthenticationResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.IntrospectTokenResponse;
 import com.hoanghocdev.dolaspharmacy.entity.InvalidToken;
@@ -13,6 +14,7 @@ import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.repository.InvalidTokenRepository;
 import com.hoanghocdev.dolaspharmacy.repository.UserEntityRepository;
 import com.hoanghocdev.dolaspharmacy.service.AuthenticationService;
+import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -47,6 +49,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     UserEntityRepository userEntityRepository;
     PasswordEncoder passwordEncoder;
     InvalidTokenRepository invalidTokenRepository;
+    private final UserEntityService userEntityService;
 
     @Value("${jwt.signerKey}")
     @NonFinal
@@ -91,6 +94,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String token = generateToken(userEntity);
 
         return AuthenticationResponse.builder().token(token).build();
+    }
+
+    @Override
+    public AuthenticationResponse register(UserCreationRequest request) {
+        userEntityService.createUser(request);
+        return authenticate(AuthenticationRequest.builder()
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .build());
     }
 
     @Override

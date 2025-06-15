@@ -82,8 +82,8 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder()
                 .build();
     }
-    //with image
 
+    //with image
     //Note: On the frontend, you'll use "data:image/jpeg;base64," + base64String to display images.
     @GetMapping("/{productId}/images")
     public ApiResponse<List<String>> getProductImageById(@PathVariable String productId) {
@@ -114,7 +114,7 @@ public class ProductController {
                 .build();
     }
 
-    @DeleteMapping("/{productId}/delete/{variantId}")
+    @DeleteMapping("/{productId}/variants/{variantId}")
     public ApiResponse<ProductResponse> deleteVariant(@PathVariable String productId,
                                                       @PathVariable String variantId) {
         return ApiResponse.<ProductResponse>builder()

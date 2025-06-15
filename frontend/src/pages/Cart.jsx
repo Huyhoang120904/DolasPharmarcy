@@ -3,22 +3,20 @@ import { useCart } from "../contexts/CartContext";
 import { LoadingOutlined, ShoppingOutlined } from "@ant-design/icons";
 import CartList from "../components/Cart/CartList";
 import { Button } from "antd";
-import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 function Cart() {
   const { cart } = useCart();
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingOutlined />;
-  }
-
   const navigate = useNavigate();
 
   const total =
-    cart.items?.reduce((acc, item) => {
-      const price = item.salePrice || item.basePrice;
+    cart?.reduce((acc, item) => {
+      const hasDiscount = item.variant.product?.promotion ? true : false;
+      const price = hasDiscount
+        ? item.variant?.price *
+          (1 - item.variant.product.promotion.discountAmount / 100)
+        : item.variant?.price;
+
       return (acc += item.quantity * price);
     }, 0) || 0;
 
@@ -26,10 +24,10 @@ function Cart() {
     <div className="w-[80%] mx-auto px-4 my-8">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left column - Cart items */}
-        <div className={cart.items?.length === 0 ? "w-full" : "lg:w-2/3"}>
+        <div className={cart?.length === 0 ? "w-full" : "lg:w-2/3"}>
           <h2 className="text-xl font-medium mb-4">Giỏ hàng của bạn</h2>
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            {cart.items?.length === 0 ? (
+            {cart?.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <ShoppingOutlined
                   style={{
@@ -67,7 +65,7 @@ function Cart() {
           </div>
         </div>
 
-        {cart.items?.length > 0 && (
+        {cart?.length > 0 && (
           <div className="lg:w-1/3">
             <h2 className="text-xl font-medium mb-4">Thông tin đơn hàng</h2>
             <div className="bg-white rounded-lg shadow p-6">

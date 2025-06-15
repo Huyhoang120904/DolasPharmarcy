@@ -32,6 +32,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delete(String id) {
+        if(!categoryRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+        }
         categoryRepository.deleteById(id);
     }
 
@@ -53,11 +56,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         category = categoryRepository.save(category);
         return categoryMapper.toCatergoryResponse(category);
-    }
-
-    @Override
-    public List<CategoryResponse> findAll() {
-        return List.of();
     }
 
     @Override

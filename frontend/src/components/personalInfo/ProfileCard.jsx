@@ -20,13 +20,15 @@ function ProfileCard({ userInfo }) {
     >
       <div className="text-center">
         <Title level={4} className="mb-0">
-          {userInfo.firstName} {userInfo.lastName}
+          {userInfo.userDetail.fullName}
         </Title>
         <Text type="secondary" className="block mb-4">
-          {userInfo.email}
+          {userInfo?.email}
         </Text>
         <Tag color="blue" className="px-3 py-1 text-sm">
-          {userInfo.role === "admin" ? "Quản trị hệ thống" : "Khách hàng"}
+          {userInfo?.roles[0].rolename.toLowerCase() === "admin"
+            ? "Quản trị hệ thống"
+            : "Khách hàng"}
         </Tag>
       </div>
     </Card>

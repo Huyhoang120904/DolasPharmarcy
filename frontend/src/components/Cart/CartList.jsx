@@ -5,16 +5,8 @@ import { useCart } from "../../contexts/CartContext";
 import { Link } from "react-router-dom";
 
 function CartList() {
-  const { cart, updateItemQuantity, removeItemFromCart } = useCart();
-
-  // Ensure cart items are properly formatted for table rendering
-  const safeCartItems = (cart.items || []).map((item) => {
-    return {
-      ...item,
-      name: item.name ? String(item.name) : "Unnamed Product",
-      variant: item.variant || { name: "Không phân loại" },
-    };
-  });
+  const { cart, updateItemQuantity, removeItemFromCart, setItemQuantity } =
+    useCart();
 
   const columns = [
     {
@@ -25,11 +17,11 @@ function CartList() {
         <div style={{ display: "flex", alignItems: "center" }}>
           <Image
             src={
-              record.images && record.images[0]
-                ? record.images[0].url
+              record.variant.product.images && record.variant.product.images[0]
+                ? record.variant.product.images[0].url
                 : "https://placeholder.com/80"
             }
-            alt={String(record.name)}
+            alt={String(record.variant.product.productName)}
             width={80}
             height={80}
             style={{ marginRight: "16px", objectFit: "contain" }}
@@ -37,17 +29,17 @@ function CartList() {
           <div className="ml-5">
             <div style={{ maxWidth: 300, fontWeight: 500, marginBottom: 4 }}>
               <Link
-                to={`/product-detail/${record.id}`}
+                to={`/product-detail/${record.variant.product.id}`}
                 style={{ color: "inherit", textDecoration: "none" }}
               >
-                {String(record.name)}
+                {String(record.variant.product.productName)}
               </Link>
             </div>
             <Button
               type="link"
               danger
               style={{ padding: 0, fontSize: "12px" }}
-              onClick={() => removeItemFromCart(record)}
+              onClick={() => removeItemFromCart(record.variant.id)}
             >
               Xóa
             </Button>
@@ -60,9 +52,7 @@ function CartList() {
       dataIndex: "variant",
       key: "variant",
       render: (_, record) => {
-        console.log(record.variant.name);
-
-        return <span>{record.variant ? record.variant.name : "Mặc định"}</span>;
+        return <span>{record.variant ? record.variant.name : ""}</span>;
       },
     },
     {
@@ -71,7 +61,12 @@ function CartList() {
       key: "price",
       width: 120,
       render: (_, record) => {
-        const price = record.salePrice || record.basePrice;
+        const hasDiscount = record.variant.product?.promotion ? true : false;
+
+        const price = hasDiscount
+          ? record.variant?.price *
+            (1 - record.variant.product.promotion.discountAmount / 100)
+          : record.variant?.price;
         return (
           <div style={{ color: "#2a9d8f" }}>
             {new Intl.NumberFormat("vi-VN").format(price)}₫
@@ -89,7 +84,12 @@ function CartList() {
         <Space>
           <Button
             icon={<MinusOutlined />}
-            onClick={() => updateItemQuantity(record, record.quantity - 1)}
+            onClick={() =>
+              updateItemQuantity({
+                variantId: record.variant.id,
+                quantityChange: -1,
+              })
+            }
             style={{
               background: "#e0e0e0",
               borderColor: "#e0e0e0",
@@ -101,11 +101,18 @@ function CartList() {
             value={record.quantity}
             style={{ width: 40, textAlign: "center", margin: "0 4px" }}
             controls={false}
-            onChange={(value) => updateItemQuantity(record.id, value)}
+            onChange={(value) =>
+              setItemQuantity({ variantId: record.variant.id, value: value })
+            }
           />
           <Button
             icon={<PlusOutlined />}
-            onClick={() => updateItemQuantity(record, record.quantity + 1)}
+            onClick={() =>
+              updateItemQuantity({
+                variantId: record.variant.id,
+                quantityChange: 1,
+              })
+            }
             style={{
               background: "#2a6fdb",
               borderColor: "#2a6fdb",
@@ -123,7 +130,13 @@ function CartList() {
       width: 140,
       align: "right",
       render: (_, record) => {
-        const price = record.salePrice || record.basePrice;
+        const hasDiscount = record.variant.product?.promotion ? true : false;
+
+        const price = hasDiscount
+          ? record.variant?.price *
+            (1 - record.variant.product.promotion.discountAmount / 100)
+          : record.variant?.price;
+
         return (
           <div style={{ color: "#e63946", fontWeight: 500 }}>
             {new Intl.NumberFormat("vi-VN").format(price * record.quantity)}₫
@@ -136,7 +149,7 @@ function CartList() {
   return (
     <div className="cart-table">
       <Table
-        dataSource={safeCartItems}
+        dataSource={cart}
         columns={columns}
         pagination={false}
         rowKey="variant.id"

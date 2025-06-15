@@ -57,7 +57,10 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public void delete(String permission) {
-        permissionRepository.deleteById(permission);
+    public void delete(String id) {
+        if (!permissionRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+        }
+        permissionRepository.deleteById(id);
     }
 }

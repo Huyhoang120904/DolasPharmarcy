@@ -26,7 +26,7 @@ public class CategoryController {
 
     @GetMapping
     public ApiResponse<Page<CategoryResponse>> getCategoryByPage(@PageableDefault(page = 0, size = 16,
-                                                                        sort = "productName",
+                                                                        sort = "categoryName",
                                                                         direction = Sort.Direction.ASC)
                                                                         Pageable pageable) {
         return ApiResponse.<Page<CategoryResponse>>builder()

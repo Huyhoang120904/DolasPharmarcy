@@ -5,9 +5,11 @@ import com.hoanghocdev.dolaspharmacy.dto.response.VariantResponse;
 import com.hoanghocdev.dolaspharmacy.entity.Variant;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {
+        ProductInfoMapper.class
+})
 public interface VariantMapper {
     Variant toVariant(VariantRequest request);
 
-    VariantResponse toReponse(Variant variant);
+    VariantResponse toResponse(Variant variant);
 }

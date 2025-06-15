@@ -61,7 +61,6 @@ public class CartServiceImpl implements CartService {
         OrderItem orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-
         cart.getOrderItems().removeIf(item ->
                 item.getId().equals(orderItem.getId()));
 

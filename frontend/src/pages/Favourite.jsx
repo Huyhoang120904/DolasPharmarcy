@@ -13,20 +13,11 @@ function Favourite() {
   const { addToCart } = useCart();
   const [api, contextHolder] = notification.useNotification();
 
-  function handleToggleFav(item) {
-    if (!item || !item.name) {
-      console.error("Invalid item passed to handleAddToCart:", item);
-      return;
-    }
-    const flag = toggleFavourite(item);
+  async function handleToggleFav(item) {
+    await toggleFavourite(item);
   }
 
   function handleAddToCart(item) {
-    if (!item || !item.name) {
-      alert("Không thể thêm vào giỏ hàng!");
-      return;
-    }
-
     addToCart(item);
     api.success({
       message: "Thêm giỏ hàng thành công",
@@ -53,9 +44,9 @@ function Favourite() {
 
         {contextHolder}
 
-        {favList.items && favList.items.length > 0 ? (
+        {favList && favList.length > 0 ? (
           <Row gutter={[24, 32]}>
-            {favList.items.map((item) => (
+            {favList.map((item) => (
               <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
                 <div className="h-full transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px] rounded-lg overflow-hidden">
                   <ProductCard

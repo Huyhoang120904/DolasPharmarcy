@@ -16,7 +16,6 @@ const Products = ({ name }) => {
       try {
         setLoading(true);
         const response = await ProductService.getProducts();
-        console.log("Product: ", response.result.content);
         setProducts(response.result.content);
       } catch (error) {
         console.error("Error fetching products:", error);

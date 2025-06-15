@@ -30,9 +30,10 @@ public class Order {
     OrderStatus orderStatus;
 
     @Enumerated(EnumType.STRING)
-    PaymentMethod paymenyMethod;
+    PaymentMethod paymentMethod;
 
-    @Embedded
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", nullable = true)
     Address address;
 
     @ManyToOne

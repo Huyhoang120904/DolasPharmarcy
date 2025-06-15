@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ImageResponse {
+    String id;
     String url;
     String alt;
     boolean isPrimary;

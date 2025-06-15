@@ -1,21 +1,40 @@
 package com.hoanghocdev.dolaspharmacy.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Embeddable
+@Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class Address {
 
-    String ward;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    String address;
     String district;
+    String ward;
     String province;
     String phoneNumber;
 
-    boolean isPrimary;
+    String name;
+    String zipcode;
+
+    @Column(name = "is_primary", columnDefinition = "TINYINT(1)")
+    Boolean primary;
+
+    @ManyToOne
+    @JoinColumn(name = "userDetail_id")
+    UserDetail userDetail;
+
+    @OneToMany(mappedBy = "address")
+    Set<Order> orders;
 }

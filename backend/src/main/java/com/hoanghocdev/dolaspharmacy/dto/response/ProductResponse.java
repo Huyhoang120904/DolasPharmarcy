@@ -3,7 +3,10 @@ package com.hoanghocdev.dolaspharmacy.dto.response;
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -23,9 +26,14 @@ public class ProductResponse {
     String usageInstruction;
     String slug;
 
+    LocalDateTime createdDate;
+    LocalDateTime lastModifiedDate;
+
     boolean requiresPrescription;
     ProductStatus productStatus;
     List<ImageResponse> images;
+
+    TargetResponse target;
 
     BrandResponse brand;
 

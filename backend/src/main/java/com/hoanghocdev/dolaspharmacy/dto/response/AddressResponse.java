@@ -9,10 +9,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressResponse {
+    String id;
     String ward;
     String district;
     String province;
     String phoneNumber;
-
-    boolean isPrimary;
+    String name;
+    String zipcode;
+    String address;
+    boolean primary;
 }

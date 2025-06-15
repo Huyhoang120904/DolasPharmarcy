@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Card, Typography, Spin, Tabs, Row, Col, message } from "antd";
 import { UserOutlined, ShoppingOutlined } from "@ant-design/icons";
@@ -9,207 +9,98 @@ import BasicInfoCard from "../components/personalInfo/BasicInfoCard";
 import AddressList from "../components/personalInfo/AddressList";
 import OtherInfoCard from "../components/personalInfo/OtherInfoCard";
 import OrderHistory from "../components/personalInfo/OrderHistory";
+import { OrderService } from "../api-services/OrderService";
+import { useNavigate } from "react-router-dom";
+import { UserService } from "../api-services/UserService";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
 function PersonalInfomation() {
-  const { user, logout, isAuthenticated } = useAuth();
-  const [userInfo, setUserInfo] = useState();
+  const { user, isAuthenticated, loading } = useAuth();
+  const [userInfo, setUserInfo] = useState(user);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [isAddressModalVisible, setIsAddressModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deletingAddress, setDeletingAddress] = useState(null);
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const nav = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      console.log(`${BASE_URL}/api/users/${user.id}`);
-
-      fetch(`${BASE_URL}/api/users/${user.id}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to fetch user information");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setUserInfo(data);
-        })
-        .catch((error) => {
-          alert("Lỗi xác thực người dùng!");
-          logout();
+      const fetchOrders = async () => {
+        try {
+          setPageLoading(true);
+          const ordersResponse = await OrderService.getMyOrders();
+          setOrders(ordersResponse.result.content);
+        } catch (error) {
           console.error(error);
-        });
-
-      // Fetch user orders
-      console.log(`${BASE_URL}/api/orders?userId=${user.id}`);
-
-      fetch(`${BASE_URL}/api/orders?userId=${user.id}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to fetch orders");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setOrders(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching orders:", error);
-          setLoading(false);
-        });
-    } else {
-      alert("Vui lòng đăng nhập lại tài khoản");
-      logout();
-    }
-  }, [isAuthenticated, user, logout]);
-
-  // Function to handle adding a new address
-  const handleAddAddress = async (values) => {
-    console.log(values);
-
-    setSubmitting(true);
-    try {
-      const newAddress = {
-        id: Date.now() + userInfo.id,
-        type: values.type || "shipping",
-        isPrimary: values.isPrimary || false,
-        street: values.address,
-        city: values.province,
-        state: values.district,
-        ward: values.ward,
-        phone: values.phoneNumber,
+        } finally {
+          setPageLoading(false);
+        }
       };
+      fetchOrders();
+    } else {
+      nav("/");
+    }
+  }, [isAuthenticated]);
 
-      // Create a copy of user info and add the new address
+  const handleAddAddress = async (values) => {
+    try {
+      setSubmitting(true);
+      const data = await UserService.addAddresses(values);
       let updatedUserInfo;
-
-      if (userInfo.addresses) {
-        updatedUserInfo = {
-          ...userInfo,
-          addresses: [...userInfo.addresses, newAddress],
-        };
-      } else {
-        updatedUserInfo = {
-          ...userInfo,
-          addresses: [newAddress],
-        };
-      }
-
-      // Update primary address if needed
-      if (values.isPrimary) {
-        updatedUserInfo.addresses = updatedUserInfo.addresses.map((addr) => ({
-          ...addr,
-          isPrimary: addr.id === newAddress.id,
-        }));
-      }
-
-      const token = localStorage.getItem("token");
-
-      // Send the updated user info to the API
-      const response = await fetch(`${BASE_URL}/api/users/${user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const currentAddresses = userInfo.userDetail?.addresses || [];
+      updatedUserInfo = {
+        ...userInfo,
+        userDetail: {
+          ...userInfo.userDetail,
+          addresses: [...currentAddresses, data.result],
         },
-        body: JSON.stringify(updatedUserInfo),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update address");
-      }
-
-      const updatedUser = await response.json();
-      setUserInfo(updatedUser);
-
-      message.success("Thêm địa chỉ thành công!");
+      };
+      setUserInfo(updatedUserInfo);
       setIsAddressModalVisible(false);
-    } catch (error) {
-      console.error("Error adding address:", error);
-      message.error("Không thể thêm địa chỉ. Vui lòng thử lại sau.");
+    } catch (e) {
+      alert(e);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Function to handle address deletion
   const handleDeleteAddress = async (addressId) => {
     setDeletingAddress(addressId);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Authentication token not found");
-      }
-
-      // Check if it's the last primary address
-      const isPrimaryAddress = userInfo.addresses.find(
-        (addr) => addr.id === addressId
-      )?.isPrimary;
-      const primaryAddressCount = userInfo.addresses.filter(
-        (addr) => addr.isPrimary
-      ).length;
-      if (
-        isPrimaryAddress &&
-        primaryAddressCount <= 1 &&
-        userInfo.addresses.length > 1
-      ) {
-        message.warning(
-          "Không thể xóa địa chỉ chính duy nhất. Vui lòng đặt địa chỉ khác làm địa chỉ chính trước."
-        );
-        return;
-      }
-
-      // Get current addresses
-      const currentAddresses = userInfo.addresses;
-      // Filter out the address to delete
-      const updatedAddresses = currentAddresses.filter(
-        (addr) => addr.id !== addressId
-      );
-
-      // Create updated user info
-      const updatedUserInfo = {
-        ...userInfo,
-        addresses: updatedAddresses,
-      };
-
       // Send the updated user info to the API
-      const response = await fetch(`${BASE_URL}/api/users/${user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedUserInfo),
-      });
+      const response = await UserService.deleteAddress(addressId);
 
-      if (!response.ok) {
-        throw new Error("Failed to delete address");
-      }
-
-      const updatedUser = await response.json();
-      setUserInfo(updatedUser);
+      const updatedUser = await UserService.getMyInfo();
+      setUserInfo(updatedUser.result);
 
       message.success("Xóa địa chỉ thành công!");
     } catch (error) {
-      console.error("Error deleting address:", error);
       message.error("Không thể xóa địa chỉ. Vui lòng thử lại sau.");
     } finally {
       setDeletingAddress(null);
     }
   };
 
-  if (!userInfo) {
+  if (!userInfo)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Spin size="large" />
+      <div>
+        <Spin />
       </div>
     );
-  }
 
+  if (!isAuthenticated)
+    return <div>Vui lòng đăng nhập để xem thông tin cá nhân</div>;
+
+  if (loading)
+    return (
+      <div>
+        <Spin />
+      </div>
+    );
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <Card className="mb-6 shadow-md border-0 rounded-xl overflow-hidden">
@@ -242,12 +133,11 @@ function PersonalInfomation() {
             </Row>
 
             <AddressList
-              addresses={userInfo.addresses}
+              addresses={userInfo?.userDetail.addresses}
               onAddAddress={() => setIsAddressModalVisible(true)}
               onDeleteAddress={handleDeleteAddress}
               deletingAddress={deletingAddress}
             />
-
             <OtherInfoCard userInfo={userInfo} />
           </TabPane>
 
@@ -260,7 +150,7 @@ function PersonalInfomation() {
             }
             key="orders"
           >
-            <OrderHistory orders={orders} loading={loading} />
+            <OrderHistory orders={orders} pageLoading={pageLoading} />
           </TabPane>
         </Tabs>
       </Card>

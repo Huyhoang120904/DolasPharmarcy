@@ -9,7 +9,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface AddressMapper {
     Address toAddress(AddressRequest request);
-    AddressResponse toAddressReponse(Address address);
+    AddressResponse toResponse(Address address);
 
     void updateAddress(AddressRequest request, @MappingTarget Address address);
 }

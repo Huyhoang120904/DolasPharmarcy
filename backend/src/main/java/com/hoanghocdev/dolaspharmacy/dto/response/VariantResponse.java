@@ -16,4 +16,5 @@ public class VariantResponse {
     int stock;
     String unit;
     Boolean isPrimary;
+    ProductInfoResponse product;
 }

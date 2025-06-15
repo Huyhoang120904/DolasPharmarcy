@@ -12,13 +12,15 @@ import FilterSidebar from "../components/product/filter/FilterSidebar";
 import SortingHeader from "../components/product/SortingHeader";
 import ProductGrid from "../components/product/ProductGrid";
 import { ProductService } from "../api-services/ProductService";
+import { BrandService } from "../api-services/BrandService";
+import { TargetService } from "../api-services/TargetService";
 
 const Product = ({ promotion = false }) => {
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { favList, toggleFavourite } = useFav();
   const { addToCart } = useCart();
   const [catergories, setCatergories] = useState([]);
   const [branding, setBranding] = useState([]);
+  const [targets, setTargets] = useState([]);
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,6 +41,7 @@ const Product = ({ promotion = false }) => {
     requiresPrescription: null, // Prescription requirement filter
     productStatus: "ACTIVE", // Default Product status filter
     supplierName: null, // Supplier name filter
+    brandName: null, // Brand name filter
     targetName: null, // Target name filter
     categoryName: searchParams.get("categoryName") || "", // Category name filter
     stockFrom: null, // Minimum stock filter
@@ -63,7 +66,6 @@ const Product = ({ promotion = false }) => {
   const [filter, setFilter] = useState(initialFilter);
   const [activeSort, setActiveSort] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [api, contextHolder] = notification.useNotification();
 
   function handleChangeFilter(e, queryParam) {
@@ -90,15 +92,27 @@ const Product = ({ promotion = false }) => {
         break;
       }
 
-      case "brand": {
+      case "brandName": {
+        console.log(e.length === 0);
+
+        if (e.length === 0) {
+          setFilter({ ...filter, [queryParam]: null });
+        }
+        setFilter({ ...filter, [queryParam]: e });
         break;
       }
 
-      case "targeted": {
+      case "targetName": {
+        console.log(e.length === 0);
+        if (e.length === 0) {
+          setFilter({ ...filter, [queryParam]: null });
+        }
+        setFilter({ ...filter, [queryParam]: e });
         break;
       }
 
       case "weight": {
+        setFilter({ ...filter, [queryParam]: e });
         break;
       }
     }
@@ -112,41 +126,6 @@ const Product = ({ promotion = false }) => {
     });
     setActiveSort({ sort_name: name, order: order });
   }
-
-  const filterArr = [
-    {
-      title: "Chọn mức giá",
-      options: [
-        "Dưới 100.000đ",
-        "100.000đ - 200.000đ",
-        "200.000đ - 300.000đ",
-        "300.000đ - 500.000đ",
-        "Trên 500.000đ",
-      ],
-      queryParam: "priceRange",
-    },
-    {
-      title: "Thương hiệu",
-      options: branding,
-      queryParam: "brand",
-    },
-    {
-      title: "Đối tượng",
-      options: ["Nam", "Nữ", "Trẻ em", "Người cao tuổi", "Phụ nữ mang thai"],
-      queryParam: "targeted",
-    },
-    {
-      title: "Trọng lượng",
-      options: [
-        "Dưới 100g",
-        "100g - 200g",
-        "200g - 500g",
-        "500g - 1kg",
-        "Trên 1kg",
-      ],
-      queryParam: "weight",
-    },
-  ];
 
   function handleDeleteFilter(queryParam, content) {
     setFilter((prevFilter) => {
@@ -174,16 +153,7 @@ const Product = ({ promotion = false }) => {
   }
 
   function handleAddToCart(item) {
-    if (!item || !item.name) {
-      alert("Không thể thêm vào giỏ hàng!");
-      return;
-    }
-
-    if (item.variants) {
-      addToCart({ ...item, variant: item.variants[0] });
-    } else {
-      addToCart(item);
-    }
+    addToCart(item);
 
     api.success({
       message: "Thêm giỏ hàng thành công",
@@ -192,46 +162,14 @@ const Product = ({ promotion = false }) => {
     });
   }
 
-  function handleToggleFav(item) {
-    if (!item || !item.name) {
-      console.error("Invalid item passed to handleAddToCart:", item);
-      return;
-    }
-    toggleFavourite(item);
+  async function handleToggleFav(item) {
+    await toggleFavourite(item);
   }
-
-  //initial load
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const reponse = await ProductService.getProducts(
-          queryString.stringify({ ...filter, page: filter.page - 1 })
-        );
-
-        const data = reponse.result;
-        setProducts(data.content);
-
-        setPagination({
-          page: data.pageable.pageNumber,
-          size: data.pageable.pageSize,
-          totalElements: data.totalElements,
-        });
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
 
   //search product
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log(filter);
-
         setLoading(true);
         const reponse = await ProductService.searchProducts(filter);
 
@@ -254,11 +192,34 @@ const Product = ({ promotion = false }) => {
 
   //brand
   useEffect(() => {
-    fetch(BASE_URL + "/api/brands")
-      .then((res) => res.json())
-      .then((data) => {
-        setBranding(data);
-      });
+    const fetchBrands = async () => {
+      const brandResponse = await BrandService.getBrands();
+
+      setBranding(brandResponse.result.content.map((brand) => brand.brandName));
+    };
+    fetchBrands();
+  }, []);
+
+  //target
+  useEffect(() => {
+    const fetchTargets = async () => {
+      const targetResponse = await TargetService.getTargets();
+      setTargets(
+        targetResponse.result.content.map((target) => target.targetName)
+      );
+    };
+    fetchTargets();
+  }, []);
+
+  //product
+  useEffect(() => {
+    const fetchTargets = async () => {
+      const targetResponse = await TargetService.getTargets();
+      setTargets(
+        targetResponse.result.content.map((target) => target.targetName)
+      );
+    };
+    fetchTargets();
   }, []);
 
   // Update filter from URL params on initial load
@@ -275,12 +236,44 @@ const Product = ({ promotion = false }) => {
     setSearchParams(params);
   }, [filter, setSearchParams]);
 
+  const filterArr = [
+    {
+      title: "Chọn mức giá",
+      options: [
+        "Dưới 100.000đ",
+        "100.000đ - 200.000đ",
+        "200.000đ - 300.000đ",
+        "300.000đ - 500.000đ",
+        "Trên 500.000đ",
+      ],
+      queryParam: "priceRange",
+    },
+    {
+      title: "Thương hiệu",
+      options: branding,
+      queryParam: "brandName",
+    },
+    {
+      title: "Đối tượng",
+      options: targets,
+      queryParam: "targetName",
+    },
+  ];
+
   const sortArr = [
     { name: "Tên A-Z", order: "ASC", sort_name: "productName" },
     { name: "Tên Z-A", order: "DESC", sort_name: "productName" },
-    { name: "Hàng mới", order: "DESC", sort_name: "createdAt" },
-    { name: "Giá thấp đến cao", order: "ASC", sort_name: "salePrice" },
-    { name: "Giá cao xuống thấp", order: "DESC", sort_name: "salePrice" },
+    { name: "Hàng mới", order: "DESC", sort_name: "createdDate" },
+    {
+      name: "Giá thấp đến cao",
+      order: "ASC",
+      sort_name: "primaryVariantPrice",
+    },
+    {
+      name: "Giá cao xuống thấp",
+      order: "DESC",
+      sort_name: "primaryVariantPrice",
+    },
   ];
 
   return (

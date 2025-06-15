@@ -10,7 +10,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
     Order toOrder(OrderCreationRequest request);
-    OrderResponse toOrderResponse(Order order);
+    OrderResponse toResponse(Order order);
 
     void updateOrder(OrderUpdateRequest request,@MappingTarget Order order);
 }
