@@ -13,4 +13,16 @@ export const OrderService = {
       console.log(error);
     }
   },
+  getOrderById: async (orderId) => {
+    try {
+      const response = await request.get(`/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${getMyToken()}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

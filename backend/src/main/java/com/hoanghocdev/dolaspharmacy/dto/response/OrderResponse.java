@@ -2,6 +2,13 @@ package com.hoanghocdev.dolaspharmacy.dto.response;
 
 import com.hoanghocdev.dolaspharmacy.dto.request.AddressRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderCreationRequest;
+import com.hoanghocdev.dolaspharmacy.entity.Address;
+import com.hoanghocdev.dolaspharmacy.entity.OrderItem;
+import com.hoanghocdev.dolaspharmacy.entity.Promotion;
+import com.hoanghocdev.dolaspharmacy.entity.UserDetail;
+import com.hoanghocdev.dolaspharmacy.entity.enums.OrderStatus;
+import com.hoanghocdev.dolaspharmacy.entity.enums.PaymentMethod;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,6 +25,11 @@ public class OrderResponse {
     String fullName;
     LocalDate receiveDate;
     String receiveTime;
+    UserDetailResponse userDetail;
     AddressRequest address;
-    List<OrderCreationRequest> orderItems;
+    PaymentMethod paymentMethod;
+    List<OrderItemResponse> orderItems;
+    double total;
+    double tax;
+    OrderStatus orderStatus;
 }

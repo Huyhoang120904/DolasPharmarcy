@@ -14,6 +14,8 @@ import { useCart } from "../../../contexts/CartContext";
 import { useFav } from "../../../contexts/FavouriteContext";
 import { HeartOutlined } from "@ant-design/icons";
 import CartButton from "./CartButton";
+import { ProductService } from "../../../api-services/ProductService";
+import { CategoryService } from "../../../api-services/CategoryService";
 
 const Header = () => {
   const textList = [
@@ -35,35 +37,20 @@ const Header = () => {
   const { favList } = useFav();
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/products`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.length > 0) {
-          setProducts(data);
-        }
-      });
+    const fetchProducts = async () => {
+      const productResponse = await ProductService.getProducts();
+      setProducts(productResponse.result.content);
+    };
+    fetchProducts();
   }, []);
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/categories`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.length > 0) {
-          setCategories(data);
-        }
-      });
+    const fetchCategory = async () => {
+      const categoryResponse = await CategoryService.getCatgories();
+      setProducts(categoryResponse.result.content);
+    };
+    fetchCategory();
   }, []);
-
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     indexRef.current = (indexRef.current + 1) % textList.length;
-  //     setCurrentText(textList[indexRef.current]);
-  //     setShowEffect(true);
-  //     setTimeout(() => setShowEffect(false), 3000);
-  //   }, 3000);
-
-  //   return () => clearInterval(intervalId);
-  // }, [textList]);
 
   const nav = useNavigate();
 

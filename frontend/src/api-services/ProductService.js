@@ -64,4 +64,17 @@ export const ProductService = {
       console.log(error);
     }
   },
+  addProduct: async (product) => {
+    try {
+      const response = await request.post("/products", product, {
+        headers: {
+          Authorization: `Bearer ${getMyToken()}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

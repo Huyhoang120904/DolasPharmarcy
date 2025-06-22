@@ -26,7 +26,7 @@ public class SupplierController {
 
     @GetMapping
     public ApiResponse<Page<SupplierResponse>> getSupplierByPage(@PageableDefault(page = 0, size = 16,
-                                                                    sort = "productName",
+                                                                    sort = "supplierName",
                                                                     direction = Sort.Direction.ASC)
                                                                      Pageable pageable){
         return ApiResponse.<Page<SupplierResponse>>builder()

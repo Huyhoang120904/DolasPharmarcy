@@ -23,8 +23,6 @@ public interface ProductService {
 
     ProductResponse addNewProduct(ProductCreationRequest request);
 
-    ProductResponse addNewProductWithImage(ProductCreationRequest request, Set<MultipartFile> imageFile);
-
     void deleteProduct(String id);
 
     ProductResponse addVariant(String productId, VariantRequest request);
@@ -32,5 +30,4 @@ public interface ProductService {
     ProductResponse deleteVariant(String productId, String variantId);
 
     Page<ProductResponse> findAll(ProductSearchRequest request, Pageable pageable);
-    List<byte[]> findImageByProductId(String productId);
 }

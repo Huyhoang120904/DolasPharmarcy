@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.dto.request;
 
+import com.hoanghocdev.dolaspharmacy.entity.enums.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -24,12 +25,16 @@ public class OrderCreationRequest {
     LocalDate receiveDate;
 
     @NotBlank(message = "Receive time is required")
-    @Pattern(regexp = "^([01]?\\d|2[0-3]):[0-5]\\d$", message = "Receive time must be in HH:MM format")
     String receiveTime;
 
-    @NotNull(message = "Address is required")
     @Valid
     AddressRequest address;
+
+    @NotBlank
+    String email;
+
+    @NotNull
+    PaymentMethod paymentMethod;
 
     @NotEmpty(message = "Order must contain at least one item")
     @Size(max = 50, message = "Order cannot contain more than 50 items")

@@ -194,7 +194,6 @@ const Product = ({ promotion = false }) => {
   useEffect(() => {
     const fetchBrands = async () => {
       const brandResponse = await BrandService.getBrands();
-
       setBranding(brandResponse.result.content.map((brand) => brand.brandName));
     };
     fetchBrands();

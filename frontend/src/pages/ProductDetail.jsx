@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import ProductImageGallery from "../components/product/ProductImageGallery";
 import { notification } from "antd";
-import queryString from "query-string";
 import { useParams } from "react-router-dom";
 import { useFav } from "../contexts/FavouriteContext";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import { Breadcrumb } from "antd";
 
-// Import new components
 import SuggestionField from "../components/productDetail/SuggestionField";
 import ProductDetailsModal from "../components/productDetail/ProductDetailsModal";
 import ProductInformation from "../components/productDetail/ProductInformation";
@@ -22,7 +20,7 @@ function ProductDetail() {
   const { slug } = useParams();
   const { isAuthenticated } = useAuth();
   const { favList, toggleFavourite } = useFav();
-  const { addToCartWithDetail } = useCart();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState({});
   const [suggest, setSuggestion] = useState([]);
   const [samePricing, setSamePricing] = useState([]);
@@ -36,8 +34,6 @@ function ProductDetail() {
   const imageArr = product.images
     ? product.images.map((image) => image.url)
     : [];
-
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -57,20 +53,12 @@ function ProductDetail() {
 
   const primaryVariant =
     product.variants?.find((v) => v.isPrimary) || product.variants?.[0];
-  // Calculate price based on selected variant or primary variant
+
   const selectedVariant = product.variants?.find((v) => v.id === activeVariant);
   const currentVariant = selectedVariant || primaryVariant;
 
-  //recommendation need working
   useEffect(() => {
     if (product.category) {
-      // fetch(`${BASE_URL}/api/products?${categoryParam}`)
-      //   .then((res) => res.json())
-      //   .then((data) => setSuggestion(data));
-      // fetch(`${BASE_URL}/api/products?${pricingParam}`)
-      //   .then((res) => res.json())
-      //   .then((data) => setSamePricing(data));
-
       const fetchReconmmendations = async () => {
         const sameCategory = await ProductService.searchProducts({
           categoryName: product.category.categoryName,
@@ -131,12 +119,7 @@ function ProductDetail() {
   }
 
   function handleAddToCart(item) {
-    if (!item || !item.productName) {
-      alert("Không thể thêm vào giỏ hàng!");
-      return;
-    }
-
-    if (item.productStatus === "inactive") {
+    if (item.productStatus === "INACTIVE") {
       api.warning({
         message: "Sản phẩm không hoạt động",
         duration: 2,
@@ -155,11 +138,12 @@ function ProductDetail() {
     }
 
     const updatedItem = {
-      ...item,
+      product: item,
       quantity: quantity,
-      variant: product.variants.find((vari) => activeVariant === vari.name),
+      variantId: activeVariant,
     };
-    addToCartWithDetail(updatedItem);
+
+    addToCart(updatedItem);
 
     api.success({
       message: "Thêm giỏ hàng thành công",

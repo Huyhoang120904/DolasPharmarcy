@@ -5,6 +5,7 @@ import com.hoanghocdev.dolaspharmacy.dto.request.ProductSearchRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.ProductUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.VariantRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ApiResponse;
+import com.hoanghocdev.dolaspharmacy.dto.response.CloudinaryResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.ProductResponse;
 import com.hoanghocdev.dolaspharmacy.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,9 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
@@ -51,7 +50,9 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ApiResponse<ProductResponse> createProduct(@RequestBody @Valid ProductCreationRequest request) {
+    public ApiResponse<ProductResponse> createProduct(@RequestBody
+//                                                          @Valid
+                                                          ProductCreationRequest request) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.addNewProduct(request))
                 .build();
@@ -80,28 +81,6 @@ public class ProductController {
     public ApiResponse deleteProduct(@PathVariable String productId) {
         productService.deleteProduct(productId);
         return ApiResponse.<ProductResponse>builder()
-                .build();
-    }
-
-    //with image
-    //Note: On the frontend, you'll use "data:image/jpeg;base64," + base64String to display images.
-    @GetMapping("/{productId}/images")
-    public ApiResponse<List<String>> getProductImageById(@PathVariable String productId) {
-        List<byte[]> images = productService.findImageByProductId(productId);
-        List<String> base64Images = images.stream()
-                .map(Base64.getEncoder()::encodeToString)
-                .toList();
-
-        return ApiResponse.<List<String>>builder()
-                .result(base64Images)
-                .build();
-    }
-
-    @PostMapping("/image")
-    public ApiResponse<ProductResponse> createProductWithProduct(@RequestPart @Valid ProductCreationRequest request,
-                                                                 @RequestPart Set<MultipartFile> imageFile) {
-        return ApiResponse.<ProductResponse>builder()
-                .result(productService.addNewProductWithImage(request, imageFile))
                 .build();
     }
 

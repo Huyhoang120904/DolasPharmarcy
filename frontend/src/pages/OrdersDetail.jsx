@@ -14,6 +14,7 @@ import {
   Button,
   Result,
 } from "antd";
+import { OrderService } from "../api-services/OrderService";
 
 const { Title, Text } = Typography;
 
@@ -24,23 +25,29 @@ function OrderDetail({ confirm = false }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     setLoading(true);
-    fetch(`${BASE_URL}/api/orders/${orderId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch order");
-        return res.json();
-      })
-      .then((data) => {
-        setOrder(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    // fetch(`${BASE_URL}/api/orders/${orderId}`)
+    //   .then((res) => {
+    //     if (!res.ok) throw new Error("Failed to fetch order");
+    //     return res.json();
+    //   })
+    //   .then((data) => {
+    //     setOrder(data);
+    //     setLoading(false);
+    //   })
+    //   .catch((err) => {
+    //     setError(err.message);
+    //     setLoading(false);
+    //   });
+
+    const fetchOrder = async () => {
+      const orderResponse = await OrderService.getOrderById(orderId);
+      console.log(orderResponse.result.address);
+      setOrder(orderResponse.result);
+      setLoading(false);
+    };
+    fetchOrder();
   }, [orderId]);
 
   const formatCurrency = (amount) => {
@@ -79,14 +86,31 @@ function OrderDetail({ confirm = false }) {
 
   const getPaymentMethodText = (method) => {
     switch (method) {
-      case "transfer":
-        return "Chuyển khoản";
-      case "cod":
-        return "Thanh toán khi nhận hàng (COD)";
+      case "CASH_ON_DELIVERY":
+        return "Trả khi ship đến";
+      case "E_BANKING":
+        return "Ngân hàng điện tử";
       default:
         return method;
     }
   };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case "pending":
+        return "Chờ xử lý";
+      case "processing":
+        return "Đang xử lý";
+      case "completed":
+        return "Hoàn thành";
+      case "cancelled":
+        return "Đã hủy";
+      default:
+        return status;
+    }
+  };
+
+  console.log(order);
 
   const columns = [
     {
@@ -95,22 +119,34 @@ function OrderDetail({ confirm = false }) {
       key: "product",
       render: (_, record) => (
         <div className="flex items-center gap-4">
-          {record.images && record.images.length > 0 && (
-            <Image
-              src={record.images[0].url}
-              alt={record.images[0].alt}
-              width={80}
-              className="rounded-md object-cover"
-              placeholder={
-                <div className="bg-gray-200 w-20 h-20 rounded-md flex items-center justify-center">
-                  Loading
-                </div>
-              }
-            />
+          {record.variant.product.images && (
+            <>
+              <Image
+                src={
+                  record.variant.product.images.findIndex(
+                    (img) => img.primary
+                  ) >= 0
+                    ? record.variant.product.images[
+                        record.variant.product.images.findIndex(
+                          (img) => img.primary
+                        )
+                      ].url
+                    : record.variant.product.images[0].url
+                }
+                alt={record.variant.product.productName}
+                width={80}
+                className="rounded-md object-cover"
+                placeholder={
+                  <div className="bg-gray-200 w-20 h-20 rounded-md flex items-center justify-center">
+                    Loading
+                  </div>
+                }
+              />
+            </>
           )}
           <div>
             <Text strong className="block mb-1">
-              {record.name}
+              {record.variant.product.productName}
             </Text>
             <Text type="secondary" className="block">
               Phân loại: {record.variant.name}
@@ -123,18 +159,27 @@ function OrderDetail({ confirm = false }) {
       title: "Đơn giá",
       dataIndex: "salePrice",
       key: "salePrice",
-      render: (salePrice, record) => (
-        <div>
-          <Text className="text-red-500 font-medium block">
-            {formatCurrency(salePrice)}
-          </Text>
-          {record.basePrice > record.salePrice && (
-            <Text delete type="secondary" className="block">
-              {formatCurrency(record.basePrice)}
+      render: (salePrice, record) => {
+        const hasDiscount = record.variant.product?.promotion ? true : false;
+
+        const price = hasDiscount
+          ? record.variant?.price *
+            (1 - record.variant.product.promotion.discountAmount / 100)
+          : record.variant?.price;
+
+        return (
+          <div>
+            <Text className="text-red-500 font-medium block">
+              {formatCurrency(price)}
             </Text>
-          )}
-        </div>
-      ),
+            {hasDiscount && (
+              <Text delete type="secondary" className="block">
+                {formatCurrency(record.variant.price)}
+              </Text>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Số lượng",
@@ -146,11 +191,20 @@ function OrderDetail({ confirm = false }) {
       title: "Thành tiền",
       key: "total",
       align: "right",
-      render: (_, record) => (
-        <Text strong className="text-red-600">
-          {formatCurrency(record.salePrice * record.quantity)}
-        </Text>
-      ),
+      render: (_, record) => {
+        const hasDiscount = record.variant.product?.promotion ? true : false;
+
+        const price = hasDiscount
+          ? record.variant?.price *
+            (1 - record.variant.product.promotion.discountAmount / 100)
+          : record.variant?.price;
+
+        return (
+          <Text strong className="text-red-600">
+            {formatCurrency(price * record.quantity)}
+          </Text>
+        );
+      },
     },
   ];
 
@@ -175,22 +229,16 @@ function OrderDetail({ confirm = false }) {
     );
   }
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case "pending":
-        return "Chờ xử lý";
-      case "processing":
-        return "Đang xử lý";
-      case "completed":
-        return "Hoàn thành";
-      case "cancelled":
-        return "Đã hủy";
-      default:
-        return status;
-    }
-  };
+  const total =
+    order?.orderItems.reduce((acc, item) => {
+      const hasDiscount = item.variant.product?.promotion ? true : false;
+      const price = hasDiscount
+        ? item.variant?.price *
+          (1 - item.variant.product.promotion.discountAmount / 100)
+        : item.variant?.price;
 
-  console.log(order);
+      return (acc += item.quantity * price);
+    }, 0) || 0;
 
   if (confirm) {
     return (
@@ -238,16 +286,17 @@ function OrderDetail({ confirm = false }) {
             size="middle"
           >
             <Descriptions.Item label="Mã đơn hàng" span={1}>
-              <Text copyable>{order.id}</Text>
+              <Text copyable>{order?.id}</Text>
             </Descriptions.Item>
             <Descriptions.Item label="Họ tên">
-              {order.fullName}
+              {order?.fullName}
             </Descriptions.Item>
             <Descriptions.Item label="Số điện thoại">
-              {order.phone}
+              {order?.address.phoneNumber}
             </Descriptions.Item>
             <Descriptions.Item label="Địa chỉ">
-              {order.address}, {order.district}, {order.province}
+              {order?.address.address}, {order?.address.district},
+              {order?.address.province}
             </Descriptions.Item>
             {order.deliveryDate && (
               <Descriptions.Item label="Ngày giao hàng">
@@ -412,21 +461,21 @@ function OrderDetail({ confirm = false }) {
             </p>
             <p className="mb-0">
               <strong className="text-green-700">Số điện thoại:</strong>{" "}
-              {order.phone}
+              {order?.address.phoneNumber}
             </p>
           </div>
           <div className="bg-white p-4 rounded-md shadow-sm">
             <p className="mb-3">
               <strong className="text-green-700">Địa chỉ:</strong>{" "}
-              {order.address}
+              {order?.address.address}
             </p>
             <p className="mb-3">
               <strong className="text-green-700">Quận/Huyện:</strong>{" "}
-              {order.district}
+              {order?.address.district}
             </p>
             <p className="mb-0">
               <strong className="text-green-700">Tỉnh/Thành phố:</strong>{" "}
-              {order.province}
+              {order?.address.province}
             </p>
           </div>
         </div>
@@ -482,9 +531,9 @@ function OrderDetail({ confirm = false }) {
             Sản phẩm đã đặt
           </span>
         </Divider>
-        {order.items && Array.isArray(order.items) ? (
+        {order.orderItems ? (
           <Table
-            dataSource={order.items}
+            dataSource={order.orderItems}
             columns={columns}
             rowKey="id"
             pagination={false}

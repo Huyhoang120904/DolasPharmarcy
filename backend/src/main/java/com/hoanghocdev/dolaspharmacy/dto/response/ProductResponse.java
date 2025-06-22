@@ -26,9 +26,6 @@ public class ProductResponse {
     String usageInstruction;
     String slug;
 
-    LocalDateTime createdDate;
-    LocalDateTime lastModifiedDate;
-
     boolean requiresPrescription;
     ProductStatus productStatus;
     List<ImageResponse> images;

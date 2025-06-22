@@ -27,7 +27,9 @@ export const CartProvider = ({ children }) => {
     if (existingIndex >= 0) {
       updatedCart[existingIndex] = {
         ...updatedCart[existingIndex],
-        quantity: updatedCart[existingIndex].quantity + 1,
+        quantity:
+          updatedCart[existingIndex].quantity +
+          (cartItem.quantity ? cartItem.quantity : 1),
       };
     } else {
       const variant = cartItem.product.variants.find(

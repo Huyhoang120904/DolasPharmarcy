@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -30,17 +30,17 @@ function UserCrediential({ loginPage }) {
   const nav = useNavigate();
   const { user, isAuthenticated } = useAuth();
 
-  const isAdmin = user?.roles
-    ? user.roles.find((role) => role.rolename.toLowerCase() === "admin")
-    : false;
+  useEffect(() => {
+    if (isAuthenticated) {
+      const isAdmin = user.roles.find(
+        (role) => role.rolename.toLowerCase() === "admin"
+      )
+        ? true
+        : false;
 
-  if (isAuthenticated && !isAdmin) {
-    nav("/");
-  }
-
-  if (isAuthenticated && isAdmin) {
-    nav("/");
-  }
+      nav("/dashboard");
+    }
+  }, [isAuthenticated]);
 
   // Add a state to handle animation
   const [isAnimating, setIsAnimating] = useState(false);

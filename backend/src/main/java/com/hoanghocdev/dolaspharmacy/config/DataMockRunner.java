@@ -1,13 +1,14 @@
 package com.hoanghocdev.dolaspharmacy.config;
 
-import com.hoanghocdev.dolaspharmacy.dto.request.UserCreationRequest;
-import com.hoanghocdev.dolaspharmacy.dto.request.UserDetailRequest;
+import com.hoanghocdev.dolaspharmacy.dto.request.*;
 import com.hoanghocdev.dolaspharmacy.entity.*;
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.repository.*;
+import com.hoanghocdev.dolaspharmacy.service.ProductService;
 import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
+import com.hoanghocdev.dolaspharmacy.utils.SlugUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.datafaker.Faker;
@@ -37,7 +38,7 @@ public class DataMockRunner {
     UserEntityService userEntityService;
 
     @Bean
-    public CommandLineRunner mockData(PasswordEncoder passwordEncoder) {
+    public CommandLineRunner mockData(PasswordEncoder passwordEncoder, ProductService productService) {
         return args -> {
             Faker faker = new Faker(new Locale("vi"));
             Random random = new Random();
@@ -123,7 +124,6 @@ public class DataMockRunner {
                 String dosage = faker.number().numberBetween(10, 1000) + "mg";
                 String description = "Sản phẩm " + productName + " giúp tăng cường sức khỏe. " + faker.lorem().sentence();
                 String usageInstruction = "Dùng theo chỉ định của bác sĩ hoặc dược sĩ.";
-                String slug = productName.toLowerCase().replaceAll("[^a-z0-9]+", "-") + "-" + sku.toLowerCase();
                 boolean requiresPrescription = i % 4 == 0;
                 ProductStatus status = (i % 7 == 0) ? ProductStatus.OUT_OF_STOCK : ProductStatus.ACTIVE;
 
@@ -137,7 +137,7 @@ public class DataMockRunner {
                     assignedPromotion = availablePromotions.remove(0);
                 }
 
-                Product product = Product.builder()
+                ProductCreationRequest product = ProductCreationRequest.builder()
                         .productName(productName)
                         .sku(sku)
                         .origin(origin)
@@ -146,45 +146,47 @@ public class DataMockRunner {
                         .dosage(dosage)
                         .description(description)
                         .usageInstruction(usageInstruction)
-                        .slug(slug)
+                        .slug(SlugUtils.toSlug(productName))
                         .requiresPrescription(requiresPrescription)
                         .productStatus(status)
-                        .supplier(randomSupplier)
-                        .target(randomTarget)
-                        .category(randomCategory)
-                        .brand(randomBrand)
-                        .promotion(assignedPromotion)
+                        .supplierId(randomSupplier.getId())
+                        .target(TargetRequest.builder().targetName(randomTarget.getTargetName()).build())
+                        .categoryId(randomCategory.getId())
+                        .brand(BrandRequest.builder().brandName(randomBrand.getBrandName()).build())
+                        .promotion(assignedPromotion==null? null :PromotionRequest.builder().promotionType(assignedPromotion.getPromotionType())
+                                .discountAmount(assignedPromotion.getDiscountAmount())
+                                .build())
                         .build();
 
                 // --- Variants: 1-3 per product ---
                 int variantCount = 1 + random.nextInt(3);
-                List<Variant> variants = new ArrayList<>();
+                List<VariantRequest> variants = new ArrayList<>();
                 for (int v = 0; v < variantCount; v++) {
                     int rawPrice = faker.number().numberBetween(10000, 5000000); // 10,000 - 500,000 VND
                     int roundedPrice = (rawPrice / 10000) * 10000;
-                    Variant variant = Variant.builder()
+                    VariantRequest variant = VariantRequest.builder()
                             .name("Hộp " + (10 + random.nextInt(40)) + " viên")
                             .price(roundedPrice)
                             .stock(faker.number().numberBetween(0, 300))
-                            .product(product)
                             .isPrimary(variants.isEmpty())
                             .build();
                     variants.add(variant);
                 }
                 product.setVariants(variants);
 
-                List<Image> images = new ArrayList<>();
+                List<ImageRequest> images = new ArrayList<>();
                 // --- Images: 1-2 per product ---
                 int imageCount = 1 + random.nextInt(2);
                 for (int img = 0; img < imageCount; img++) {
-                    Image image = Image.builder()
+                    ImageRequest image = ImageRequest.builder()
                             .url("https://picsum.photos/seed/" + product.getSku() + img + "/300/300")
+                            .isPrimary(images.isEmpty())
                             .build();
                     images.add(image);
                 }
                 product.setImages(images);
 
-                productRepository.save(product);
+                productService.addNewProduct(product);
             }
 
             //Roles

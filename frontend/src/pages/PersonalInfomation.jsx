@@ -109,7 +109,7 @@ function PersonalInfomation() {
         </Title>
 
         <Tabs
-          defaultActiveKey="info"
+          defaultActiveKey="orders"
           className="bg-white rounded-lg"
           type="card"
           tabBarStyle={{ marginBottom: "1rem", fontWeight: "bold" }}

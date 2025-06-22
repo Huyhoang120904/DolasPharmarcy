@@ -1,6 +1,5 @@
 package com.hoanghocdev.dolaspharmacy.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -9,11 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ImageResponse {
-    String id;
+public class CloudinaryResponse {
+    String publicId;
     String url;
-    String alt;
-
-    @JsonProperty(value = "isPrimary")
-    boolean isPrimary;
 }

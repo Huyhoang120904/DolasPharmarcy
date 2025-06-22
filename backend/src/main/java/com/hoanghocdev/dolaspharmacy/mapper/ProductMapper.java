@@ -5,6 +5,7 @@ import com.hoanghocdev.dolaspharmacy.dto.request.ProductUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ProductResponse;
 import com.hoanghocdev.dolaspharmacy.entity.Product;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 
@@ -18,6 +19,7 @@ import org.mapstruct.MappingTarget;
         TargetMapper.class
 })
 public interface ProductMapper {
+
     Product toProduct(ProductUpdateRequest request);
     Product toProduct(ProductCreationRequest request);
 

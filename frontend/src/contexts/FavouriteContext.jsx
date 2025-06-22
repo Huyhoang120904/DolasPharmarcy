@@ -5,9 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { UserService } from "../api-services/UserService";
 
 const FavContext = createContext();
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export const useFav = () => useContext(FavContext);
 
 const FavProvider = ({ children }) => {
@@ -30,9 +27,6 @@ const FavProvider = ({ children }) => {
   const toggleFavourite = async (productId) => {
     try {
       const response = await UserService.toogleFavourites(productId);
-
-      console.log(response.result.products);
-
       setFavList(response.result.products);
     } catch (err) {
       console.error(err);

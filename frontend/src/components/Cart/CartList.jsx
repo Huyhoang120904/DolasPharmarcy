@@ -152,18 +152,10 @@ function CartList() {
         dataSource={cart}
         columns={columns}
         pagination={false}
-        rowKey="variant.id"
+        rowKey={(record) => record.variant.id}
         style={{ borderRadius: "8px", overflow: "hidden" }}
         className="cart-items-table"
       />
-      <style jsx>{`
-        .cart-items-table .ant-table-thead > tr > th {
-          background-color: #f5f5f5;
-        }
-        .cart-table {
-          margin-bottom: 20px;
-        }
-      `}</style>
     </div>
   );
 }

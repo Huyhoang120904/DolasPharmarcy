@@ -61,6 +61,7 @@ export const UserService = {
       console.error(error);
     }
   },
+
   addCartItem: async (cartItem) => {
     try {
       console.log(`cartItem`, cartItem);
@@ -88,9 +89,9 @@ export const UserService = {
     }
   },
 
-  checkout: async () => {
+  checkout: async (orderRequest) => {
     try {
-      const response = await request.delete(`/users/me/cartItems/checkout`, {
+      const response = await request.post(`/users/me/checkout`, orderRequest, {
         headers: { Authorization: `Bearer ${getMyToken()}` },
       });
       return response.data;

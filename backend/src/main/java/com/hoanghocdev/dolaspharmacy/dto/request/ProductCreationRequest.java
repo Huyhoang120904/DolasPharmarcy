@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -42,14 +43,6 @@ public class ProductCreationRequest {
     @Size(max = 1000, message = "Usage instruction cannot exceed 1000 characters")
     String usageInstruction;
 
-    @NotBlank(message = "Slug is required")
-    @Size(min = 3, max = 200, message = "Slug must be between 3 and 200 characters")
-    @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Slug must be lowercase with hyphens only")
-    String slug;
-
-    @Min(value = 0 , message = "Stock must be greater than 0")
-    Long stock;
-
     boolean requiresPrescription;
 
     @NotNull(message = "Product status is required")
@@ -75,5 +68,9 @@ public class ProductCreationRequest {
     @NotBlank(message = "Category ID is required")
     String categoryId;
 
-    String promotionId;
+    @NotBlank(message = "Slug is required")
+    String slug;
+
+    @Valid
+    PromotionRequest promotion;
 }

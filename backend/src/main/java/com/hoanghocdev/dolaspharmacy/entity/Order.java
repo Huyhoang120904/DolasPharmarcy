@@ -5,8 +5,11 @@ import com.hoanghocdev.dolaspharmacy.entity.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -32,7 +35,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", nullable = true)
     Address address;
 
@@ -40,9 +43,15 @@ public class Order {
     @JoinColumn(name = "user_detail_id")
     UserDetail userDetail;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     List<OrderItem> orderItems;
 
     @OneToOne
     Promotion promotion;
+
+    @CreationTimestamp
+    LocalDateTime createAt;
+
+    @UpdateTimestamp
+    LocalDateTime lastModifiedAt;
 }

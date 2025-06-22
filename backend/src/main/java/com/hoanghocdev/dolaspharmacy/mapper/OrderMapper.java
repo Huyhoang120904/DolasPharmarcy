@@ -7,7 +7,9 @@ import com.hoanghocdev.dolaspharmacy.entity.Order;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {
+        UserDetailMapper.class
+})
 public interface OrderMapper {
     Order toOrder(OrderCreationRequest request);
     OrderResponse toResponse(Order order);

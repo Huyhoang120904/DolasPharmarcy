@@ -29,6 +29,7 @@ import PaymentProduct from "../components/product/PaymentProduct";
 import { Await, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import PaymentProductsList from "../components/product/PaymentProductList";
+import { UserService } from "../api-services/UserService";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -49,22 +50,15 @@ function Payment() {
   const [loading, setLoading] = useState();
   const navigate = useNavigate();
   const total =
-    cart?.items?.reduce((acc, item) => {
-      const price = item.salePrice || item.basePrice;
+    cart?.reduce((acc, item) => {
+      const hasDiscount = item.variant.product?.promotion ? true : false;
+
+      const price = hasDiscount
+        ? item.variant?.price *
+          (1 - item.variant.product.promotion.discountAmount / 100)
+        : item.variant?.price;
       return (acc += item.quantity * price);
     }, 0) || 0;
-
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  useEffect(() => {
-    if (user) {
-      fetch(`${BASE_URL}/api/users/${user.id}`)
-        .then((response) => response.json())
-        .then((data) => {
-          setCurrUser(data);
-        });
-    }
-  }, [user]);
 
   useEffect(() => {
     // Fetch provinces from the new API
@@ -173,17 +167,6 @@ function Payment() {
   }
 
   const fillUserInfo = () => {
-    if (!currUser || !currUser.addresses || currUser.addresses.length === 0) {
-      api.warning({
-        message: "Thông tin địa chỉ trống",
-        description: "Bạn chưa có địa chỉ nào trong tài khoản của mình.",
-        duration: 2,
-      });
-      return;
-    }
-
-    console.log(currUser);
-
     // Find the best address to use (primary shipping address, or any shipping address, or first address)
     const primaryShippingAddress =
       currUser.addresses?.find(
@@ -293,123 +276,20 @@ function Payment() {
   async function handleFinish() {
     setLoading(true);
     const values = form.getFieldsValue();
-
-    // Use validated values from form.onFinish parameter
-    const order = {
+    const orderItems = cart.map((cartItem) => {
+      return { variantId: cartItem.variant.id, quantity: cartItem.quantity };
+    });
+    const request = {
       ...values,
-      items: cart,
-      userId: user ? user.id : "Khách vãng lai",
+      orderItems: orderItems,
       paymentMethod: paymentMethod,
-      status: "pending",
-      total: total, // Include the total amount
     };
 
-    try {
-      const response = await fetch(`${BASE_URL}/api/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      });
+    const response = await UserService.checkout(request);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Order error:", errorData);
-        api.warning({
-          message: "Không thể thêm hoá đơn!",
-          description: `Đã có lỗi xảy ra. Vui lòng thử lại sau!`,
-          duration: 2,
-        });
-        setLoading(false);
-        return;
-      }
-
-      const serverContent = await response.json();
-
-      const templateId = "template_c5pwx77";
-      const serviceId = "service_ztlc7ux";
-      const publicKey = import.meta.env.VITE_PUBLIC_MAIL_KEY;
-
-      // Format the individual items properly for Handlebars template
-      const formattedItems = cart.map((item) => {
-        // Ensure the image URL is valid
-        const imageUrl = item.images[0].url
-          ? item.images[0].url
-          : "https://res.cloudinary.com/dbmtxumro/image/upload/v1746693032/placeholder_image.png";
-
-        // Ensure price is valid
-        const price = parseFloat(item.salePrice || item.basePrice || 0);
-
-        return {
-          name: item.name || "Sản phẩm",
-          units: item.quantity || 1,
-          image_url: imageUrl,
-          price: new Intl.NumberFormat("vi-VN", {
-            minimumFractionDigits: 2,
-          }).format(price),
-          variant: item.variant,
-        };
-      });
-
-      const shipping = 0;
-      const tax = 0; // Define tax variable to avoid reference error
-
-      const emailData = {
-        to_email: values.email || "",
-        order_id: serverContent.id || "N/A",
-        email: values.email || "",
-        orders: formattedItems,
-        // Add user shipping information
-        fullName: values.fullName || "",
-        phone: values.phone || "",
-        province: values.province || "",
-        district: values.district || "",
-        address: values.address || "",
-        deliveryDate: values.deliveryDate
-          ? values.deliveryDate.format("DD/MM/YYYY")
-          : "",
-        deliveryTime: values.deliveryTime || "",
-        // Cost information
-        cost: {
-          shipping: new Intl.NumberFormat("vi-VN", {
-            maximumFractionDigits: 0,
-          }).format(shipping),
-          tax: new Intl.NumberFormat("vi-VN", {
-            maximumFractionDigits: 0,
-          }).format(tax),
-          total: new Intl.NumberFormat("vi-VN", {
-            maximumFractionDigits: 0,
-          }).format(total),
-        },
-      };
-
-      console.log("Email data being sent:", JSON.stringify(emailData, null, 2));
-
-      // Send email
-      if (values.email) {
-        try {
-          await emailjs.send(serviceId, templateId, emailData, publicKey);
-          alert(
-            `Thông tin đơn hàng đã được gửi tới địa chỉ email: ${emailData.to_email}`
-          );
-        } catch (emailError) {
-          console.error("Failed to send order confirmation email:", emailError);
-        }
-      }
-
+    if (response && response.result.id) {
+      navigate(`/confirmation/${response.result.id}`);
       emptyCart();
-
-      form.resetFields();
-      navigate(`/confirmation/${serverContent.id}`);
-    } catch (error) {
-      console.error("Order submission error:", error);
-      api.error({
-        message: "Lỗi kết nối",
-        description: "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.",
-        duration: 3,
-      });
-    } finally {
       setLoading(false);
     }
   }
@@ -471,7 +351,7 @@ function Payment() {
                   </Col>
                   <Col xs={24} sm={12}>
                     <Form.Item
-                      name="phone"
+                      name={["address", "phoneNumber"]}
                       label="Số điện thoại"
                       rules={[
                         { required: true, message: "Vui lòng số điện thoại!" },
@@ -489,7 +369,7 @@ function Payment() {
                 <Row gutter={16}>
                   <Col xs={24} sm={12}>
                     <Form.Item
-                      name="province"
+                      name={["address", "province"]}
                       label="Tỉnh thành"
                       rules={[
                         {
@@ -523,7 +403,7 @@ function Payment() {
                   </Col>
                   <Col xs={24} sm={12}>
                     <Form.Item
-                      name="district"
+                      name={["address", "district"]}
                       label="Quận huyện"
                       rules={[
                         {
@@ -557,7 +437,7 @@ function Payment() {
                 <Row gutter={16}>
                   <Col span={24}>
                     <Form.Item
-                      name="ward"
+                      name={["address", "ward"]}
                       label="Phường xã"
                       rules={[
                         {
@@ -581,7 +461,7 @@ function Payment() {
                 </Row>
 
                 <Form.Item
-                  name="address"
+                  name={["address", "address"]}
                   label="Địa chỉ chi tiết"
                   rules={[
                     { required: true, message: "Vui lòng nhập địa chỉ!" },
@@ -593,7 +473,7 @@ function Payment() {
                 <Row gutter={16}>
                   <Col xs={24} sm={12}>
                     <Form.Item
-                      name="deliveryDate"
+                      name="receiveDate"
                       label="Ngày giao hàng"
                       rules={[
                         {
@@ -617,7 +497,7 @@ function Payment() {
                   </Col>
                   <Col xs={24} sm={12}>
                     <Form.Item
-                      name="deliveryTime"
+                      name="receiveTime"
                       label="Giờ giao hàng"
                       rules={[
                         {
@@ -695,15 +575,16 @@ function Payment() {
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="w-full"
+              defaultValue={"E_BANKING"}
             >
               <Space direction="vertical" className="w-full">
-                <Radio value="transfer" className="w-full">
+                <Radio value="E_BANKING" className="w-full">
                   <div className="flex items-center justify-between w-full p-3 border border-gray-200 rounded space-x-3">
                     <span>Chuyển khoản </span>
                     <BankOutlined className="text-xl" />
                   </div>
                 </Radio>
-                <Radio value="cod" className="w-full">
+                <Radio value="CASH_ON_DELIVERY" className="w-full">
                   <div className="flex items-center justify-between w-full p-3 border border-gray-200 rounded space-x-3">
                     <span>Thu hộ (COD)</span>
                     <DollarOutlined className="text-xl" />
@@ -717,27 +598,29 @@ function Payment() {
               cart ? cart.length : 0
             } sản phẩm)`}</Title>
             <div className="mt-4">
-              {cart && <PaymentProductsList products={cart} />}
+              {cart && <PaymentProductsList cartItems={cart} />}
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Tạm tính</span>
-                <span>{new Intl.NumberFormat("vi-VN").format(total)} ₫ </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Phí vận chuyển</span>
-                <span className="text-green-500">{"Miễn phí"}</span>
-              </div>
-              <Divider className="my-2" />
-              <div className="flex justify-between font-bold">
-                <span>Tổng cộng</span>
-                <span className="font-bold text-green-500">
-                  {new Intl.NumberFormat("vi-VN").format(total)} ₫
-                </span>
+            <div className="space-y-1.5 text-sm">
+              <div className="py-2">
+                <div className="flex justify-between pt-1">
+                  <span>Tạm tính</span>
+                  <span>{new Intl.NumberFormat("vi-VN").format(total)} ₫ </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Phí vận chuyển</span>
+                  <span className="text-green-500">{"Miễn phí"}</span>
+                </div>
+                <Divider className="!my-1" />
+                <div className="flex justify-between font-bold">
+                  <span>Tổng cộng</span>
+                  <span className="font-bold text-green-500">
+                    {new Intl.NumberFormat("vi-VN").format(total)} ₫
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex justify-between items-center mt-3">
               <Button
                 type="link"
                 className="px-0"

@@ -5,32 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { UserService } from "../../../api-services/UserService";
 
 function UserInfo({ user }) {
-  // const [userCurr, setUserCurr] = useState({});
   const { logout } = useAuth();
-
-  const nav = useNavigate();
-
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (!user || !user.id) {
-  //     console.error("User or user.id is undefined");
-  //     return;
-  //   }
-  //   // fetch(`${BASE_URL}/api/users/${user.id}`)
-  //   //   .then((res) => res.json())
-  //   //   .then((data) => {
-  //   //     setUserCurr(data);
-  //   //   })
-  //   //   .catch((err) => {
-  //   //     console.error(err);
-  //   //   });
-
-  //   const fetchUser = async () => {
-  //     const userResponse = await UserService.getMyInfo();
-  //     setUserCurr(userCurr)
-  //   };
-  // }, [user]);
 
   function handleUserInfo() {
     navigate("/profile");
@@ -38,7 +14,7 @@ function UserInfo({ user }) {
 
   function handleLogout() {
     logout();
-    nav("/");
+    navigate("/");
   }
 
   return (

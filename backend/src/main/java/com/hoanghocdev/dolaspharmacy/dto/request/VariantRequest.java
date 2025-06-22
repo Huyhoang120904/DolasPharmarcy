@@ -21,9 +21,6 @@ public class VariantRequest {
     @Max(value = 999999, message = "Stock cannot exceed 999,999")
     int stock;
 
-    @NotBlank(message = "Unit is required")
-    @Size(min = 1, max = 20, message = "Unit must be between 1 and 20 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "Unit can only contain letters and spaces")
     String unit;
 
     @NotNull

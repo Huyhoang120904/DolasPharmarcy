@@ -9,7 +9,13 @@ export default function ProtectedRoute({ adminOnly = false }) {
     return <Navigate to={"/login"} replace />;
   }
 
-  if (adminOnly && user.role !== "admin") {
+  const isAdmin = user.roles.find(
+    (role) => role.rolename.toLowerCase() === "admin"
+  )
+    ? true
+    : false;
+
+  if (adminOnly && !isAdmin) {
     alert("Chỉ admin mới có quyền truy cập khu vực này");
     return <Navigate to="/dashboard" replace />;
   }

@@ -32,12 +32,12 @@ public class SecurityConfig {
             "/orders/**", "/v3/api-docs/**",
             "/swagger-ui/**", "/swagger-ui.html",
             "/swagger-resources/**", "/webjars/**",
-            "/users/me/**"
+            "/users/me/**","/payments/recall/**"
     };
 
     static String[] PUBLIC_POST_ENDPOINTS = {
-            "/auth/**",
-            "/products/search/**","/users/me/**"
+            "/auth/**", "/users/me/**",
+            "/products/search/**","/users/me/**","/payments/create"
     };
 
     static String[] PUBLIC_DELETE_ENDPOINTS = {

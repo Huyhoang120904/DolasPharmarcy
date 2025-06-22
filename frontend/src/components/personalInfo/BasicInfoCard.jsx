@@ -8,8 +8,6 @@ function BasicInfoCard({ userInfo }) {
   const primaryAddress =
     userInfo.userDetail.addresses.find((address) => address.primary) || null;
 
-  console.log(primaryAddress);
-
   return (
     <Card className="h-full shadow-md border-0 rounded-lg transition-all duration-300 hover:shadow-lg">
       <Title level={4} className="flex items-center gap-2 text-blue-700 mb-4">

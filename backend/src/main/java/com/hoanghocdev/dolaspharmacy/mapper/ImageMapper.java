@@ -8,5 +8,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface ImageMapper {
     Image toImage(ImageRequest request);
-    ImageResponse toReponse(Image image);
+    ImageResponse toResponse(Image image);
 }

@@ -40,7 +40,6 @@ public class UserEntityServiceImpl implements UserEntityService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
     UserDetailRepository userDetailRepository;
-    CartRepository cartRepository;
     FavouritesRepository favouritesRepository;
     private final UserDetailMapper userDetailMapper;
 
@@ -58,7 +57,7 @@ public class UserEntityServiceImpl implements UserEntityService {
         String name = contextHolder.getAuthentication().getName();
 
         UserEntity userEntity = userEntityRepository.findByUsername(name)
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         return userEntityMapper.toUserResponse(userEntity);
     }
@@ -66,8 +65,6 @@ public class UserEntityServiceImpl implements UserEntityService {
     @Override
     @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse findUserById(String id) {
-
-
         UserEntity userEntity = userEntityRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         return userEntityMapper.toUserResponse(userEntity);
     }
@@ -92,28 +89,10 @@ public class UserEntityServiceImpl implements UserEntityService {
         UserDetail userDetail = userDetailMapper.toUserDetail(request.getUserDetail());
         userDetail.setUserEntity(userEntity);
 
-//        String fullName = request.getUserDetail().getFullName();
-//        LocalDate dob = request.getUserDetail().getDob();
-//        Gender gender = Gender.valueOf(request.getUserDetail().getGender());
-//        UserDetail userDetail = UserDetail.builder()
-//                .userEntity(userEntity)
-//                .fullName(fullName)
-//                .userEntity(userEntity)
-//                .gender(gender)
-//                .dob(dob)
-//                .build();
-
         userDetail = userDetailRepository.save(userDetail);
 
         userEntity.setUserDetail(userDetail);
         userEntity = userEntityRepository.save(userEntity);
-
-        Cart cart = Cart.builder()
-                .userDetail(userDetail)
-                .orderItems(new ArrayList<>())
-                .build();
-
-        cartRepository.save(cart);
 
         Favourites favourites = Favourites.builder()
                 .userDetail(userDetail)

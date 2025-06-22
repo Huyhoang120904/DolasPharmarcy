@@ -27,10 +27,6 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     Order order;
 
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    Cart cart;
-
     public OrderItem calculateFinalPrice() {
         this.finalPrice = this.quantity * this.variant.getPrice();
         return this;

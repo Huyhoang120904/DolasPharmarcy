@@ -26,6 +26,7 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
     @NotNull
     @Column(name = "name")
     String productName;
@@ -45,15 +46,16 @@ public class Product {
     Double primaryVariantPrice;
 
     @CreationTimestamp
-    LocalDateTime createdDate;
+    @Column(updatable = false)
+    LocalDateTime createdAt;
 
     @UpdateTimestamp
-    LocalDateTime lastModifiedDate;
+    LocalDateTime lastModifiedAt;
 
     @Enumerated(EnumType.STRING)
     ProductStatus productStatus;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     List<Image> images;
 
     @ManyToOne
@@ -75,11 +77,14 @@ public class Product {
     @JoinColumn(name = "catergory_id")
     Category category;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     Promotion promotion;
 
     public void setVariants(List<Variant> variants) {
         this.variants = variants;
+        if (variants == null) {
+            return;
+        }
         this.setPrimaryVariantPrice(
                 this.getVariants().stream()
                         .filter(v -> Boolean.TRUE.equals(v.getIsPrimary()))

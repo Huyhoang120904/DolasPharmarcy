@@ -3,6 +3,7 @@ package com.hoanghocdev.dolaspharmacy.service.impl;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderCreationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.OrderResponse;
+import com.hoanghocdev.dolaspharmacy.dto.response.UserResponse;
 import com.hoanghocdev.dolaspharmacy.entity.Order;
 import com.hoanghocdev.dolaspharmacy.entity.OrderItem;
 import com.hoanghocdev.dolaspharmacy.entity.UserDetail;
@@ -11,15 +12,14 @@ import com.hoanghocdev.dolaspharmacy.entity.enums.OrderStatus;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.mapper.OrderMapper;
-import com.hoanghocdev.dolaspharmacy.repository.OrderRepository;
-import com.hoanghocdev.dolaspharmacy.repository.UserDetailRepository;
-import com.hoanghocdev.dolaspharmacy.repository.VariantRepository;
-import com.hoanghocdev.dolaspharmacy.service.CartService;
+import com.hoanghocdev.dolaspharmacy.repository.*;
 import com.hoanghocdev.dolaspharmacy.service.OrderService;
+import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +31,19 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
     OrderMapper orderMapper;
     VariantRepository variantRepository;
-    CartService cartService;
     OrderRepository orderRepository;
     UserDetailRepository userDetailRepository;
+    OrderItemRepository orderItemRepository;
+    AddressRepository addressRepository;
+    private final UserEntityService userEntityService;
 
     @Override
     public OrderResponse createOrder(OrderCreationRequest request) {
+        UserResponse userResponse = userEntityService.findMyInfo();
+
+        UserDetail userDetail = userDetailRepository.findByUsername(userResponse.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
         Order order = orderMapper.toOrder(request);
         List<OrderItem> orderItems = request.getOrderItems().stream().map(orderItem -> {
             Variant variant = variantRepository.findById(orderItem.getVariantId())
@@ -45,10 +52,12 @@ public class OrderServiceImpl implements OrderService {
                     .variant(variant)
                     .quantity(orderItem.getQuantity())
                     .order(order)
-                    .build().calculateFinalPrice();
+                    .build()
+                    .calculateFinalPrice();
         }).toList();
+
         order.setOrderItems(orderItems);
-        cartService.clearCart();
+        order.setUserDetail(userDetail);
         order.setOrderStatus(OrderStatus.PENDING);
 
         Order savedOrder = orderRepository.save(order);
@@ -88,6 +97,15 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse findOrderById(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        String orderUserName = order.getUserDetail().getUserEntity().getUsername();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+
+        if (!orderUserName.equals(username)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
         return orderMapper.toResponse(order);
     }
 

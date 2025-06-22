@@ -11,6 +11,5 @@ public interface SupplierMapper {
     Supplier toSupplier(SupplierRequest request);
     SupplierResponse toSupplierResponse(Supplier supplier);
 
-
     void updateSupplier(SupplierRequest request,@MappingTarget Supplier supplier);
 }

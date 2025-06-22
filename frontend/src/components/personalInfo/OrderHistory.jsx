@@ -47,13 +47,13 @@ function OrderHistory({ orders, loading }) {
   // Order status tag color mapping
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":
+      case "PENDING":
         return "gold";
-      case "processing":
+      case "SHIPPING":
         return "geekblue";
-      case "completed":
+      case "COMPLETED":
         return "success";
-      case "cancelled":
+      case "CANCELLED":
         return "error";
       default:
         return "default";
@@ -63,14 +63,14 @@ function OrderHistory({ orders, loading }) {
   // Status text mapping
   const getStatusText = (status) => {
     switch (status) {
-      case "pending":
+      case "PENDING":
         return "Chờ xử lý";
-      case "processing":
-        return "Đang xử lý";
-      case "completed":
-        return "Hoàn thành";
-      case "cancelled":
-        return "Đã hủy";
+      case "SHIPPING":
+        return "Đang giao hàng";
+      case "COMPLETED":
+        return "Đã giao hàng thành công";
+      case "CANCELLED":
+        return "Đã huỷ";
       default:
         return status;
     }
@@ -79,23 +79,17 @@ function OrderHistory({ orders, loading }) {
   // Status icon mapping
   const getStatusIcon = (status) => {
     switch (status) {
-      case "pending":
+      case "PENDING":
         return <ClockCircleOutlined />;
-      case "processing":
+      case "SHIPPING":
         return <SyncOutlined spin />;
-      case "completed":
+      case "COMPLETED":
         return <CheckCircleOutlined />;
-      case "cancelled":
+      case "CANCELLED":
         return <CloseCircleOutlined />;
       default:
         return null;
     }
-  };
-
-  // Calculate total items in an order
-  const getTotalItems = (items) => {
-    if (!items) return 0;
-    return items.reduce((total, item) => total + item.quantity, 0);
   };
 
   // Define columns for the orders table
@@ -117,11 +111,11 @@ function OrderHistory({ orders, loading }) {
       title: "Ngày đặt",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date) => (
-        <Tooltip title={new Date(date).toLocaleString()}>
+      render: (_, record) => (
+        <Tooltip title={new Date(record.createdAt).toLocaleString()}>
           <div className="flex items-center">
             <ClockCircleOutlined className="mr-1 text-gray-500" />
-            <span>{formatDate(date)}</span>
+            <span>{formatDate(record.createdAt)}</span>
           </div>
         </Tooltip>
       ),
@@ -133,9 +127,15 @@ function OrderHistory({ orders, loading }) {
       title: "Số lượng",
       dataIndex: "items",
       key: "items",
-      render: (items) => (
-        <Text className="ml-2 font-bold">{items.length} sản phẩm</Text>
-      ),
+      render: (_, record) => {
+        console.log(record);
+
+        return (
+          <Text className="ml-2 font-bold">
+            {record?.orderItems.length} sản phẩm
+          </Text>
+        );
+      },
       width: 120,
     },
     {
@@ -152,15 +152,15 @@ function OrderHistory({ orders, loading }) {
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
+      dataIndex: "orderStatus",
+      key: "orderStatus",
+      render: (orderStatus) => (
         <Tag
-          icon={getStatusIcon(status)}
-          color={getStatusColor(status)}
+          icon={getStatusIcon(orderStatus)}
+          color={getStatusColor(orderStatus)}
           className="py-1 px-3 text-sm font-medium rounded-full"
         >
-          {getStatusText(status)}
+          {getStatusText(orderStatus)}
         </Tag>
       ),
       filters: [
@@ -190,6 +190,8 @@ function OrderHistory({ orders, loading }) {
       align: "center",
     },
   ];
+
+  console.log(orders);
 
   return (
     <Card className="shadow-lg border-0 rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">

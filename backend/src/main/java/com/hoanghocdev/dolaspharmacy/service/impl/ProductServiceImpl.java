@@ -14,6 +14,7 @@ import com.hoanghocdev.dolaspharmacy.mapper.VariantMapper;
 import com.hoanghocdev.dolaspharmacy.repository.*;
 import com.hoanghocdev.dolaspharmacy.service.ProductService;
 import com.hoanghocdev.dolaspharmacy.service.specifications.ProductSpecification;
+import com.hoanghocdev.dolaspharmacy.utils.SlugUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -37,8 +38,6 @@ public class ProductServiceImpl implements ProductService {
     SupplierRepository supplierRepository;
     ProductRepository productRepository;
     ProductMapper productMapper;
-    ImageRepository imageRepository;
-    ImageMapper imageMapper;
     VariantRepository variantRepository;
     VariantMapper variantMapper;
     private final BrandRepository brandRepository;
@@ -65,14 +64,15 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryRepository.findById(creationRequest.getCategoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        Promotion promotion = promotionRepository.findById(creationRequest.getCategoryId())
+        Supplier supplier = supplierRepository.findById(creationRequest.getSupplierId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        Supplier supplier = supplierRepository.findById(creationRequest.getCategoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        Variant variant = variantRepository.findById(creationRequest.getCategoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+//        List<Variant> variants = creationRequest.getVariants().stream()
+//                .map(variantMapper::toVariant).toList();
+//
+//        if (variants.stream().filter(Variant::getIsPrimary).count() != 1) {
+//            throw new AppException(ErrorCode.INVALID_VARIANTS);
+//        }
 
         Target target = null;
 
@@ -102,82 +102,17 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(brand);
         product.setCategory(category);
         product.setSupplier(supplier);
-        product.getVariants().add(variant);
-        product.setPromotion(promotion);
-
+        product.setVariants(null);
+        product.setSlug(SlugUtils.toSlug(product.getProductName()) );
         product = productRepository.save(product);
-        return productMapper.toResponse(product);
-    }
 
-    @Override
-    @Transactional(rollbackOn = IOException.class)
-    public ProductResponse addNewProductWithImage(ProductCreationRequest creationRequest, Set<MultipartFile> imageFiles) {
-        Product product = productMapper.toProduct(creationRequest);
+        List<Variant> variants = creationRequest.getVariants().stream().map(variantMapper::toVariant).toList();
+        Product finalProduct = product;
+        variants.forEach(variant -> variant.setProduct(finalProduct));
 
-        Category category = categoryRepository.findById(creationRequest.getCategoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        Promotion promotion = promotionRepository.findById(creationRequest.getCategoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        Supplier supplier = supplierRepository.findById(creationRequest.getCategoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        List<Variant> variants = creationRequest.getVariants().stream()
-                .map(variantMapper::toVariant).toList();
-
-        if (variants.stream().filter(Variant::getIsPrimary).count() != 1) {
-            throw new AppException(ErrorCode.INVALID_VARIANTS);
-        }
-
-        List<Image> images = new ArrayList<>();
-
-        imageFiles.forEach(imageFile -> {
-            try {
-                images.add(Image.builder()
-                        .alt(imageFile.getOriginalFilename())
-                        .imageData(imageFile.getBytes())
-                        .build());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        Target target = null;
-
-        if (targetRepository.findById(creationRequest.getTarget().getTargetName()).isPresent()) {
-            target = targetRepository.findById(creationRequest.getTarget().getTargetName()).get();
-        } else {
-            target = Target.builder()
-                    .targetName(creationRequest.getTarget().getTargetName())
-                    .description(creationRequest.getTarget().getDescription())
-                    .build();
-            target = targetRepository.save(target);
-        }
-        product.setTarget(target);
-
-        Brand brand = null;
-
-        if (brandRepository.findById(creationRequest.getBrand().getBrandName()).isPresent()) {
-            brand = brandRepository.findById(creationRequest.getBrand().getBrandName()).get();
-        } else {
-            brand = Brand.builder()
-                    .brandName(creationRequest.getBrand().getBrandName())
-                    .origin(creationRequest.getBrand().getBrandOrigin())
-                    .build();
-            brand = brandRepository.save(brand);
-        }
-
-        product.setBrand(brand);
-        product.setCategory(category);
-        product.setSupplier(supplier);
-        product.setPromotion(promotion);
+        variants = variantRepository.saveAll(variants);
 
         product.setVariants(variants);
-        updatePrimaryVariantPrice(product);
-
-        product.setImages(images);
-
         product = productRepository.save(product);
 
         return productMapper.toResponse(product);
@@ -192,18 +127,9 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryRepository.findById(updateRequest.getCategoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        Promotion promotion = promotionRepository.findById(updateRequest.getCategoryId())
+
+        Supplier supplier = supplierRepository.findById(updateRequest.getSupplierId())
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        Supplier supplier = supplierRepository.findById(updateRequest.getCategoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        List<Variant> variants = updateRequest.getVariants().stream()
-                .map(variantMapper::toVariant).toList();
-
-        if (variants.stream().filter(Variant::getIsPrimary).count() != 1) {
-            throw new AppException(ErrorCode.INVALID_VARIANTS);
-        }
 
         Target target = null;
 
@@ -233,10 +159,17 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(brand);
         product.setCategory(category);
         product.setSupplier(supplier);
-        product.setPromotion(promotion);
-        product.setVariants(variants);
-
+        product.setSlug(SlugUtils.toSlug(product.getProductName()) );
         product = productRepository.save(product);
+
+        List<String> variantIds = product.getVariants().stream().map(Variant::getId).toList();
+
+        List<Variant> variants = variantRepository.findAllById(variantIds);
+
+        Product finalProduct = product;
+        variants.forEach(variant -> variant.setProduct(finalProduct));
+        variantRepository.saveAll(variants);
+
         return productMapper.toResponse(product);
     }
 
@@ -294,15 +227,6 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponse> findAll(ProductSearchRequest request, Pageable pageable) {
         return productRepository.findAll(ProductSpecification.getSpecification(request), pageable)
                 .map(productMapper::toResponse);
-    }
-
-    @Override
-    public List<byte[]> findImageByProductId(String productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-        return product.getImages().stream()
-                .map(Image::getImageData)
-                .toList();
     }
 
     public void updatePrimaryVariantPrice(Product product) {

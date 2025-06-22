@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,5 +23,6 @@ public class ImageRequest {
     @Size(max = 255, message = "Alt text cannot exceed 255 characters")
     String alt;
 
+    @JsonProperty(value = "isPrimary")
     boolean isPrimary;
 }

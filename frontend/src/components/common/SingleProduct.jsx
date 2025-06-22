@@ -23,20 +23,16 @@ const SingleProduct = ({ product }) => {
 
   useEffect(() => {
     setIsCurrentlyFavourited(
-      favList.items &&
-        favList.items.some((favItem) => favItem.id === product.id)
+      favList && favList.find((favItem) => favItem.id === product.id)
+        ? true
+        : false
     );
   }, [favList, product.id]);
 
   const handleToggleFav = (e) => {
     e.stopPropagation();
-    if (!product || !product.name) {
-      console.error("Invalid item passed to handleToggleFav:", product);
-      return;
-    }
-
     if (isAuthenticated) {
-      toggleFavourite(product);
+      toggleFavourite(product.id);
       setIsCurrentlyFavourited(!isCurrentlyFavourited);
       if (!isCurrentlyFavourited) {
         api.success({

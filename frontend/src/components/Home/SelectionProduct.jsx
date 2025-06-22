@@ -8,13 +8,13 @@ import SingleProduct from "../common/SingleProduct";
 import { Link } from "react-router-dom";
 import queryString from "query-string";
 import { CategoryService } from "../../api-services/CategoryService";
+import { ProductService } from "../../api-services/ProductService";
 
 const SelectionProduct = ({ name }) => {
   const [categories, setCategories] = useState([]);
   const [active, setActive] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const searchMost = [
     "Dầu cá",
     "Omega3",
@@ -28,34 +28,24 @@ const SelectionProduct = ({ name }) => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const reponse = await CategoryService.getCatgories();
-        setCategories(reponse.result.content);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const reponse = await CategoryService.getCatgories();
+      setCategories(reponse.result.content);
+      setActive(reponse.result.content[1].categoryName);
+      setLoading(false);
     };
     fetchCategories();
   }, []);
 
   useEffect(() => {
     if (active) {
-      fetch(
-        `${BASE_URL}/api/products?${queryString.stringify({
+      const fetchProductByCategory = async () => {
+        const productResponse = await ProductService.searchProducts({
           categoryName: active,
-        })}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          setProducts(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching products:", error);
         });
+        setProducts(productResponse.result.content);
+      };
+      fetchProductByCategory();
     } else {
       setProducts([]);
     }
@@ -98,7 +88,7 @@ const SelectionProduct = ({ name }) => {
         <div className="col-span-4">
           {/* Nút danh mục */}
           <div className="flex gap-3 mb-6">
-            {categories.slice(0, 2).map((item) => (
+            {categories.slice(1, 3).map((item) => (
               <button
                 key={item.slug}
                 onClick={() => handleActive(item.categoryName)}

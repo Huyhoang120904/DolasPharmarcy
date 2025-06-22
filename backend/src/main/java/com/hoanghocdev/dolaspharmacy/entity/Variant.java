@@ -23,8 +23,8 @@ public class Variant {
 
     Boolean isPrimary;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToOne()
+    @JoinColumn(name = "product_id")
     Product product;
 
 }

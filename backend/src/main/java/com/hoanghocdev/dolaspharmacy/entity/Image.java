@@ -18,9 +18,6 @@ public class Image {
 
     String url;
 
-    @Lob
-    byte[] imageData;
-
     String alt;
     boolean isPrimary;
 }

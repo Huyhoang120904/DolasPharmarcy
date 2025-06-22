@@ -26,7 +26,6 @@ public class UserEntityController {
     UserEntityService userEntityService;
     OrderService orderService;
     AddressService addressService;
-    CartService cartService;
     FavouriteService favouriteService;
 
     @GetMapping
@@ -104,43 +103,8 @@ public class UserEntityController {
                 .build();
     }
 
-    //cart
-
-    //get cart item
-    @GetMapping("/me/cartItems")
-    public ApiResponse<CartResponse> findMyCart() {
-        return ApiResponse.<CartResponse>builder()
-                .result(cartService.findMyCart())
-                .build();
-    }
-
-    //add cart item
-    @PostMapping("/me/cartItems")
-    public ApiResponse<CartResponse> addOrderItemToCart(@RequestBody @Valid CartRequest request) {
-        return ApiResponse.<CartResponse>builder()
-                .result(cartService.addToCart(request))
-                .build();
-    }
-
-    //update cart item
-    @PutMapping("/me/cartItems/{cartItemId}")
-    public ApiResponse<CartResponse> updateCartItem(@PathVariable @NotBlank(message = "Cart item must not null") String cartItemId,
-                                                                   @Valid CartRequest request) {
-        return ApiResponse.<CartResponse>builder()
-                .result(cartService.updateQuantity(cartItemId, request))
-                .build();
-    }
-
-    //remove cart item
-    @DeleteMapping("/me/cartItems/{cartItemId}")
-    public ApiResponse<CartResponse> removeCartItem(@PathVariable @NotBlank(message = "Cart item must not null") String cartItemId) {
-        return ApiResponse.<CartResponse>builder()
-                .result(cartService.removeFromCart(cartItemId))
-                .build();
-    }
-
     //Checkout
-    @PostMapping("/me/cartItems/checkout")
+    @PostMapping("/me/checkout")
     public ApiResponse<OrderResponse> createOrderFromCart(@RequestBody @Valid OrderCreationRequest request) {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.createOrder(request))
