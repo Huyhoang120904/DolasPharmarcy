@@ -23,24 +23,9 @@ function OrderDetail({ confirm = false }) {
   const navigate = useNavigate();
   const [order, setOrder] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
-    // fetch(`${BASE_URL}/api/orders/${orderId}`)
-    //   .then((res) => {
-    //     if (!res.ok) throw new Error("Failed to fetch order");
-    //     return res.json();
-    //   })
-    //   .then((data) => {
-    //     setOrder(data);
-    //     setLoading(false);
-    //   })
-    //   .catch((err) => {
-    //     setError(err.message);
-    //     setLoading(false);
-    //   });
-
     const fetchOrder = async () => {
       const orderResponse = await OrderService.getOrderById(orderId);
       console.log(orderResponse.result.address);
@@ -109,8 +94,6 @@ function OrderDetail({ confirm = false }) {
         return status;
     }
   };
-
-  console.log(order);
 
   const columns = [
     {
@@ -215,30 +198,6 @@ function OrderDetail({ confirm = false }) {
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto p-4">
-        <Alert
-          message="Lỗi"
-          description={`Không thể tải thông tin đơn hàng: ${error}`}
-          type="error"
-          showIcon
-        />
-      </div>
-    );
-  }
-
-  const total =
-    order?.orderItems.reduce((acc, item) => {
-      const hasDiscount = item.variant.product?.promotion ? true : false;
-      const price = hasDiscount
-        ? item.variant?.price *
-          (1 - item.variant.product.promotion.discountAmount / 100)
-        : item.variant?.price;
-
-      return (acc += item.quantity * price);
-    }, 0) || 0;
 
   if (confirm) {
     return (

@@ -1,0 +1,406 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OrderMapperImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.hoanghocdev.dolaspharmacy.mapper</a>
+</div>
+
+<h1>Coverage Summary for Class: OrderMapperImpl (com.hoanghocdev.dolaspharmacy.mapper)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OrderMapperImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (1/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.7%
+  </span>
+  <span class="absValue">
+    (1/140)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.hoanghocdev.dolaspharmacy.mapper;
+&nbsp;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.AddressRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.OrderCreationRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.OrderItemRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.OrderUpdateRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.ImageResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.OrderItemResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.OrderResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.ProductInfoResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.PromotionResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.VariantResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Address;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Image;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Order;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.OrderItem;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Product;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Promotion;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Variant;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.enums.OrderStatus;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import javax.annotation.processing.Generated;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;
+&nbsp;@Generated(
+&nbsp;    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+&nbsp;    date = &quot;2025-06-29T14:07:26+0700&quot;,
+&nbsp;    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 21.0.7 (Amazon.com Inc.)&quot;
+&nbsp;)
+&nbsp;@Component
+<b class="fc">&nbsp;public class OrderMapperImpl implements OrderMapper {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private UserDetailMapper userDetailMapper;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Order toOrder(OrderCreationRequest request) {
+<b class="nc">&nbsp;        if ( request == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Order.OrderBuilder order = Order.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        order.fullName( request.getFullName() );</b>
+<b class="nc">&nbsp;        order.receiveDate( request.getReceiveDate() );</b>
+<b class="nc">&nbsp;        order.receiveTime( request.getReceiveTime() );</b>
+<b class="nc">&nbsp;        order.paymentMethod( request.getPaymentMethod() );</b>
+<b class="nc">&nbsp;        order.address( addressRequestToAddress( request.getAddress() ) );</b>
+<b class="nc">&nbsp;        order.orderItems( orderItemRequestListToOrderItemList( request.getOrderItems() ) );</b>
+&nbsp;
+<b class="nc">&nbsp;        return order.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public OrderResponse toResponse(Order order) {
+<b class="nc">&nbsp;        if ( order == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        OrderResponse.OrderResponseBuilder orderResponse = OrderResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        orderResponse.id( order.getId() );</b>
+<b class="nc">&nbsp;        orderResponse.fullName( order.getFullName() );</b>
+<b class="nc">&nbsp;        orderResponse.receiveDate( order.getReceiveDate() );</b>
+<b class="nc">&nbsp;        orderResponse.receiveTime( order.getReceiveTime() );</b>
+<b class="nc">&nbsp;        orderResponse.userDetail( userDetailMapper.toResponse( order.getUserDetail() ) );</b>
+<b class="nc">&nbsp;        orderResponse.address( addressToAddressRequest( order.getAddress() ) );</b>
+<b class="nc">&nbsp;        orderResponse.paymentMethod( order.getPaymentMethod() );</b>
+<b class="nc">&nbsp;        orderResponse.orderItems( orderItemListToOrderItemResponseList( order.getOrderItems() ) );</b>
+<b class="nc">&nbsp;        orderResponse.total( order.getTotal() );</b>
+<b class="nc">&nbsp;        orderResponse.tax( order.getTax() );</b>
+<b class="nc">&nbsp;        orderResponse.orderStatus( order.getOrderStatus() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return orderResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateOrder(OrderUpdateRequest request, Order order) {
+<b class="nc">&nbsp;        if ( request == null ) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        order.setFullName( request.getFullName() );</b>
+<b class="nc">&nbsp;        order.setReceiveDate( request.getReceiveDate() );</b>
+<b class="nc">&nbsp;        order.setReceiveTime( request.getReceiveTime() );</b>
+<b class="nc">&nbsp;        if ( request.getOrderStatus() != null ) {</b>
+<b class="nc">&nbsp;            order.setOrderStatus( Enum.valueOf( OrderStatus.class, request.getOrderStatus() ) );</b>
+&nbsp;        }
+&nbsp;        else {
+<b class="nc">&nbsp;            order.setOrderStatus( null );</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if ( request.getAddress() != null ) {</b>
+<b class="nc">&nbsp;            if ( order.getAddress() == null ) {</b>
+<b class="nc">&nbsp;                order.setAddress( Address.builder().build() );</b>
+&nbsp;            }
+<b class="nc">&nbsp;            addressRequestToAddress1( request.getAddress(), order.getAddress() );</b>
+&nbsp;        }
+&nbsp;        else {
+<b class="nc">&nbsp;            order.setAddress( null );</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Address addressRequestToAddress(AddressRequest addressRequest) {
+<b class="nc">&nbsp;        if ( addressRequest == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Address.AddressBuilder address = Address.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        address.address( addressRequest.getAddress() );</b>
+<b class="nc">&nbsp;        address.district( addressRequest.getDistrict() );</b>
+<b class="nc">&nbsp;        address.ward( addressRequest.getWard() );</b>
+<b class="nc">&nbsp;        address.province( addressRequest.getProvince() );</b>
+<b class="nc">&nbsp;        address.phoneNumber( addressRequest.getPhoneNumber() );</b>
+<b class="nc">&nbsp;        address.name( addressRequest.getName() );</b>
+<b class="nc">&nbsp;        address.zipcode( addressRequest.getZipcode() );</b>
+<b class="nc">&nbsp;        address.primary( addressRequest.isPrimary() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return address.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected OrderItem orderItemRequestToOrderItem(OrderItemRequest orderItemRequest) {
+<b class="nc">&nbsp;        if ( orderItemRequest == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        OrderItem.OrderItemBuilder orderItem = OrderItem.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        orderItem.quantity( orderItemRequest.getQuantity() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return orderItem.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected List&lt;OrderItem&gt; orderItemRequestListToOrderItemList(List&lt;OrderItemRequest&gt; list) {
+<b class="nc">&nbsp;        if ( list == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        List&lt;OrderItem&gt; list1 = new ArrayList&lt;OrderItem&gt;( list.size() );</b>
+<b class="nc">&nbsp;        for ( OrderItemRequest orderItemRequest : list ) {</b>
+<b class="nc">&nbsp;            list1.add( orderItemRequestToOrderItem( orderItemRequest ) );</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return list1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected AddressRequest addressToAddressRequest(Address address) {
+<b class="nc">&nbsp;        if ( address == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        AddressRequest.AddressRequestBuilder addressRequest = AddressRequest.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        addressRequest.name( address.getName() );</b>
+<b class="nc">&nbsp;        addressRequest.zipcode( address.getZipcode() );</b>
+<b class="nc">&nbsp;        addressRequest.address( address.getAddress() );</b>
+<b class="nc">&nbsp;        addressRequest.ward( address.getWard() );</b>
+<b class="nc">&nbsp;        addressRequest.district( address.getDistrict() );</b>
+<b class="nc">&nbsp;        addressRequest.province( address.getProvince() );</b>
+<b class="nc">&nbsp;        addressRequest.phoneNumber( address.getPhoneNumber() );</b>
+<b class="nc">&nbsp;        if ( address.getPrimary() != null ) {</b>
+<b class="nc">&nbsp;            addressRequest.primary( address.getPrimary() );</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return addressRequest.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected PromotionResponse promotionToPromotionResponse(Promotion promotion) {
+<b class="nc">&nbsp;        if ( promotion == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        PromotionResponse.PromotionResponseBuilder promotionResponse = PromotionResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        promotionResponse.id( promotion.getId() );</b>
+<b class="nc">&nbsp;        promotionResponse.promotionName( promotion.getPromotionName() );</b>
+<b class="nc">&nbsp;        promotionResponse.code( promotion.getCode() );</b>
+<b class="nc">&nbsp;        promotionResponse.startDate( promotion.getStartDate() );</b>
+<b class="nc">&nbsp;        promotionResponse.endDate( promotion.getEndDate() );</b>
+<b class="nc">&nbsp;        promotionResponse.discountAmount( promotion.getDiscountAmount() );</b>
+<b class="nc">&nbsp;        promotionResponse.promotionType( promotion.getPromotionType() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return promotionResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ImageResponse imageToImageResponse(Image image) {
+<b class="nc">&nbsp;        if ( image == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ImageResponse.ImageResponseBuilder imageResponse = ImageResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        imageResponse.id( image.getId() );</b>
+<b class="nc">&nbsp;        imageResponse.url( image.getUrl() );</b>
+<b class="nc">&nbsp;        imageResponse.alt( image.getAlt() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return imageResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected List&lt;ImageResponse&gt; imageListToImageResponseList(List&lt;Image&gt; list) {
+<b class="nc">&nbsp;        if ( list == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        List&lt;ImageResponse&gt; list1 = new ArrayList&lt;ImageResponse&gt;( list.size() );</b>
+<b class="nc">&nbsp;        for ( Image image : list ) {</b>
+<b class="nc">&nbsp;            list1.add( imageToImageResponse( image ) );</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return list1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ProductInfoResponse productToProductInfoResponse(Product product) {
+<b class="nc">&nbsp;        if ( product == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ProductInfoResponse.ProductInfoResponseBuilder productInfoResponse = ProductInfoResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        productInfoResponse.id( product.getId() );</b>
+<b class="nc">&nbsp;        productInfoResponse.productName( product.getProductName() );</b>
+<b class="nc">&nbsp;        productInfoResponse.promotion( promotionToPromotionResponse( product.getPromotion() ) );</b>
+<b class="nc">&nbsp;        productInfoResponse.images( imageListToImageResponseList( product.getImages() ) );</b>
+&nbsp;
+<b class="nc">&nbsp;        return productInfoResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected VariantResponse variantToVariantResponse(Variant variant) {
+<b class="nc">&nbsp;        if ( variant == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        VariantResponse.VariantResponseBuilder variantResponse = VariantResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        variantResponse.id( variant.getId() );</b>
+<b class="nc">&nbsp;        variantResponse.name( variant.getName() );</b>
+<b class="nc">&nbsp;        variantResponse.price( variant.getPrice() );</b>
+<b class="nc">&nbsp;        variantResponse.stock( variant.getStock() );</b>
+<b class="nc">&nbsp;        variantResponse.unit( variant.getUnit() );</b>
+<b class="nc">&nbsp;        variantResponse.isPrimary( variant.getIsPrimary() );</b>
+<b class="nc">&nbsp;        variantResponse.product( productToProductInfoResponse( variant.getProduct() ) );</b>
+&nbsp;
+<b class="nc">&nbsp;        return variantResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected OrderItemResponse orderItemToOrderItemResponse(OrderItem orderItem) {
+<b class="nc">&nbsp;        if ( orderItem == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        OrderItemResponse.OrderItemResponseBuilder orderItemResponse = OrderItemResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        orderItemResponse.id( orderItem.getId() );</b>
+<b class="nc">&nbsp;        orderItemResponse.quantity( orderItem.getQuantity() );</b>
+<b class="nc">&nbsp;        orderItemResponse.finalPrice( orderItem.getFinalPrice() );</b>
+<b class="nc">&nbsp;        orderItemResponse.variant( variantToVariantResponse( orderItem.getVariant() ) );</b>
+&nbsp;
+<b class="nc">&nbsp;        return orderItemResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected List&lt;OrderItemResponse&gt; orderItemListToOrderItemResponseList(List&lt;OrderItem&gt; list) {
+<b class="nc">&nbsp;        if ( list == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        List&lt;OrderItemResponse&gt; list1 = new ArrayList&lt;OrderItemResponse&gt;( list.size() );</b>
+<b class="nc">&nbsp;        for ( OrderItem orderItem : list ) {</b>
+<b class="nc">&nbsp;            list1.add( orderItemToOrderItemResponse( orderItem ) );</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return list1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addressRequestToAddress1(AddressRequest addressRequest, Address mappingTarget) {
+<b class="nc">&nbsp;        if ( addressRequest == null ) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        mappingTarget.setAddress( addressRequest.getAddress() );</b>
+<b class="nc">&nbsp;        mappingTarget.setDistrict( addressRequest.getDistrict() );</b>
+<b class="nc">&nbsp;        mappingTarget.setWard( addressRequest.getWard() );</b>
+<b class="nc">&nbsp;        mappingTarget.setProvince( addressRequest.getProvince() );</b>
+<b class="nc">&nbsp;        mappingTarget.setPhoneNumber( addressRequest.getPhoneNumber() );</b>
+<b class="nc">&nbsp;        mappingTarget.setName( addressRequest.getName() );</b>
+<b class="nc">&nbsp;        mappingTarget.setZipcode( addressRequest.getZipcode() );</b>
+<b class="nc">&nbsp;        mappingTarget.setPrimary( addressRequest.isPrimary() );</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-29 14:10</div>
+</div>
+</body>
+</html>

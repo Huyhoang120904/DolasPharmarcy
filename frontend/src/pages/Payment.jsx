@@ -21,7 +21,6 @@ import {
   BankOutlined,
   DollarOutlined,
 } from "@ant-design/icons";
-import emailjs from "@emailjs/browser";
 
 import imgLogo from "../img/Header/Logo.png";
 import { useCart } from "../contexts/CartContext";
@@ -30,6 +29,7 @@ import { Await, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import PaymentProductsList from "../components/product/PaymentProductList";
 import { UserService } from "../api-services/UserService";
+import { PaymentService } from "../api-services/PaymmentService";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -287,11 +287,31 @@ function Payment() {
 
     const response = await UserService.checkout(request);
 
-    if (response && response.result.id) {
-      navigate(`/confirmation/${response.result.id}`);
+    if (response.code == 1000) {
       emptyCart();
+    } else {
       setLoading(false);
+      api.error({
+        message: "Lỗi xảy ra",
+        description: "Không thể tạo đơn hàng. Vui lòng liên hệ với hỗ trợ.",
+        duration: 2,
+      });
+      return;
     }
+
+    const orderId = response.result.id;
+
+    if (response.result.paymentMethod === "E_BANKING") {
+      const createPaymentResponse = await PaymentService.checkout(orderId);
+
+      if (createPaymentResponse.result.status === "00") {
+        if (request.paymentMethod === "E_BANKING") {
+          window.location.href = createPaymentResponse.result.url;
+        }
+      }
+    }
+
+    setLoading(false);
   }
 
   function handleFailed() {

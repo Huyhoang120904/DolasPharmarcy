@@ -1,10 +1,13 @@
 package com.hoanghocdev.dolaspharmacy.controller;
 
+import com.cloudinary.Api;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ApiResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.OrderResponse;
 import com.hoanghocdev.dolaspharmacy.entity.Order_;
+import com.hoanghocdev.dolaspharmacy.mapper.OrderMapper;
 import com.hoanghocdev.dolaspharmacy.service.OrderService;
+import com.hoanghocdev.dolaspharmacy.service.impl.EmailServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/orders")
 @FieldDefaults(makeFinal = true)
@@ -24,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 public class OrderController {
     OrderService orderService;
+    EmailServiceImpl emailService;
+    private final OrderMapper orderMapper;
 
     @GetMapping
     public ApiResponse<Page<OrderResponse>> getOrderByPage(@PageableDefault(page = 0, size = 16,
@@ -54,6 +61,14 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     public ApiResponse<OrderResponse> updateOrder(@PathVariable String orderId) {
         orderService.deleteOrder(orderId);
+        return ApiResponse.<OrderResponse>builder()
+                .build();
+    }
+
+    @PostMapping("/email/{orderId}")
+    public ApiResponse orderConfirmation(@PathVariable String orderId) throws IOException {
+        OrderResponse response = orderService.findOrderById(orderId);
+        emailService.sendOrderConfirmationMail(orderMapper.toOrder(response));
         return ApiResponse.<OrderResponse>builder()
                 .build();
     }

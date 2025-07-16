@@ -2,7 +2,9 @@ package com.hoanghocdev.dolaspharmacy.service.impl;
 
 import com.hoanghocdev.dolaspharmacy.dto.request.PromotionRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.PromotionResponse;
+import com.hoanghocdev.dolaspharmacy.entity.Order;
 import com.hoanghocdev.dolaspharmacy.entity.Promotion;
+import com.hoanghocdev.dolaspharmacy.entity.enums.PromotionType;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.mapper.PromotionMapper;
@@ -16,7 +18,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +29,6 @@ import java.util.stream.Collectors;
 public class PromotionServiceImpl implements PromotionService {
     PromotionRepository promotionRepository;
     PromotionMapper promotionMapper;
-
 
     @Override
     public void delete(String id) {
@@ -64,5 +67,10 @@ public class PromotionServiceImpl implements PromotionService {
         Promotion promotion = promotionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         return promotionMapper.toPromotionResponse(promotion);
+    }
+
+    @Override
+    public Optional<Promotion> getHighestAvailablePromotionForOrderByPromotionType(PromotionType promotionType) {
+        return promotionRepository.findActivePromotionByType(promotionType, LocalDate.now());
     }
 }

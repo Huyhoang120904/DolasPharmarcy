@@ -1,6 +1,7 @@
 package com.hoanghocdev.dolaspharmacy.service.impl;
 
 import com.hoanghocdev.dolaspharmacy.dto.request.UserCreationRequest;
+import com.hoanghocdev.dolaspharmacy.dto.request.UserEntitySearchRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.UserUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.UserResponse;
 import com.hoanghocdev.dolaspharmacy.entity.*;
@@ -11,6 +12,7 @@ import com.hoanghocdev.dolaspharmacy.mapper.UserDetailMapper;
 import com.hoanghocdev.dolaspharmacy.mapper.UserEntityMapper;
 import com.hoanghocdev.dolaspharmacy.repository.*;
 import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
+import com.hoanghocdev.dolaspharmacy.service.specifications.UserEntitySpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -45,8 +47,7 @@ public class UserEntityServiceImpl implements UserEntityService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<UserResponse> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<UserResponse> findAll(Pageable pageable) {
         Page<UserEntity> pageUsers = userEntityRepository.findAll(pageable);
         return pageUsers.map(userEntityMapper::toUserResponse);
     }
@@ -124,5 +125,11 @@ public class UserEntityServiceImpl implements UserEntityService {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
         }
         userEntityRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<UserResponse> search(UserEntitySearchRequest request, Pageable pageable) {
+        return userEntityRepository.findAll(UserEntitySpecification.getSpecification(request), pageable)
+                .map(userEntityMapper::toUserResponse);
     }
 }

@@ -1,0 +1,106 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PromotionRequest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.hoanghocdev.dolaspharmacy.dto.request</a>
+</div>
+
+<h1>Coverage Summary for Class: PromotionRequest (com.hoanghocdev.dolaspharmacy.dto.request)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">PromotionRequest</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.hoanghocdev.dolaspharmacy.dto.request;
+&nbsp;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.enums.PromotionType;
+&nbsp;import com.hoanghocdev.dolaspharmacy.validation.ValidDateRange;
+&nbsp;import jakarta.validation.constraints.*;
+&nbsp;import lombok.*;
+&nbsp;import lombok.experimental.FieldDefaults;
+&nbsp;
+&nbsp;import java.time.LocalDate;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Builder
+&nbsp;@NoArgsConstructor
+&nbsp;@AllArgsConstructor
+&nbsp;@FieldDefaults(level = AccessLevel.PRIVATE)
+&nbsp;@ValidDateRange(message = &quot;End date must be after start date&quot;)
+&nbsp;public class PromotionRequest {
+&nbsp;    String promotionName;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Promotion code is required&quot;)
+&nbsp;    @Size(min = 3, max = 20, message = &quot;Promotion code must be between 3 and 20 characters&quot;)
+&nbsp;    String code;
+&nbsp;
+&nbsp;    @NotNull(message = &quot;Start date is required&quot;)
+&nbsp;    @FutureOrPresent(message = &quot;Start date cannot be in the past&quot;)
+&nbsp;    LocalDate startDate;
+&nbsp;
+&nbsp;    @NotNull(message = &quot;End date is required&quot;)
+&nbsp;    @Future(message = &quot;End date must be in the future&quot;)
+&nbsp;    LocalDate endDate;
+&nbsp;
+&nbsp;    @Positive(message = &quot;Discount amount must be positive&quot;)
+&nbsp;    @DecimalMax(value = &quot;1&quot;, message = &quot;Discount amount cannot exceed 100%&quot;)
+&nbsp;    double discountAmount;
+&nbsp;
+&nbsp;    @NotNull(message = &quot;Promotion type is required&quot;)
+&nbsp;    PromotionType promotionType;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-29 14:10</div>
+</div>
+</body>
+</html>

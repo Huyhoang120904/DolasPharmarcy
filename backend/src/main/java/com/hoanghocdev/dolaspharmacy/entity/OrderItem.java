@@ -28,7 +28,14 @@ public class OrderItem {
     Order order;
 
     public OrderItem calculateFinalPrice() {
-        this.finalPrice = this.quantity * this.variant.getPrice();
+        if(this.variant.getProduct().getPromotion() != null &&
+                this.variant.getProduct().getPromotion().getDiscountAmount() > 0) {
+            this.finalPrice = this.quantity
+                    * this.variant.getPrice()
+                    * (1 - this.variant.getProduct().getPromotion().getDiscountAmount()/100);
+        } else {
+            this.finalPrice = this.quantity * this.variant.getPrice();
+        }
         return this;
     }
 

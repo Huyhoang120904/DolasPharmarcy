@@ -25,4 +25,16 @@ export const OrderService = {
       console.log(error);
     }
   },
+  getOrderByPage: async () => {
+    try {
+      const response = await request.get(`/orders`, {
+        headers: {
+          Authorization: `Bearer ${getMyToken()}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

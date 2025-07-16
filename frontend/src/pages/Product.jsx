@@ -1,7 +1,7 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { notification } from "antd";
 import queryString from "query-string";
-import { data, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useFav } from "../contexts/FavouriteContext";
 import { useCart } from "../contexts/CartContext";
 
@@ -155,9 +155,11 @@ const Product = ({ promotion = false }) => {
   function handleAddToCart(item) {
     addToCart(item);
 
+    console.log(item);
+
     api.success({
       message: "Thêm giỏ hàng thành công",
-      description: `${item.name} được thêm vào giỏ hàng thành công!`,
+      description: `${item.product.productName} được thêm vào giỏ hàng thành công!`,
       duration: 1.5,
     });
   }

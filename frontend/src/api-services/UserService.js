@@ -1,7 +1,7 @@
 import request, { getMyToken } from "../utils/axiosConfig";
 
 export const UserService = {
-  //person info method
+  //personal info method
   getMyInfo: async () => {
     try {
       const response = await request.get("/users/me", {
@@ -124,6 +124,7 @@ export const UserService = {
       console.error("Error adding address:", error);
     }
   },
+
   deleteAddress: async (addressId) => {
     try {
       // Send the updated user info to the API

@@ -1,0 +1,162 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ErrorCode</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.hoanghocdev.dolaspharmacy.exception</a>
+</div>
+
+<h1>Coverage Summary for Class: ErrorCode (com.hoanghocdev.dolaspharmacy.exception)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ErrorCode</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.hoanghocdev.dolaspharmacy.exception;
+&nbsp;
+&nbsp;import lombok.Getter;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;
+<b class="nc">&nbsp;@Getter</b>
+&nbsp;public enum ErrorCode {
+&nbsp;    // SYS: System/Unknown
+<b class="nc">&nbsp;    UNCATEGORIZED_EXCEPTION(9999, &quot;An unexpected error occurred. Please contact support.&quot;, HttpStatus.INTERNAL_SERVER_ERROR),</b>
+&nbsp;
+&nbsp;    // VAL: Validation
+<b class="nc">&nbsp;    INVALID_KEY(1001, &quot;Invalid key provided.&quot;, HttpStatus.BAD_REQUEST),</b>
+&nbsp;
+<b class="nc">&nbsp;    USERNAME_INVALID(1002, &quot;Username must be at least {min} characters.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    INVALID_PASSWORD(1003, &quot;Password must be at least {min} characters.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    INVALID_EMAIL(1004, &quot;The email address provided is invalid.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    INVALID_DOB(1005, &quot;Your age must be at least {min}.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    MALFORMED_REQUEST(1006, &quot;The request format is invalid.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    MISSING_REQUIRED_FIELD(1007, &quot;A required field is missing: {field}.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    INVALID_VARIANTS(1008, &quot;Invalid variants.&quot;, HttpStatus.BAD_REQUEST),</b>
+<b class="nc">&nbsp;    PRIMARY_VARIANT_CANNOT_BE_DELETED(1009, &quot;Variant is a primary variant&quot;, HttpStatus.BAD_REQUEST),</b>
+&nbsp;
+&nbsp;
+&nbsp;    // AUT: Authentication &amp; Authorization
+<b class="nc">&nbsp;    UNAUTHENTICATED(1101, &quot;You are not authenticated!.&quot;, HttpStatus.UNAUTHORIZED),</b>
+<b class="nc">&nbsp;    UNAUTHORIZED(1102, &quot;You do not have permission to access this resource.&quot;, HttpStatus.FORBIDDEN),</b>
+<b class="nc">&nbsp;    TOKEN_DECODE_FAILED(1103, &quot;Failed to decode the provided token.&quot;, HttpStatus.UNAUTHORIZED),</b>
+<b class="nc">&nbsp;    TOKEN_GENERATE_FAILED(1104, &quot;Could not generate authentication token.&quot;, HttpStatus.INTERNAL_SERVER_ERROR),</b>
+<b class="nc">&nbsp;    TOKEN_EXPIRED(1105, &quot;Authentication token has expired.&quot;, HttpStatus.UNAUTHORIZED),</b>
+&nbsp;
+&nbsp;    // USR: User
+<b class="nc">&nbsp;    USER_EXISTED(1201, &quot;User already exists.&quot;, HttpStatus.CONFLICT),</b>
+<b class="nc">&nbsp;    USER_NOT_EXISTED(1202, &quot;User does not exist.&quot;, HttpStatus.NOT_FOUND),</b>
+<b class="nc">&nbsp;    USER_DISABLED(1203, &quot;User account is disabled.&quot;, HttpStatus.FORBIDDEN),</b>
+<b class="nc">&nbsp;    INVALID_CREDENTIALS(1204, &quot;Invalid username or password.&quot;, HttpStatus.UNAUTHORIZED),</b>
+&nbsp;
+&nbsp;    // DAT: Data/Resource
+<b class="nc">&nbsp;    DATA_NOT_FOUND(1301, &quot;The requested data does not exist.&quot;, HttpStatus.NOT_FOUND),</b>
+<b class="nc">&nbsp;    DUPLICATE_ENTRY(1302, &quot;A duplicate entry exists.&quot;, HttpStatus.CONFLICT),</b>
+<b class="nc">&nbsp;    PERMISSION_EXISTED(1303, &quot;Permission already exists.&quot;, HttpStatus.CONFLICT),</b>
+<b class="nc">&nbsp;    ROLE_EXISTED(1304, &quot;Role already exists.&quot;, HttpStatus.CONFLICT),</b>
+&nbsp;
+&nbsp;    // BUS: Business logic/domainspecific
+<b class="nc">&nbsp;    STOCK_UNAVAILABLE(1401, &quot;The requested item is out of stock.&quot;, HttpStatus.CONFLICT),</b>
+<b class="nc">&nbsp;    ORDER_ALREADY_PROCESSED(1402, &quot;This order has already been processed.&quot;, HttpStatus.CONFLICT),</b>
+&nbsp;
+&nbsp;    ;
+&nbsp;
+&nbsp;    private final int code;
+&nbsp;    private final String message;
+&nbsp;    private final HttpStatus httpStatus;
+&nbsp;
+<b class="nc">&nbsp;    ErrorCode(int code, String message, HttpStatus httpStatus) {</b>
+<b class="nc">&nbsp;        this.code = code;</b>
+<b class="nc">&nbsp;        this.message = message;</b>
+<b class="nc">&nbsp;        this.httpStatus = httpStatus;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-29 14:10</div>
+</div>
+</body>
+</html>

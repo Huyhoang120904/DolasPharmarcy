@@ -14,5 +14,7 @@ public interface OrderMapper {
     Order toOrder(OrderCreationRequest request);
     OrderResponse toResponse(Order order);
 
+    Order toOrder(OrderResponse request);
+
     void updateOrder(OrderUpdateRequest request,@MappingTarget Order order);
 }

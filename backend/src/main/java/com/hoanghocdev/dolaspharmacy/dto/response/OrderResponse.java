@@ -13,6 +13,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -24,6 +25,7 @@ public class OrderResponse {
     String id;
     String fullName;
     LocalDate receiveDate;
+    LocalDateTime createAt;
     String receiveTime;
     UserDetailResponse userDetail;
     AddressRequest address;

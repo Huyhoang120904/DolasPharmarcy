@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OrderStatus {
     PENDING("P", "Chờ xử lý"),
+    PAID("P", "Đã thanh toán"),
+    UNPAID("UD", "Chưa được thanh toán"),
     SHIPPING("S", "Đang giao hàng"),
     COMPLETED("CP", "Đã hoàn tất"),
     CANCELLED("CC", "Đã huỷ"),

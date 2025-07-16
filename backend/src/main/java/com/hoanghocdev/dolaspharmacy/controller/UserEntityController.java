@@ -4,6 +4,8 @@ import com.hoanghocdev.dolaspharmacy.dto.request.*;
 import com.hoanghocdev.dolaspharmacy.dto.response.*;
 import com.hoanghocdev.dolaspharmacy.entity.Address;
 import com.hoanghocdev.dolaspharmacy.entity.Order;
+import com.hoanghocdev.dolaspharmacy.entity.Order_;
+import com.hoanghocdev.dolaspharmacy.entity.UserEntity_;
 import com.hoanghocdev.dolaspharmacy.service.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,10 +33,12 @@ public class UserEntityController {
     FavouriteService favouriteService;
 
     @GetMapping
-    public ApiResponse<Page<UserResponse>> findAll(@RequestParam(defaultValue = "0") int page,
-                                                   @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<Page<UserResponse>> findAll(@PageableDefault(page = 0, size = 16,
+                                                        sort = UserEntity_.USERNAME,
+                                                        direction = Sort.Direction.ASC)
+                                                       Pageable pageable) {
         return ApiResponse.<Page<UserResponse>>builder()
-                .result(userEntityService.findAll(page, size))
+                .result(userEntityService.findAll(pageable))
                 .build();
     }
 
@@ -40,6 +46,16 @@ public class UserEntityController {
     public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userEntityService.createUser(request))
+                .build();
+    }
+
+    @PostMapping("/search")
+    public ApiResponse<Page<UserResponse>> createUser(@RequestBody @Valid UserEntitySearchRequest request, @PageableDefault(page = 0, size = 16,
+            sort = UserEntity_.USERNAME,
+            direction = Sort.Direction.ASC)
+    Pageable pageable) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .result(userEntityService.search(request, pageable))
                 .build();
     }
 

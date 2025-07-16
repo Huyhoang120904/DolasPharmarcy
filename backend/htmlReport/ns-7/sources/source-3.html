@@ -1,0 +1,225 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CategoryMapperImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.hoanghocdev.dolaspharmacy.mapper</a>
+</div>
+
+<h1>Coverage Summary for Class: CategoryMapperImpl (com.hoanghocdev.dolaspharmacy.mapper)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CategoryMapperImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (1/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.2%
+  </span>
+  <span class="absValue">
+    (1/45)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.hoanghocdev.dolaspharmacy.mapper;
+&nbsp;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.CategoryRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.ImageRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.CategoryResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Category;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.Image;
+&nbsp;import javax.annotation.processing.Generated;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;
+&nbsp;@Generated(
+&nbsp;    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+&nbsp;    date = &quot;2025-06-29T14:07:26+0700&quot;,
+&nbsp;    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 21.0.7 (Amazon.com Inc.)&quot;
+&nbsp;)
+&nbsp;@Component
+<b class="fc">&nbsp;public class CategoryMapperImpl implements CategoryMapper {</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Category toCatergory(CategoryRequest request) {
+<b class="nc">&nbsp;        if ( request == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Category.CategoryBuilder category = Category.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        category.categoryName( request.getCategoryName() );</b>
+<b class="nc">&nbsp;        category.description( request.getDescription() );</b>
+<b class="nc">&nbsp;        category.slug( request.getSlug() );</b>
+<b class="nc">&nbsp;        category.image( imageRequestToImage( request.getImage() ) );</b>
+&nbsp;
+<b class="nc">&nbsp;        return category.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public CategoryResponse toCatergoryResponse(Category category) {
+<b class="nc">&nbsp;        if ( category == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        CategoryResponse.CategoryResponseBuilder categoryResponse = CategoryResponse.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        categoryResponse.id( category.getId() );</b>
+<b class="nc">&nbsp;        categoryResponse.categoryName( category.getCategoryName() );</b>
+<b class="nc">&nbsp;        categoryResponse.description( category.getDescription() );</b>
+<b class="nc">&nbsp;        categoryResponse.slug( category.getSlug() );</b>
+<b class="nc">&nbsp;        categoryResponse.image( imageToImageRequest( category.getImage() ) );</b>
+<b class="nc">&nbsp;        categoryResponse.parentCategory( category.getParentCategory() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return categoryResponse.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void updateCatergory(CategoryRequest request, Category category) {
+<b class="nc">&nbsp;        if ( request == null ) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        category.setCategoryName( request.getCategoryName() );</b>
+<b class="nc">&nbsp;        category.setDescription( request.getDescription() );</b>
+<b class="nc">&nbsp;        category.setSlug( request.getSlug() );</b>
+<b class="nc">&nbsp;        category.setActive( request.isActive() );</b>
+<b class="nc">&nbsp;        if ( request.getImage() != null ) {</b>
+<b class="nc">&nbsp;            if ( category.getImage() == null ) {</b>
+<b class="nc">&nbsp;                category.setImage( Image.builder().build() );</b>
+&nbsp;            }
+<b class="nc">&nbsp;            imageRequestToImage1( request.getImage(), category.getImage() );</b>
+&nbsp;        }
+&nbsp;        else {
+<b class="nc">&nbsp;            category.setImage( null );</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Image imageRequestToImage(ImageRequest imageRequest) {
+<b class="nc">&nbsp;        if ( imageRequest == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Image.ImageBuilder image = Image.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        image.url( imageRequest.getUrl() );</b>
+<b class="nc">&nbsp;        image.alt( imageRequest.getAlt() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return image.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ImageRequest imageToImageRequest(Image image) {
+<b class="nc">&nbsp;        if ( image == null ) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ImageRequest.ImageRequestBuilder imageRequest = ImageRequest.builder();</b>
+&nbsp;
+<b class="nc">&nbsp;        imageRequest.url( image.getUrl() );</b>
+<b class="nc">&nbsp;        imageRequest.alt( image.getAlt() );</b>
+&nbsp;
+<b class="nc">&nbsp;        return imageRequest.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void imageRequestToImage1(ImageRequest imageRequest, Image mappingTarget) {
+<b class="nc">&nbsp;        if ( imageRequest == null ) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        mappingTarget.setUrl( imageRequest.getUrl() );</b>
+<b class="nc">&nbsp;        mappingTarget.setAlt( imageRequest.getAlt() );</b>
+<b class="nc">&nbsp;        mappingTarget.setPrimary( imageRequest.isPrimary() );</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-29 14:10</div>
+</div>
+</body>
+</html>

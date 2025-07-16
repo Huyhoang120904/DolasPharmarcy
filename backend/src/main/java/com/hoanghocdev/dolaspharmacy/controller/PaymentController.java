@@ -40,13 +40,13 @@ public class PaymentController {
     @GetMapping("/recall")
     private ApiResponse<PaymentResponse> pay(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String status = req.getParameter("vnp_ResponseCode");
-//        long orderId = Long.parseLong(req.getParameter("orderId"));
+        String orderId = req.getParameter("vnp_OrderInfo");
         if (status.equals("00")) {
-//            resp.sendRedirect(String.format(CORS_URL +
-//                    "/payment/checkout?vnp_ResponseCode=%s&orderId=%d", status, orderId));
+            resp.sendRedirect(String.format(CORS_URL +
+                    "/confirmation/%s", orderId));
 
             req.getParameterMap().entrySet().forEach(entry ->
-                    log.info("request info: {} = {}", entry.getKey(),entry.getValue()) );
+                    log.info("request info: {} = {}", entry.getKey(), entry.getValue()));
 
             return ApiResponse.<PaymentResponse>builder()
                     .statusCode(HttpStatus.OK.value())
@@ -56,16 +56,14 @@ public class PaymentController {
         } else {
             //handle filed payment in the future
             vnPayService.handleFailedPayment(req);
-//            resp.sendRedirect(String.format(CORS_URL +
-//                    "/payment/checkout?vnp_ResponseCode=%s&orderId=%d", status, orderId));
+            resp.sendRedirect(String.format(CORS_URL +
+                    "/confirmation/%s", orderId));
             return ApiResponse.<PaymentResponse>builder()
                     .statusCode(HttpStatus.BAD_REQUEST.value())
                     .code(9999)
                     .message("Payment failed")
                     .build();
         }
-
-
     }
 
 

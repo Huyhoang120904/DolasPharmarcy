@@ -4,16 +4,15 @@ import com.hoanghocdev.dolaspharmacy.dto.request.OrderCreationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.OrderResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.UserResponse;
-import com.hoanghocdev.dolaspharmacy.entity.Order;
-import com.hoanghocdev.dolaspharmacy.entity.OrderItem;
-import com.hoanghocdev.dolaspharmacy.entity.UserDetail;
-import com.hoanghocdev.dolaspharmacy.entity.Variant;
+import com.hoanghocdev.dolaspharmacy.entity.*;
 import com.hoanghocdev.dolaspharmacy.entity.enums.OrderStatus;
+import com.hoanghocdev.dolaspharmacy.entity.enums.PromotionType;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.mapper.OrderMapper;
 import com.hoanghocdev.dolaspharmacy.repository.*;
 import com.hoanghocdev.dolaspharmacy.service.OrderService;
+import com.hoanghocdev.dolaspharmacy.service.PromotionService;
 import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +33,10 @@ public class OrderServiceImpl implements OrderService {
     VariantRepository variantRepository;
     OrderRepository orderRepository;
     UserDetailRepository userDetailRepository;
-    OrderItemRepository orderItemRepository;
-    AddressRepository addressRepository;
-    private final UserEntityService userEntityService;
+    UserEntityService userEntityService;
+    PromotionService promotionService;
+    VnPayServiceImpl vnPayService;
+
 
     @Override
     public OrderResponse createOrder(OrderCreationRequest request) {
@@ -59,7 +60,8 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         order.setUserDetail(userDetail);
         order.setOrderStatus(OrderStatus.PENDING);
-
+        order.calculateTotal();
+        applyHighestAvailableOrderPromotion(order);
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toResponse(savedOrder);
     }
@@ -98,14 +100,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        String orderUserName = order.getUserDetail().getUserEntity().getUsername();
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
-
-        if (!orderUserName.equals(username)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-
         return orderMapper.toResponse(order);
     }
 
@@ -116,4 +110,35 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.deleteById(orderId);
     }
+
+    private void applyHighestAvailableOrderPromotion(Order order) {
+        Promotion promotionFixed = promotionService.getHighestAvailablePromotionForOrderByPromotionType(PromotionType.FIXED_AMOUNT_ORDER).orElse(null);
+        Promotion promotionPercentage = promotionService.getHighestAvailablePromotionForOrderByPromotionType(PromotionType.PERCENTAGE_ORDER).orElse(null);
+        Promotion promotion = promotionFixed;
+        if (promotionFixed !=null && promotionPercentage !=null) {
+            if (promotionFixed.getDiscountAmount() >= promotionPercentage.getDiscountAmount()*order.getTotal()) {
+                promotion = promotionFixed;
+            } else {
+                promotion = promotionPercentage;
+            }
+        }
+        if (promotionFixed == null && promotionPercentage !=null) {
+            promotion = promotionPercentage;
+        }
+
+        if ( promotionPercentage ==null && promotionFixed != null) {
+            promotion = promotionFixed;
+        }
+
+        if (promotion !=null) {
+            order.setPromotion(promotion);
+            if (promotion.getPromotionType() == PromotionType.FIXED_AMOUNT_ORDER) {
+                order.setTotal(order.getTotal() - promotion.getDiscountAmount());
+            }
+            if (promotion.getPromotionType() == PromotionType.PERCENTAGE_ORDER) {
+                order.setTotal(order.getTotal() *(1- promotion.getDiscountAmount()/100));
+            }
+        }
+    }
+
 }

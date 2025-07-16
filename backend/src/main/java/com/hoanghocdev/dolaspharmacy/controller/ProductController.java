@@ -42,6 +42,8 @@ public class ProductController {
                 .build();
     }
 
+
+
     @GetMapping("/{productSlug}")
     public ApiResponse<ProductResponse> getProductBySlug(@PathVariable String productSlug) {
         return ApiResponse.<ProductResponse>builder()

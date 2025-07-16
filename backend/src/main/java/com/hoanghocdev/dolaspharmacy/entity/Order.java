@@ -7,6 +7,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,4 +56,16 @@ public class Order {
 
     @UpdateTimestamp
     LocalDateTime lastModifiedAt;
+
+    public void calculateTotal(){
+        this.total = 0;
+        if (!CollectionUtils.isEmpty(this.orderItems)) {
+            double tmp = 0;
+            for (OrderItem orderItem : this.orderItems) {
+                tmp+=orderItem.getFinalPrice();
+            }
+            this.total = tmp;
+        }
+    }
+
 }

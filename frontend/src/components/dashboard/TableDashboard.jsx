@@ -1,20 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ProductService } from "../../api-services/ProductService";
 
-const TableDashboard = ({ category, filter, choose }) => {
+const TableDashboard = ({ sortObj, choose }) => {
   const [data, setData] = useState([]);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  useEffect(() => {
-    fetch(baseUrl + "/api/products")
-      .then((res) => res.json())
-      .then((data) => setData(data));
-  }, []);
-
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
   });
+  const [totalPages, setTotalPages] = useState();
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const response = await ProductService.searchProducts({
+        page: pagination.currentPage,
+        size: pagination.itemsPerPage,
+        sort: sortObj,
+      });
+      setData(response.result.content);
+      setTotalPages(response.result.totalPages);
+    };
+    fetchProduct();
+  }, [pagination, sortObj]);
 
   const arrItemsPerPage = [10, 15, 20];
 
@@ -25,30 +32,6 @@ const TableDashboard = ({ category, filter, choose }) => {
     }));
   };
 
-  // Filter lọc sản phẩm theo từng tiêu chí
-  const filteredData = data
-    .filter((item) => {
-      if (!category) return true;
-      return item.categoryName === category;
-    })
-    .sort((a, b) => {
-      switch (filter) {
-        case "name_asc":
-          return a.name.localeCompare(b.name);
-        case "name_desc":
-          return b.name.localeCompare(a.name);
-        case "price_asc":
-          return a.cost - b.cost;
-        case "price_desc":
-          return b.cost - a.cost;
-        case "quantity_asc":
-          return (a.stock?.available ?? 0) - (b.stock?.available ?? 0);
-        case "quantity_desc":
-          return (b.stock?.available ?? 0) - (a.stock?.available ?? 0);
-        default:
-          return 0;
-      }
-    });
   // Hàm xác nhận xóa sản phẩm
   const handleComfirmDelte = (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không ?"))
@@ -57,39 +40,8 @@ const TableDashboard = ({ category, filter, choose }) => {
   // Hàm xóa sản phẩm
   const handleDelete = async (id) => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Không tìm thấy token. Vui lòng đăng nhập lại!");
-    }
-    try {
-      const response = await fetch(`${baseUrl}/api/products/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        alert(
-          `Lỗi khi xóa sản phẩm: ${response.status} - ${
-            errorData.message || "Lỗi không xác định"
-          }`
-        );
-        return;
-      }
-
-      alert("Sản phẩm đã được xóa thành công!");
-      setData((prevData) => prevData.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error("Lỗi khi xóa sản phẩm:", error);
-      alert("Đã xảy ra lỗi khi xóa sản phẩm. Vui lòng thử lại sau.");
-    }
+    console.log(id, token);
   };
-
-  const totalPages = Math.ceil(filteredData.length / pagination.itemsPerPage);
-  const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
-  const endIndex = pagination.currentPage * pagination.itemsPerPage;
-  const paginationData = filteredData.slice(startIndex, endIndex);
 
   return (
     <div className="bg-white px-4 py-3 flex-1">
@@ -121,7 +73,6 @@ const TableDashboard = ({ category, filter, choose }) => {
         <table className="min-w-full text-sm text-gray-800 bg-white border border-gray-200 shadow-md rounded-md overflow-hidden">
           <thead className="bg-gray-100 uppercase text-gray-600 text-xs font-semibold sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-3 text-left">STT</th>
               <th className="px-4 py-3 text-left">Tên</th>
               <th className="px-4 py-3 text-left">Danh mục</th>
               <th className="px-4 py-3 text-left">Giảm giá</th>
@@ -132,9 +83,21 @@ const TableDashboard = ({ category, filter, choose }) => {
             </tr>
           </thead>
           <tbody>
-            {paginationData.map((item, index) => {
+            {data.map((item, index) => {
               const primaryImage =
                 item.images?.find((img) => img.isPrimary) || item.images?.[0];
+
+              const hasDiscount = item?.promotion ? true : false;
+
+              const primaryVariant = item?.variants.find(
+                (variant) => variant.isPrimary
+              );
+
+              const price = hasDiscount
+                ? primaryVariant?.price *
+                  (1 - item.promotion.discountAmount / 100)
+                : primaryVariant?.price;
+
               return (
                 <tr
                   key={item.id}
@@ -144,20 +107,17 @@ const TableDashboard = ({ category, filter, choose }) => {
                       : "bg-gray-50 hover:bg-gray-100"
                   }
                 >
-                  <td className="px-4 py-2 text-gray-500 font-medium">
-                    #{startIndex + index + 1}
-                  </td>
                   <td className="px-4 py-2 text-blue-600 font-semibold">
-                    {item.name}
+                    {item.productName}
                   </td>
                   <td className="px-4 py-2 text-gray-600">
-                    {item.categoryName}
+                    {item.category.categoryName}
                   </td>
                   <td className="px-4 py-2 text-red-500 font-semibold">
                     {item.discount?.value ?? 0}%
                   </td>
                   <td className="px-4 py-2 text-emerald-600 font-medium">
-                    {item.cost.toLocaleString()} VNĐ
+                    {price} VNĐ
                   </td>
                   <td className="px-4 py-2 text-indigo-500">
                     {item.stock?.available ?? 0}

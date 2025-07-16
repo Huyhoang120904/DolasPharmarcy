@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // SYS: System/Unknown
     UNCATEGORIZED_EXCEPTION(9999, "An unexpected error occurred. Please contact support.", HttpStatus.INTERNAL_SERVER_ERROR),
+    EMAIL_SEND_FAILED(9998, "Unable to send order confirmation email", HttpStatus.UNAUTHORIZED),
 
     // VAL: Validation
     INVALID_KEY(1001, "Invalid key provided.", HttpStatus.BAD_REQUEST),

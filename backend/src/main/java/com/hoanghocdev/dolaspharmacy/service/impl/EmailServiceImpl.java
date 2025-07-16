@@ -1,13 +1,16 @@
 package com.hoanghocdev.dolaspharmacy.service.impl;
 
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hoanghocdev.dolaspharmacy.entity.Order;
+import com.hoanghocdev.dolaspharmacy.exception.AppException;
+import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,45 +20,55 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Slf4j
 @Service
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EmailServiceImpl {
 
-    @Value("${spring.sendgrid.from-email}")
-    @NonFinal
-    private String FROM_EMAIL;
-
     SendGrid sendGrid;
+    ObjectMapper objectMapper;
 
-    public void send(String to, String subject, String text) {
-        Email fromEmail = new Email(FROM_EMAIL);
-        Email toEmail = new Email(to);
+    @NonFinal
+    @Value("${mail.sendgrid.fromEmail}")
+    String fromEmail;
 
-        Content content = new Content("text/plain", text);
-        Mail mail = new Mail(fromEmail, subject, toEmail, content);
+    @NonFinal
+    @Value("${mail.sendgrid.orderConfirmationTemplateId}")
+    String orderConfirmationTemplateId;
+
+    public void sendOrderConfirmationMail(Order order) throws IOException {
+        Mail mail = new Mail();
+        mail.setFrom(new Email(fromEmail));
+        mail.setTemplateId(orderConfirmationTemplateId);
+
+        Personalization personalization = new Personalization();
+        personalization.addTo(new Email(order.getUserDetail().getEmail()));
+
+        Map<String,Object> orderJsonData = objectMapper.convertValue(order, Map.class);
+
+        orderJsonData.entrySet().forEach(entrySet ->
+                personalization.addDynamicTemplateData(entrySet.getKey(), entrySet.getValue()));
+
+        mail.addPersonalization(personalization);
 
         Request request = new Request();
-        try {
+        request.setMethod(Method.POST);
+        request.setBody(mail.build());
+        request.setEndpoint("mail/send");
 
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
+        Response response = sendGrid.api(request);
 
-            Response response = sendGrid.api(request);
+        log.info("Email response: {}", response.getStatusCode());
+        log.info("Email response: {}", response.getBody());
+        log.info("Email response: {}", response.getHeaders());
 
-            if (response.getStatusCode() == 202) {
-                log.info("Email sent successful");
-            } else {
-                log.info("Error sending email");
-            }
 
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
+        if(response.getStatusCode() != 202 ) {
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
-
 
 }

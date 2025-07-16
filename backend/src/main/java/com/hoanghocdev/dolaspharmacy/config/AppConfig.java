@@ -10,16 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppConfig {
 
-    @Value("${spring.sendgrid.api-key}")
-    private String SENDGRID_API_KEY;
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
-    @Bean
-    SendGrid sendGrid() {
-        return new SendGrid(SENDGRID_API_KEY);
-    }
 }

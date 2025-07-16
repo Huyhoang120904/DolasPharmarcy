@@ -1,0 +1,262 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UserEntityServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.hoanghocdev.dolaspharmacy.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: UserEntityServiceImpl (com.hoanghocdev.dolaspharmacy.service.impl)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UserEntityServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">UserEntityServiceImpl$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.hoanghocdev.dolaspharmacy.service.impl;
+&nbsp;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.UserCreationRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.request.UserUpdateRequest;
+&nbsp;import com.hoanghocdev.dolaspharmacy.dto.response.UserResponse;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.*;
+&nbsp;import com.hoanghocdev.dolaspharmacy.entity.enums.Gender;
+&nbsp;import com.hoanghocdev.dolaspharmacy.exception.AppException;
+&nbsp;import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
+&nbsp;import com.hoanghocdev.dolaspharmacy.mapper.UserDetailMapper;
+&nbsp;import com.hoanghocdev.dolaspharmacy.mapper.UserEntityMapper;
+&nbsp;import com.hoanghocdev.dolaspharmacy.repository.*;
+&nbsp;import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
+&nbsp;import lombok.AccessLevel;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.experimental.FieldDefaults;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.security.access.prepost.PostAuthorize;
+&nbsp;import org.springframework.security.access.prepost.PreAuthorize;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.security.crypto.password.PasswordEncoder;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;@Service
+&nbsp;@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class UserEntityServiceImpl implements UserEntityService {
+&nbsp;
+&nbsp;    UserEntityRepository userEntityRepository;
+&nbsp;    UserEntityMapper userEntityMapper;
+&nbsp;    PasswordEncoder passwordEncoder;
+&nbsp;    RoleRepository roleRepository;
+&nbsp;    UserDetailRepository userDetailRepository;
+&nbsp;    FavouritesRepository favouritesRepository;
+&nbsp;    private final UserDetailMapper userDetailMapper;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)
+&nbsp;    public Page&lt;UserResponse&gt; findAll(int page, int size) {
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size);</b>
+<b class="nc">&nbsp;        Page&lt;UserEntity&gt; pageUsers = userEntityRepository.findAll(pageable);</b>
+<b class="nc">&nbsp;        return pageUsers.map(userEntityMapper::toUserResponse);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public UserResponse findMyInfo() {
+<b class="nc">&nbsp;        var contextHolder = SecurityContextHolder.getContext();</b>
+<b class="nc">&nbsp;        String name = contextHolder.getAuthentication().getName();</b>
+&nbsp;
+<b class="nc">&nbsp;        UserEntity userEntity = userEntityRepository.findByUsername(name)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new AppException(ErrorCode.UNAUTHENTICATED));</b>
+&nbsp;
+<b class="nc">&nbsp;        return userEntityMapper.toUserResponse(userEntity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @PostAuthorize(&quot;returnObject.username == authentication.name&quot;)
+&nbsp;    public UserResponse findUserById(String id) {
+<b class="nc">&nbsp;        UserEntity userEntity = userEntityRepository.findById(id).orElseThrow(() -&gt; new AppException(ErrorCode.DATA_NOT_FOUND));</b>
+<b class="nc">&nbsp;        return userEntityMapper.toUserResponse(userEntity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public UserResponse createUser(UserCreationRequest request) {
+<b class="nc">&nbsp;        UserEntity userEntity = userEntityMapper.toUserEntity(request);</b>
+<b class="nc">&nbsp;        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));</b>
+&nbsp;
+<b class="nc">&nbsp;        Role role = roleRepository.findById(&quot;USER&quot;).orElse(null);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (role == null) {</b>
+<b class="nc">&nbsp;            role = roleRepository.save(Role.builder().rolename(&quot;USER&quot;).build());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Set&lt;Role&gt; roles = new HashSet&lt;&gt;();</b>
+<b class="nc">&nbsp;        roles.add(role);</b>
+<b class="nc">&nbsp;        userEntity.setRoles(roles);</b>
+&nbsp;
+<b class="nc">&nbsp;        userEntity = userEntityRepository.save(userEntity);</b>
+&nbsp;
+<b class="nc">&nbsp;        UserDetail userDetail = userDetailMapper.toUserDetail(request.getUserDetail());</b>
+<b class="nc">&nbsp;        userDetail.setUserEntity(userEntity);</b>
+&nbsp;
+<b class="nc">&nbsp;        userDetail = userDetailRepository.save(userDetail);</b>
+&nbsp;
+<b class="nc">&nbsp;        userEntity.setUserDetail(userDetail);</b>
+<b class="nc">&nbsp;        userEntity = userEntityRepository.save(userEntity);</b>
+&nbsp;
+<b class="nc">&nbsp;        Favourites favourites = Favourites.builder()</b>
+<b class="nc">&nbsp;                .userDetail(userDetail)</b>
+<b class="nc">&nbsp;                .products(new ArrayList&lt;&gt;())</b>
+<b class="nc">&nbsp;                .build();</b>
+&nbsp;
+<b class="nc">&nbsp;        favouritesRepository.save(favourites);</b>
+&nbsp;
+<b class="nc">&nbsp;        return userEntityMapper.toUserResponse(userEntity);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @PostAuthorize(&quot;returnObject.username == authentication.name&quot;)
+&nbsp;    public UserResponse updateUser(UserUpdateRequest request) {
+<b class="nc">&nbsp;        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</b>
+&nbsp;
+<b class="nc">&nbsp;        UserEntity userEntity = userEntityRepository.findById(authentication.getName())</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new AppException(ErrorCode.USER_NOT_EXISTED));</b>
+&nbsp;
+<b class="nc">&nbsp;        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));</b>
+&nbsp;
+<b class="nc">&nbsp;        return userEntityMapper.toUserResponse(userEntityRepository.save(userEntity));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)
+&nbsp;    public void delete(String id) {
+<b class="nc">&nbsp;        if (!userEntityRepository.existsById(id)) {</b>
+<b class="nc">&nbsp;            throw new AppException(ErrorCode.DATA_NOT_FOUND);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        userEntityRepository.deleteById(id);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-29 14:10</div>
+</div>
+</body>
+</html>
