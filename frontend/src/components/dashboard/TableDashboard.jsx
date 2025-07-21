@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ProductService } from "../../api-services/ProductService";
+import { notification } from "antd";
 
-const TableDashboard = ({ sortObj, choose }) => {
+const TableDashboard = ({ categoryName, sortObj }) => {
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
   });
   const [totalPages, setTotalPages] = useState();
+  const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -16,12 +18,13 @@ const TableDashboard = ({ sortObj, choose }) => {
         page: pagination.currentPage,
         size: pagination.itemsPerPage,
         sort: sortObj,
+        categoryName: categoryName,
       });
       setData(response.result.content);
       setTotalPages(response.result.totalPages);
     };
     fetchProduct();
-  }, [pagination, sortObj]);
+  }, [pagination, sortObj, categoryName]);
 
   const arrItemsPerPage = [10, 15, 20];
 
@@ -33,18 +36,24 @@ const TableDashboard = ({ sortObj, choose }) => {
   };
 
   // Hàm xác nhận xóa sản phẩm
-  const handleComfirmDelte = (id) => {
+  const handleComfirmDelete = (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không ?"))
       handleDelete(id);
   };
-  // Hàm xóa sản phẩm
+
   const handleDelete = async (id) => {
-    const token = localStorage.getItem("token");
-    console.log(id, token);
+    const response = await ProductService.deleteProduct(id);
+    if (response.code === 1000) {
+      api.success({
+        message: "Đã xoá sản phẩm thành công",
+        duration: 1.5,
+      });
+    }
   };
 
   return (
     <div className="bg-white px-4 py-3 flex-1">
+      {contextHolder}
       <div className="flex justify-between">
         <strong>Bảng sản phẩm</strong>
         <div className="flex items-center gap-2">
@@ -85,7 +94,7 @@ const TableDashboard = ({ sortObj, choose }) => {
           <tbody>
             {data.map((item, index) => {
               const primaryImage =
-                item.images?.find((img) => img.isPrimary) || item.images?.[0];
+                item.images?.find((img) => img.primary) || item.images?.[0];
 
               const hasDiscount = item?.promotion ? true : false;
 
@@ -120,7 +129,7 @@ const TableDashboard = ({ sortObj, choose }) => {
                     {price} VNĐ
                   </td>
                   <td className="px-4 py-2 text-indigo-500">
-                    {item.stock?.available ?? 0}
+                    {primaryVariant.stock ?? 0}
                   </td>
                   <td className="px-4 py-2 text-center">
                     <img
@@ -132,35 +141,26 @@ const TableDashboard = ({ sortObj, choose }) => {
                     />
                   </td>
                   <td className="px-4 py-2 text-center">
-                    {choose === 0 ? (
+                    <div className="flex items-center justify-center space-x-2">
                       <Link
-                        to={`product/${item.id}`}
-                        className="inline-block px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-200 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
+                        to={`${item.slug}`}
+                        className="cursor-pointer inline-block px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-200 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
                       >
                         Xem
                       </Link>
-                    ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <Link
-                          to={`${item.id}`}
-                          className="cursor-pointer inline-block px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-200 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
-                        >
-                          Xem
-                        </Link>
-                        <Link
-                          to={`update/${item.id}`}
-                          className=" cursor-pointer inline-block px-3 py-1.5 text-sm font-medium text-green-600 bg-green-100 border border-green-200 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 transition-colors"
-                        >
-                          Cập nhật
-                        </Link>
-                        <button
-                          onClick={() => handleComfirmDelte(item.id)}
-                          className="cursor-pointer inline-block px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 border border-red-200 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors"
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    )}
+                      <Link
+                        to={`update/${item.slug}`}
+                        className=" cursor-pointer inline-block px-3 py-1.5 text-sm font-medium text-green-600 bg-green-100 border border-green-200 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 transition-colors"
+                      >
+                        Cập nhật
+                      </Link>
+                      <button
+                        onClick={() => handleComfirmDelete(item.id)}
+                        className="cursor-pointer inline-block px-3 py-1.5 text-sm font-medium !text-red-600 bg-red-100 border border-red-200 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors"
+                      >
+                        Vô hiệu hoá
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

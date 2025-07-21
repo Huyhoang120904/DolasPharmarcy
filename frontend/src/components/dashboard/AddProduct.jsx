@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiPlus, FiTrash2, FiArrowLeft, FiImage } from "react-icons/fi";
 import { Editor } from "@tinymce/tinymce-react";
-import { useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Form,
   Input,
@@ -27,7 +26,7 @@ import { ProductService } from "../../api-services/ProductService";
 import Radio from "antd/es/radio/radio";
 import FormItem from "antd/es/form/FormItem";
 
-export default function AddProduct() {
+export default function AddProduct({ update = false }) {
   const navigate = useNavigate();
   const editorRef = useRef(null);
   const [activeTab, setActiveTab] = useState("general");
@@ -41,6 +40,8 @@ export default function AddProduct() {
   const [targets, setTargets] = useState([]);
   const [isPrimary, setIsPrimary] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState(null);
+  const { slug } = useParams();
+  const [productId, setProductId] = useState();
   //brand
   useEffect(() => {
     const fetchBrands = async () => {
@@ -87,21 +88,6 @@ export default function AddProduct() {
     window.history.back();
   };
 
-  const addVariant = () => {
-    setVariants([
-      ...variants,
-      { id: crypto.randomUUID(), name: "", sku: "", price: 0, stock: 0 },
-    ]);
-  };
-  const removeVariant = (id) => {
-    setVariants(variants.filter((v) => v.id !== id));
-  };
-  const updateVariant = (id, field, value) => {
-    setVariants(
-      variants.map((v) => (v.id === id ? { ...v, [field]: value } : v))
-    );
-  };
-
   const removeImage = (itemIndex) => {
     setImages((prev) => prev.filter((img, index) => index !== itemIndex));
   };
@@ -125,116 +111,153 @@ export default function AddProduct() {
 
     values = { ...values, description: form.getFieldValue("description") };
 
-    if (typeof values.description !== "string") {
-      console.log(typeof values.description);
+    const request = {
+      ...values,
+      images: imagesResponses,
+      variants: variants,
+    };
 
-      console.error("Mô tả sản phẩm không hợp lệ!");
-      return;
+    console.log(`variants`, variants);
+
+    if (update) {
+      const tmpRequest = { ...request, images: productId.images };
+      console.log(`request: `, tmpRequest);
+      await ProductService.updateProduct(productId.id, request);
+    } else {
+      await ProductService.addProduct(request);
     }
-
-    const request = { ...values, images: imagesResponses, variants: variants };
-
-    console.log(request);
-
-    const response = await ProductService.addProduct(request);
-
-    console.log(response);
   };
-
-  const variantColumns = [
-    {
-      title: "Tên biến thể",
-      dataIndex: "name",
-      render: (text, record) => (
-        <Input
-          value={text}
-          onChange={(e) => updateVariant(record.id, "name", e.target.value)}
-          placeholder="Tên biến thể"
-        />
-      ),
-    },
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      render: (text, record) => (
-        <Input
-          value={text}
-          onChange={(e) => updateVariant(record.id, "sku", e.target.value)}
-          placeholder="SKU"
-        />
-      ),
-    },
-    {
-      title: "Giá (VNĐ)",
-      dataIndex: "price",
-      render: (text, record) => (
-        <Input
-          type="number"
-          min={0}
-          value={text}
-          onChange={(e) => updateVariant(record.id, "price", e.target.value)}
-        />
-      ),
-    },
-    {
-      title: "Số lượng",
-      dataIndex: "stock",
-      render: (text, record) => (
-        <Input
-          type="number"
-          min={0}
-          value={text}
-          onChange={(e) => updateVariant(record.id, "stock", e.target.value)}
-        />
-      ),
-    },
-    {
-      title: "",
-      dataIndex: "action",
-      render: (_, record) => (
-        <Button
-          type="link"
-          danger
-          icon={<FiTrash2 />}
-          onClick={() => removeVariant(record.id)}
-        />
-      ),
-      width: 60,
-    },
-  ];
 
   useEffect(() => {
     setSelectedVariantId("blah");
   }, []);
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-          <Button
-            icon={<FiArrowLeft />}
-            shape="circle"
-            onClick={handleCancel}
-            style={{ marginRight: 8 }}
-          />
-          <h1 className="text-2xl font-bold !mb-0">Thêm sản phẩm mới</h1>
-        </div>
-      </div>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          name: "",
+  function toInitialValue(product) {
+    if (!product) return {};
+
+    console.log({
+      id: product.id,
+      productName: product.productName,
+      sku: product.sku,
+      slug: product.slug,
+      origin: product.origin || "",
+      weight: product.weight || undefined,
+      manufacturerName: product.manufacturerName || "",
+      productStatus: product.productStatus || "ACTIVE",
+      requiresPrescription: product.requiresPrescription || false,
+      description: product.description || "",
+      ingredients: product.ingredients || "",
+      dosage: product.dosage || "",
+      warning: product.warning || "",
+
+      // Handle nested fields
+      brand: {
+        brandName: product.brand?.brandName,
+      },
+      categoryId: product.category?.id,
+      supplierId: product.supplier?.id,
+
+      // Handle target
+      target: product.target
+        ? {
+            targetName: product.target.targetName,
+          }
+        : undefined,
+
+      // Normalize promotion
+      promotion: {
+        promotionType: product.promotion?.promotionType || "PERCENTAGE_PRODUCT",
+        discountAmount: product.promotion?.discountAmount || 0,
+        startDate: product.promotion?.startDate,
+        endDate: product.promotion?.endDate,
+      },
+
+      // Variants
+      variants:
+        product.variants?.map((v) => ({
+          id: v.id,
+          name: v.name,
+          stock: v.stock,
+          unit: v.unit || "",
+          price: v.price,
+        })) || [],
+
+      // Images
+      images: product.images || [],
+    });
+
+    return {
+      id: product.id,
+      productName: product.productName,
+      sku: product.sku,
+      slug: product.slug,
+      origin: product.origin || "",
+      weight: product.weight || undefined,
+      manufacturerName: product.manufacturerName || "",
+      productStatus: product.productStatus || "ACTIVE",
+      requiresPrescription: product.requiresPrescription || false,
+      description: product.description || "",
+      ingredients: product.ingredients || "",
+      dosage: product.dosage || "",
+      warning: product.warning || "",
+
+      // Handle nested fields
+      brand: {
+        brandName: product.brand?.brandName,
+      },
+      categoryId: product.category?.id,
+      supplierId: product.supplier?.id,
+
+      // Handle target
+      target: product.target
+        ? {
+            targetName: product.target.targetName,
+          }
+        : undefined,
+
+      // Normalize promotion
+      promotion: {
+        promotionType: product.promotion?.promotionType || "PERCENTAGE_PRODUCT",
+        discountAmount: product.promotion?.discountAmount || 0,
+        startDate: product.promotion?.startDate,
+        endDate: product.promotion?.endDate,
+      },
+
+      // Variants
+      variants:
+        product.variants?.map((v) => ({
+          id: v.id,
+          name: v.name,
+          stock: v.stock,
+          unit: v.unit || "",
+          price: v.price,
+        })) || [],
+
+      // Images
+      images: product.images || [],
+    };
+  }
+
+  //set initial value
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (slug) {
+        const productResponse = await ProductService.getProductsBySlug(slug);
+        form.setFieldsValue(toInitialValue(productResponse.result));
+        productResponse.result?.variants.forEach((variant) => {
+          if (variant.isPrimary) setSelectedVariantId(variant.id);
+        });
+        setProductId(productResponse.result);
+        setVariants(productResponse.result.variants);
+      } else {
+        form.setFieldsValue({
+          productName: "",
           sku: "",
           brand: {
             brandName: undefined,
           },
           categoryId: undefined,
           slug: "",
-          basePrice: 0,
-          salePrice: 0,
-          cost: 0,
           promotion: {
             promotionType: "PERCENTAGE_PRODUCT",
             discountAmount: 0,
@@ -243,7 +266,6 @@ export default function AddProduct() {
           priceRange: "",
           origin: "",
           manufacturerName: "",
-          weight: undefined,
           target: undefined,
           supplierId: undefined,
           productStatus: "ACTIVE",
@@ -261,8 +283,26 @@ export default function AddProduct() {
               stock: "",
             },
           ],
-        }}
-      >
+        });
+      }
+    };
+    fetchProduct();
+  }, [slug, form]);
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <Button
+            icon={<FiArrowLeft />}
+            shape="circle"
+            onClick={handleCancel}
+            style={{ marginRight: 8 }}
+          />
+          <h1 className="text-2xl font-bold !mb-0">Thêm sản phẩm mới</h1>
+        </div>
+      </div>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
@@ -285,10 +325,7 @@ export default function AddProduct() {
                   <Form.Item label="Thương hiệu" name={["brand", "brandName"]}>
                     <Select placeholder="Chọn thương hiệu" allowClear>
                       {brands.map((brand) => (
-                        <Select.Option
-                          key={brand.brandName}
-                          value={brand.brandName}
-                        >
+                        <Select.Option key={brand.id} value={brand.brandName}>
                           {brand.brandName}
                         </Select.Option>
                       ))}
@@ -303,7 +340,7 @@ export default function AddProduct() {
                   >
                     <Select placeholder="Chọn danh mục">
                       {categories.map((category) => (
-                        <Select.Option value={category.id}>
+                        <Select.Option key={category.id} value={category.id}>
                           {category.categoryName}
                         </Select.Option>
                       ))}
@@ -399,7 +436,7 @@ export default function AddProduct() {
                             <Select placeholder="Chọn đối tượng">
                               {targets.map((target) => (
                                 <Select.Option
-                                  key={target.targetName}
+                                  key={target.id || target.targetName}
                                   value={target.targetName}
                                 >
                                   {target.targetName}
@@ -449,162 +486,145 @@ export default function AddProduct() {
                     key: "variants",
                     label: "Phân loại",
                     children: (
-                      // Then in your variants tab content, replace the Form.List with:
                       <div className="space-y-4">
                         <Form.List name="variants">
-                          {(fields, { add, remove }) => (
-                            <>
-                              <Radio.Group
-                                value={selectedVariantId}
-                                onChange={(e) =>
-                                  setSelectedVariantId(e.target.value)
-                                }
-                                className="w-full"
-                              >
-                                {fields.length > 0 ? (
-                                  <div className="grid grid-cols-[0.1fr_1fr_1fr_1fr_1fr_0.1fr] gap-2 mb-2 font-medium">
-                                    <div>Chọn</div>
-                                    <div>Tên biến thể</div>
-                                    <div>SKU</div>
-                                    <div>Số lượng</div>
-                                    <div>Đơn vị</div>
-                                    <div></div>
-                                  </div>
-                                ) : null}
-
-                                {fields.map((field) => {
-                                  const variantId =
-                                    form.getFieldValue([
-                                      "variants",
-                                      field.name,
-                                      "id",
-                                    ]) || crypto.randomUUID();
-
-                                  // Set ID if not already set
-                                  if (
-                                    !form.getFieldValue([
-                                      "variants",
-                                      field.name,
-                                      "id",
-                                    ])
-                                  ) {
-                                    form.setFieldsValue({
-                                      variants: {
-                                        [field.name]: {
-                                          id: variantId,
-                                        },
-                                      },
-                                    });
+                          {(fields, { add, remove }) => {
+                            return (
+                              <>
+                                <Radio.Group
+                                  value={selectedVariantId}
+                                  onChange={(e) =>
+                                    setSelectedVariantId(e.target.value)
                                   }
-
-                                  return (
-                                    <div
-                                      key={field.key}
-                                      className="grid grid-cols-[0.9fr_1fr_1fr_1fr_1fr_0.1fr] gap-2 mb-2 items-center"
-                                    >
-                                      <div className="flex justify-center items-center">
-                                        <Radio
-                                          value={variantId}
-                                          checked={
-                                            variantId === selectedVariantId
-                                          }
-                                          onChange={() =>
-                                            setSelectedVariantId(variantId)
-                                          }
-                                        >
-                                          Phân loại chính
-                                        </Radio>
-                                      </div>
-
-                                      <Form.Item
-                                        {...field}
-                                        name={[field.name, "name"]}
-                                        noStyle
-                                      >
-                                        <Input placeholder="Tên biến thể" />
-                                      </Form.Item>
-
-                                      <Form.Item
-                                        {...field}
-                                        name={[field.name, "sku"]}
-                                        noStyle
-                                      >
-                                        <Input placeholder="SKU" />
-                                      </Form.Item>
-
-                                      <Form.Item
-                                        {...field}
-                                        name={[field.name, "stock"]}
-                                        noStyle
-                                      >
-                                        <Input
-                                          type="number"
-                                          min={0}
-                                          placeholder="Số lượng"
-                                        />
-                                      </Form.Item>
-
-                                      <Form.Item
-                                        {...field}
-                                        name={[field.name, "unit"]}
-                                        noStyle
-                                      >
-                                        <Input placeholder="Đơn vị" />
-                                      </Form.Item>
-
-                                      <Button
-                                        type="link"
-                                        danger
-                                        onClick={() => {
-                                          remove(field.name);
-                                          if (
-                                            form.getFieldValue([
-                                              "variants",
-                                              field.name,
-                                              "id",
-                                            ]) === selectedVariantId
-                                          ) {
-                                            const remainingVariants = form
-                                              .getFieldValue("variants")
-                                              ?.filter(
-                                                (_, i) => i !== field.name
-                                              );
-                                            setSelectedVariantId(
-                                              remainingVariants?.length > 0
-                                                ? remainingVariants[0].id
-                                                : null
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        <FiTrash2 />
-                                      </Button>
+                                  className="w-full"
+                                >
+                                  {fields.length > 0 ? (
+                                    <div className="grid grid-cols-[0.1fr_1fr_1fr_1fr_1fr_0.1fr] gap-2 mb-2 font-medium">
+                                      <div>Chọn</div>
+                                      <div>Tên biến thể</div>
+                                      <div>Số lượng</div>
+                                      <div>Đơn giá</div>
+                                      <div>Đơn vị</div>
+                                      <div></div>
                                     </div>
-                                  );
-                                })}
-                              </Radio.Group>
-                              {fields.length === 0 && (
-                                <div className="text-center text-gray-500 py-4">
-                                  Chưa có phân loại nào. Vui lòng thêm phân
-                                  loại.
-                                </div>
-                              )}
+                                  ) : null}
 
-                              <Button
-                                type="dashed"
-                                onClick={() => {
-                                  const newVariantId = crypto.randomUUID();
-                                  add({ id: newVariantId });
-                                  if (fields.length === 0) {
-                                    setSelectedVariantId(newVariantId);
-                                  }
-                                }}
-                                className="w-full mt-2"
-                              >
-                                <FiPlus /> Thêm phân loại
-                              </Button>
-                            </>
-                          )}
+                                  {fields.map((field) => {
+                                    const variantId =
+                                      form.getFieldValue([
+                                        "variants",
+                                        field.name,
+                                        "id",
+                                      ]) || crypto.randomUUID();
+
+                                    return (
+                                      <div
+                                        key={field.key}
+                                        className="grid grid-cols-[0.9fr_1fr_1fr_1fr_1fr_0.1fr] gap-2 mb-2 items-center"
+                                      >
+                                        <div className="flex justify-center items-center">
+                                          <Radio
+                                            value={variantId}
+                                            checked={
+                                              variantId === selectedVariantId
+                                            }
+                                            onChange={() =>
+                                              setSelectedVariantId(variantId)
+                                            }
+                                          >
+                                            Phân loại chính
+                                          </Radio>
+                                        </div>
+
+                                        <Form.Item
+                                          {...field}
+                                          name={[field.name, "name"]}
+                                          noStyle
+                                        >
+                                          <Input placeholder="Tên biến thể" />
+                                        </Form.Item>
+
+                                        <Form.Item
+                                          {...field}
+                                          name={[field.name, "stock"]}
+                                          noStyle
+                                        >
+                                          <Input
+                                            type="number"
+                                            min={0}
+                                            placeholder="Số lượng"
+                                          />
+                                        </Form.Item>
+
+                                        <Form.Item
+                                          {...field}
+                                          name={[field.name, "price"]}
+                                          noStyle
+                                        >
+                                          <Input placeholder="Đơn giá" />
+                                        </Form.Item>
+                                        <Form.Item
+                                          {...field}
+                                          name={[field.name, "unit"]}
+                                          noStyle
+                                        >
+                                          <Input placeholder="Đơn vị" />
+                                        </Form.Item>
+
+                                        <Button
+                                          type="link"
+                                          danger
+                                          onClick={() => {
+                                            remove(field.name);
+                                            if (
+                                              form.getFieldValue([
+                                                "variants",
+                                                field.name,
+                                                "id",
+                                              ]) === selectedVariantId
+                                            ) {
+                                              const remainingVariants = form
+                                                .getFieldValue("variants")
+                                                ?.filter(
+                                                  (_, i) => i !== field.name
+                                                );
+                                              setSelectedVariantId(
+                                                remainingVariants?.length > 0
+                                                  ? remainingVariants[0].id
+                                                  : null
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          <FiTrash2 />
+                                        </Button>
+                                      </div>
+                                    );
+                                  })}
+                                </Radio.Group>
+                                {fields.length === 0 && (
+                                  <div className="text-center text-gray-500 py-4">
+                                    Chưa có phân loại nào. Vui lòng thêm phân
+                                    loại.
+                                  </div>
+                                )}
+
+                                <Button
+                                  type="dashed"
+                                  onClick={() => {
+                                    const newVariantId = crypto.randomUUID();
+                                    add({ id: newVariantId });
+                                    if (fields.length === 0) {
+                                      setSelectedVariantId(newVariantId);
+                                    }
+                                  }}
+                                  className="w-full mt-2"
+                                >
+                                  <FiPlus /> Thêm phân loại
+                                </Button>
+                              </>
+                            );
+                          }}
                         </Form.List>
                       </div>
                     ),
@@ -613,14 +633,16 @@ export default function AddProduct() {
                     key: "description",
                     label: "Mô tả",
                     children: (
-                      <Form.Item label="Mô tả sản phẩm">
+                      <Form.Item label="Mô tả sản phẩm" name="description">
                         <Editor
                           apiKey="95zzat4zdhk63cbyepm9apkvb89bqply9apvsjwh88a454sw"
                           onInit={(evt, editor) => (editorRef.current = editor)}
                           value={form.getFieldValue("description")} // controlled by form
                           onEditorChange={(content) => {
-                            form.setFieldsValue({ description: content });
-                            console.log(form.getFieldValue("description"));
+                            form.setFieldsValue({
+                              description: content,
+                            });
+                            console.log("Editor content:", content);
                           }}
                           init={{
                             height: 400,

@@ -1,14 +1,4 @@
 import React, { useEffect, useState } from "react";
-import img1 from "../../img/Header/imgCategory/image1.png";
-import img2 from "../../img/Header/imgCategory/image2.png";
-import img3 from "../../img/Header/imgCategory/image3.png";
-import img4 from "../../img/Header/imgCategory/image4.png";
-import img5 from "../../img/Header/imgCategory/image5.png";
-import img6 from "../../img/Header/imgCategory/image6.png";
-import img7 from "../../img/Header/imgCategory/image7.png";
-import img8 from "../../img/Header/imgCategory/image8.png";
-import img9 from "../../img/Header/imgCategory/image9.png";
-import img10 from "../../img/Header/imgCategory/image10.png";
 import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import img1a from "../../img/Header/imgDiscount/image1.png";
 import img2a from "../../img/Header/imgDiscount/image2.png";
@@ -70,7 +60,6 @@ const Category = () => {
         setCategories(reponse.result.content);
       } catch (error) {
         console.error("Error fetching categories:", error);
-        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -152,7 +141,7 @@ const Category = () => {
                     className="flex flex-col items-center"
                   >
                     <img
-                      src={category.img}
+                      src={category.image.url}
                       alt={category.categoryName}
                       className="w-20 h-20 transition-transform duration-300 ease-in-out transform hover:scale-90"
                     />

@@ -77,4 +77,28 @@ export const ProductService = {
       console.log(error);
     }
   },
+  updateProduct: async (productId, newProduct) => {
+    try {
+      const response = await request.put(`/products/${productId}`, newProduct, {
+        headers: {
+          Authorization: `Bearer ${getMyToken()}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  deleteProduct: async (productId) => {
+    try {
+      const response = await request.delete(`/products/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${getMyToken()}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

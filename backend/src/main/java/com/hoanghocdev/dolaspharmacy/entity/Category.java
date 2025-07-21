@@ -24,7 +24,7 @@ public class Category {
     String slug;
     boolean isActive;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     Image image;
 
 

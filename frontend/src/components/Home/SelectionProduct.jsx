@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import img1 from "../../img/Header/BannerHealth6.png";
 import img2 from "../../img/Header/BannerHealth7.png";
 import img3 from "../../img/Header/imgSelection/Baby.png";
-import img4 from "../../img/Header/imgSelection/MomAndBaby.png";
-import img5 from "../../img/Header/imgSelection/Old.png";
 import SingleProduct from "../common/SingleProduct";
 import { Link } from "react-router-dom";
-import queryString from "query-string";
 import { CategoryService } from "../../api-services/CategoryService";
 import { ProductService } from "../../api-services/ProductService";
 
@@ -57,6 +54,8 @@ const SelectionProduct = ({ name }) => {
 
   if (loading) return <div>Loading...</div>;
 
+  console.log(`active`, active);
+
   return (
     <div className="my-14 px-4">
       <Link to="/product">
@@ -88,24 +87,26 @@ const SelectionProduct = ({ name }) => {
         <div className="col-span-4">
           {/* Nút danh mục */}
           <div className="flex gap-3 mb-6">
-            {categories.slice(1, 3).map((item) => (
-              <button
-                key={item.slug}
-                onClick={() => handleActive(item.categoryName)}
-                className={`flex items-center px-4 py-4 rounded-sm cursor-pointer border border-blue-500 transition-colors  hover:bg-blue-600 hover:!text-white ${
-                  active === item.name
-                    ? "bg-blue-600 !text-white"
-                    : "bg-white text-blue-600"
-                }`}
-              >
-                <img
-                  src={img3}
-                  alt=""
-                  className="w-[24px] h-[24px] object-cover rounded-full mr-2"
-                />
-                <span>{item.categoryName}</span>
-              </button>
-            ))}
+            {categories.slice(1, 3).map((item) => {
+              return (
+                <button
+                  key={item.slug}
+                  onClick={() => handleActive(item.categoryName)}
+                  className={`flex items-center px-4 py-4 rounded-sm cursor-pointer border border-blue-500 transition-colors  hover:bg-blue-600 hover:!text-white ${
+                    active === item.categoryName
+                      ? "bg-blue-600 !text-white"
+                      : "bg-white text-blue-600"
+                  }`}
+                >
+                  <img
+                    src={img3}
+                    alt=""
+                    className="w-[24px] h-[24px] object-cover rounded-full mr-2"
+                  />
+                  <span>{item.categoryName}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Lưới sản phẩm */}

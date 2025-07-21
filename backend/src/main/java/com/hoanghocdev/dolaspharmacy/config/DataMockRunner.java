@@ -36,9 +36,9 @@ public class DataMockRunner {
     VariantRepository variantRepository;
     BrandRepository brandRepository;
     UserEntityService userEntityService;
-
+    ProductService productService;
     @Bean
-    public CommandLineRunner mockData(PasswordEncoder passwordEncoder, ProductService productService) {
+    public CommandLineRunner mockData(PasswordEncoder passwordEncoder) {
         return args -> {
             Faker faker = new Faker(new Locale("vi"));
             Random random = new Random();
@@ -47,6 +47,39 @@ public class DataMockRunner {
             if (productRepository.count() > 0) {
                 return;
             }
+
+
+            // Cloudinary images list
+            List<String> cloudinaryImages = Arrays.asList(
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341495/00021988-anica-phytextra-60v-513_fc7gpe.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341495/00031920-top-grow-jpanwell-10-ch_vogxfu.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341495/00031920-top-grow-jpanwell-10-ch_1_a0fqlp.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341495/00031036-omexxel-ginkgo-120-2x15_hx0z2x.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341494/00029929-maxpremum-naga-plus-200_uu8e9w.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341494/00030869-sasagold-saffron-nhuy-h_btbsu0.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341489/img-9003-7e22ddc19e_1_czsgxg.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341489/dsc-09932-bc701e2141_y7evhl.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341489/dsc-09866-48ad7ea252_mf8bzn.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341489/hebe-tuyp-truoc-908f63e863_xzl4jv.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341488/dsc-00535-480fad02f8_1_mxnxvw.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341487/00503275-vien-uong-bo-sung-canxi_qjtovs.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341487/00032817-blood-care-jpanwell-60v_ule2rv.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341487/dsc-00036-f81526ba97_oojjx4.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341487/dsc-00025-00386132d2_ryqm1b.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341487/00502603-vien-uong-tang-cuong-ch_ytdohn.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341486/00503081-sap-duong-am-vaseline-r_xz0dfq.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341485/00503066-son-duong-moi-sebamed-l_iuf3kn.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341485/00032923-vien-uong-cai-thien-tim_m6kd4c.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341485/00502680-vien-uong-lam-dep-da-ch_we06np.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341485/00502416-blackmores-executive-b-4_fsoxxw.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341485/00501988-sua-cho-benh-nhan-gan-f_pyyoou.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341484/00032918-glucosamine-and-chondro_xsbh2t.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341484/00032923-vien-uong-cai-thien-tim_1_b56yqn.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341484/00032884-okinawa-fucoidan-jpanwe_ohmdom.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341483/00031920-top-grow-jpanwell-10-ch-3f81b1a4-df3b-41f3-869d-c64cb90506fa_qble7r.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341483/00500955-tra-nhan-sam-ko-ginseng_a9hd5l.png",
+                    "https://res.cloudinary.com/dbmtxumro/image/upload/v1746341483/00500119-vien-uong-ho-tro-giam-n_fyciyl.png"
+            );
 
             // --- Categories ---
             List<Category> categories = Arrays.asList(
@@ -59,6 +92,13 @@ public class DataMockRunner {
                     Category.builder().categoryName("Dưỡng Trắng Da").description("Sản phẩm dưỡng trắng và chăm sóc da").slug("duong-trang-da").isActive(true).build(),
                     Category.builder().categoryName("Ung Thư - Bướu").description("Sản phẩm hỗ trợ cho người ung thư, bướu").slug("ung-thu-buou").isActive(true).build()
             );
+            categories = categoryRepository.saveAll(categories);
+
+            for (Category category : categories) {
+                String imageUrl = cloudinaryImages.get(random.nextInt(cloudinaryImages.size()));
+                Image image = Image.builder().url(imageUrl).build();
+                category.setImage(image);
+            }
             categories = categoryRepository.saveAll(categories);
 
             // --- Suppliers ---
@@ -175,11 +215,18 @@ public class DataMockRunner {
                 product.setVariants(variants);
 
                 List<ImageRequest> images = new ArrayList<>();
-                // --- Images: 1-2 per product ---
+                // --- Images: 1-2 per product, use cloudinary images ---
                 int imageCount = 1 + random.nextInt(2);
+                Set<Integer> usedIndices = new HashSet<>();
                 for (int img = 0; img < imageCount; img++) {
+                    int imgIdx;
+                    do {
+                        imgIdx = random.nextInt(cloudinaryImages.size());
+                    } while (usedIndices.contains(imgIdx));
+                    usedIndices.add(imgIdx);
+
                     ImageRequest image = ImageRequest.builder()
-                            .url("https://picsum.photos/seed/" + product.getSku() + img + "/300/300")
+                            .url(cloudinaryImages.get(imgIdx))
                             .isPrimary(images.isEmpty())
                             .build();
                     images.add(image);
@@ -211,14 +258,14 @@ public class DataMockRunner {
                     UserCreationRequest.builder().username("admin").password("admin123")
                             .userDetail(UserDetailRequest.builder()
                                     .fullName("Quản trị viên")
-                                    .email("foxminer246@gmail.com")
+                                    .email("hoang123@yopmail.com")
                                     .dob(LocalDate.of(2004, 9 , 12))
                                     .gender("MALE").build())
                             .build(),
                     UserCreationRequest.builder().username("huyhoang").password("huyhoang123")
                             .userDetail(UserDetailRequest.builder()
                                     .fullName("Nguyễn Huy Hoàng")
-                                    .email("imanoskun11@gmail.com")
+                                    .email("hoang1234@yopmail.com")
                                     .dob(LocalDate.of(2004, 9 , 12))
                                     .gender("FEMALE").build())
                             .build()
@@ -235,3 +282,4 @@ public class DataMockRunner {
         };
     }
 }
+

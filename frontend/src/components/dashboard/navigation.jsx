@@ -34,18 +34,6 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: "customer",
     icon: <HiOutlineUsers />,
   },
-  {
-    key: "documents",
-    label: "Tài Liệu",
-    path: "document",
-    icon: <HiOutlineDocumentText />,
-  },
-  {
-    key: "announcement",
-    label: "Tin Nhắn",
-    path: "announcement",
-    icon: <HiOutlineAnnotation />,
-  },
 ];
 
 export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [

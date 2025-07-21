@@ -10,6 +10,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class VariantRequest {
+
+    String id;
+
     @NotBlank(message = "Variant name is required")
     @Size(min = 1, max = 100, message = "Variant name must be between 1 and 100 characters")
     String name;

@@ -59,7 +59,7 @@ const Products = ({ name }) => {
               transform: `translateX(-${productIndex * (100 / itemsPerPage)}%)`,
             }}
           >
-            {products?.map((product, index) => (
+            {products?.map((product) => (
               <SingleProduct
                 key={product.slug}
                 product={product}
@@ -118,7 +118,7 @@ const Products = ({ name }) => {
         )}
       </div>
       <div className="mt-10 text-center">
-        <Link to={(name = "Khuyến mãi hấp dẫn") ? "/promotion" : "/product"}>
+        <Link to={name === "Khuyến mãi hấp dẫn" ? "/promotion" : "/product"}>
           <button className="hover:bg-[#003cbf] hover:!text-white cursor-pointer transition-colors duration-300  px-4 py-2 border-2 border-solid border-blue-700 rounded-sm font-lg">
             Xem tất cả
           </button>

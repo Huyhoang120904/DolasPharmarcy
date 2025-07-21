@@ -20,7 +20,6 @@ const DashboardProduct = () => {
     const fetchCategory = async () => {
       const response = await CategoryService.getCatgories();
       setCategoryData(response.result.content);
-      console.log(response);
     };
     fetchCategory();
   }, []);
@@ -32,8 +31,6 @@ const DashboardProduct = () => {
   const handleFilterChange = (e) => {
     setCurrentFilter(e.target.value);
   };
-
-  console.log(currentFilter);
 
   return (
     <>
@@ -84,7 +81,11 @@ const DashboardProduct = () => {
       </div>
 
       <div className="bg-white mt-6 p-6 rounded-md shadow">
-        <TableDashboard category={currentCategory} sortObj={currentFilter} />
+        <TableDashboard
+          category={currentCategory}
+          categoryName={currentCategory}
+          sortObj={currentFilter}
+        />
       </div>
     </>
   );

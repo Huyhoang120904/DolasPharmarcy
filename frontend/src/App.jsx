@@ -163,8 +163,11 @@ const router = createBrowserRouter([
           { index: true, element: <Dashboard /> },
           { path: "product", element: <DashboardProduct /> },
           { path: "product/add", element: <AddProduct /> },
-          { path: "product/update/:id", element: <UpdateProduct /> },
-          { path: "product/:id", element: <DashboardProductDetail /> },
+          {
+            path: "product/update/:slug",
+            element: <AddProduct update={true} />,
+          },
+          { path: "product/:slug", element: <DashboardProductDetail /> },
           { path: "order", element: <DashboardOrder /> },
           { path: "customer", element: <DashboardCustomer /> },
           { path: "announcement", element: <DashboardAnnoucement /> },

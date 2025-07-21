@@ -1,9 +1,6 @@
-import request from "../utils/axiosConfig";
-
 const cloudName = import.meta.env.VITE_CLOUDINARY_NAME;
 
 export const uploadImg = async (files, isPrimary) => {
-  console.log(isPrimary);
   const uploadPromises = files.map((file) => {
     const formData = new FormData();
 

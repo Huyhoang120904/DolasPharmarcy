@@ -74,7 +74,6 @@ const Others = () => {
         setCategories(reponse.result.content);
       } catch (error) {
         console.error("Error fetching categories:", error);
-        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -136,7 +135,7 @@ const Others = () => {
                       className="flex flex-col items-center"
                     >
                       <img
-                        src={catergory.image}
+                        src={catergory.image.url}
                         alt={catergory.name}
                         className="w-16 h-16 object-contain transition-transform duration-300 ease-in-out transform hover:scale-90"
                       />

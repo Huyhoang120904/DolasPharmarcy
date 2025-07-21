@@ -1,23 +1,24 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { FiPlus, FiTrash2, FiArrowLeft, FiImage } from "react-icons/fi"
-import { Editor } from "@tinymce/tinymce-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useState, useRef, useEffect } from "react";
+import { FiPlus, FiTrash2, FiArrowLeft, FiImage } from "react-icons/fi";
+import { Editor } from "@tinymce/tinymce-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ProductService } from "../../api-services/ProductService";
 
 export default function UpdateProduct() {
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const editorRef = useRef(null)
-  const [activeTab, setActiveTab] = useState("general")
-  const [variants, setVariants] = useState([])
-  const [images, setImages] = useState([])
-  const [isUploading, setIsUploading] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [categories, setCategories] = useState([])
-  const [suppliers, setSuppliers] = useState([])
-  const [brands, setBrands] = useState([])
-  const baseUrl = import.meta.env.VITE_API_BASE_URL
+  const navigate = useNavigate();
+  const { slug } = useParams();
+  const editorRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("general");
+  const [variants, setVariants] = useState([]);
+  const [images, setImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [product, setProduct] = useState({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -45,157 +46,133 @@ export default function UpdateProduct() {
     dosage: "",
     warnings: "",
     requiresPrescription: false,
-  })
+  });
+
+ //brand
+  useEffect(() => {
+    const fetchBrands = async () => {
+      const brandResponse = await BrandService.getBrands();
+      setBrands(brandResponse.result.content);
+    };
+    fetchBrands();
+  }, []);
+
+  //categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const reponse = await CategoryService.getCatgories();
+      setCategories(reponse.result.content);
+    };
+    fetchCategories();
+  }, []);
+
+  //targets
+  useEffect(() => {
+    const fetchTargets = async () => {
+      const reponse = await TargetService.getTargets();
+      setTargets(reponse.result.content);
+    };
+    fetchTargets();
+  }, []);
+
+  useEffect(() => {
+    if (images.length <= 1) {
+      setIsPrimary(0);
+    }
+  }, [images]);
+
+  //suppliers
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const reponse = await SupplierService.getSuppliers();
+      setSuppliers(reponse.result.content);
+    };
+    fetchSuppliers();
+  }, []);
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      try {
-        const token = localStorage.getItem("token")
-        if (!token) {
-          alert("Không tìm thấy token. Vui lòng đăng nhập lại")
-          navigate("/login")
-          return
-        }
+      const productResponse = await ProductService.getProductsBySlug(slug);
+      setProduct(productResponse.result);
+    };
 
-        // Fetch categories
-        const categoriesResponse = await fetch(`${baseUrl}/api/categories`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!categoriesResponse.ok) throw new Error("Không thể tải danh mục")
-        const categoriesData = await categoriesResponse.json()
-        setCategories(categoriesData)
-
-        // Fetch suppliers
-        const suppliersResponse = await fetch(`${baseUrl}/api/suppliers`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!suppliersResponse.ok) throw new Error("Không thể tải nhà cung cấp")
-        const suppliersData = await suppliersResponse.json()
-        setSuppliers(suppliersData)
-
-        // Fetch brands
-        const brandsResponse = await fetch(`${baseUrl}/api/brands`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!brandsResponse.ok) throw new Error("Không thể tải thương hiệu")
-        const brandsData = await brandsResponse.json()
-        // Transform the array of strings into array of objects with id and name
-        const formattedBrands = brandsData.map((brandName, index) => ({
-          id: index.toString(),
-          name: brandName,
-        }))
-        setBrands(formattedBrands)
-
-        // Fetch product
-        const productResponse = await fetch(`${baseUrl}/api/products/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!productResponse.ok) throw new Error("Không thể tải thông tin sản phẩm")
-        const product = await productResponse.json()
-
-        setFormData({
-          name: product.name || "",
-          sku: product.sku || "",
-          brand: product.brand || "",
-          category: product.category || "",
-          categoryName: product.categoryName || "",
-          subCategory: product.subCategory || "",
-          basePrice: product.basePrice || 0,
-          salePrice: product.salePrice || 0,
-          cost: product.cost || 0,
-          discount: product.discount || { type: "percentage", value: 0, maxDiscountAmount: 0 },
-          stock: product.stock || { total: 0, lowStockThreshold: 0 },
-          priceRange: product.priceRange || "",
-          origin: product.origin || "",
-          manufacturerName: product.manufacturerName || "",
-          weight: product.weight || "",
-          targeted: product.targeted || "",
-          supplierId: product.supplierId || "",
-          status: product.status || "active",
-          isFeatured: product.isFeatured || false,
-          isPopular: product.isPopular || false,
-          description: product.description || "",
-          ingredients: product.ingredients || "",
-          dosage: product.dosage || "",
-          warnings: product.warnings || "",
-          requiresPrescription: product.requiresPrescription || false,
-        })
-        setVariants(product.variants || [])
-        setImages(product.images || [])
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error)
-        alert("Không thể tải thông tin. Vui lòng thử lại.")
-        navigate("/dashboard")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchInitialData()
-  }, [id, navigate, baseUrl])
+    fetchInitialData();
+  }, [slug]);
 
   const handleCancel = () => {
-    window.history.back()
-  }
+    window.history.back();
+  };
 
   const addVariant = () => {
-    setVariants([...variants, { id: crypto.randomUUID(), name: "", sku: "", price: 0, stock: 0 }])
-  }
+    setVariants([
+      ...variants,
+      { id: crypto.randomUUID(), name: "", sku: "", price: 0, stock: 0 },
+    ]);
+  };
 
   const removeVariant = (id) => {
-    setVariants(variants.filter((v) => v.id !== id))
-  }
+    setVariants(variants.filter((v) => v.id !== id));
+  };
 
   const updateVariant = (id, field, value) => {
-    setVariants(variants.map((v) => (v.id === id ? { ...v, [field]: value } : v)))
-  }
+    setVariants(
+      variants.map((v) => (v.id === id ? { ...v, [field]: value } : v))
+    );
+  };
 
   const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files)
-    if (files.length === 0) return
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    setIsUploading(true)
-    const cloudName = "dysjwopcc"
-    const uploadPreset = "Dola-Pharmacy"
+    setIsUploading(true);
+    const cloudName = "dysjwopcc";
+    const uploadPreset = "Dola-Pharmacy";
 
     const uploadPromises = files.map(async (file) => {
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("upload_preset", uploadPreset)
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
 
       try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-          method: "POST",
-          body: formData,
-        })
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(`Lỗi khi tải ảnh lên Cloudinary: ${errorData.message || "Không xác định"}`)
+          const errorData = await response.json();
+          throw new Error(
+            `Lỗi khi tải ảnh lên Cloudinary: ${
+              errorData.message || "Không xác định"
+            }`
+          );
         }
 
-        const data = await response.json()
+        const data = await response.json();
         return {
           id: crypto.randomUUID(),
           url: data.secure_url,
           alt: `Product image ${images.length + 1}`,
           isPrimary: images.length === 0,
           sortOrder: images.length,
-        }
+        };
       } catch (error) {
-        console.error("Lỗi khi tải ảnh:", error)
-        return null
+        console.error("Lỗi khi tải ảnh:", error);
+        return null;
       }
-    })
+    });
 
     try {
-      const results = await Promise.all(uploadPromises)
-      const uploadedImages = results.filter((img) => img !== null)
+      const results = await Promise.all(uploadPromises);
+      const uploadedImages = results.filter((img) => img !== null);
 
       if (uploadedImages.length === 0) {
-        alert("Không thể tải bất kỳ ảnh nào lên Cloudinary. Vui lòng thử lại.")
+        alert("Không thể tải bất kỳ ảnh nào lên Cloudinary. Vui lòng thử lại.");
       } else if (uploadedImages.length < files.length) {
-        alert("Một số ảnh không thể tải lên. Vui lòng kiểm tra lại.")
+        alert("Một số ảnh không thể tải lên. Vui lòng kiểm tra lại.");
       }
 
       setImages((prevImages) => [
@@ -205,109 +182,67 @@ export default function UpdateProduct() {
           sortOrder: prevImages.length + index,
           isPrimary: prevImages.length === 0 && index === 0,
         })),
-      ])
+      ]);
     } catch (error) {
-      console.error("Lỗi tổng thể khi tải ảnh:", error)
-      alert("Đã xảy ra lỗi khi tải ảnh. Vui lòng thử lại.")
+      console.error("Lỗi tổng thể khi tải ảnh:", error);
+      alert("Đã xảy ra lỗi khi tải ảnh. Vui lòng thử lại.");
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const removeImage = (id) => {
-    setImages(images.filter((img) => img.id !== id))
-  }
+    setImages(images.filter((img) => img.id !== id));
+  };
 
   const setPrimaryImage = (id) => {
     setImages((prevImages) =>
       prevImages.map((img) =>
-        img.id === id ? { ...img, isPrimary: true } : { ...img, isPrimary: false }
+        img.id === id
+          ? { ...img, isPrimary: true }
+          : { ...img, isPrimary: false }
       )
-    )
-  }
+    );
+  };
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
-      setFormData((prev) => ({ ...prev, [name]: checked }))
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (name === "category") {
-      const selectedCategory = categories.find((cat) => cat.id === value)
+      const selectedCategory = categories.find((cat) => cat.id === value);
       setFormData((prev) => ({
         ...prev,
         category: value,
         categoryName: selectedCategory ? selectedCategory.name : "",
-      }))
+      }));
     } else if (name.includes(".")) {
-      const [parent, child] = name.split(".")
+      const [parent, child] = name.split(".");
       setFormData((prev) => ({
         ...prev,
         [parent]: { ...prev[parent], [child]: value },
-      }))
+      }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }))
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    const token = localStorage.getItem("token")
-    if (!token) {
-      alert("Không tìm thấy token. Vui lòng đăng nhập lại")
-      navigate("/login")
-      return
-    }
-
-    const product = {
-      ...formData,
-      variants: variants.map((v) => ({
-        id: v.id,
-        name: v.name,
-        sku: v.sku,
-        price: Number(v.price),
-        stock: Number(v.stock),
-      })),
-      images: images.map((img) => ({
-        url: img.url,
-        alt: img.alt,
-        isPrimary: img.isPrimary,
-        sortOrder: img.sortOrder,
-      })),
-    }
-
-    try {
-      const response = await fetch(`${baseUrl}/api/products/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(product),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        alert(`Lỗi khi cập nhật sản phẩm: ${response.status} - ${errorData.message || "Lỗi không xác định"}`)
-        return
-      }
-
-      alert("Sản phẩm đã được cập nhật thành công!")
-      navigate("/dashboard")
-    } catch (error) {
-      console.error("Lỗi khi gửi yêu cầu:", error)
-      alert("Đã xảy ra lỗi khi cập, Vui lòng thử lại sau.")
-    }
-  }
+    e.preventDefault();
+  };
 
   if (isLoading) {
-    return <div className="p-6">Đang tải thông tin sản phẩm...</div>
+    return <div className="p-6">Đang tải thông tin sản phẩm...</div>;
   }
 
   return (
     <div className="">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
-          <button onClick={handleCancel} className="p-2 rounded-full hover:bg-gray-100">
+          <button
+            onClick={handleCancel}
+            className="p-2 rounded-full hover:bg-gray-100"
+          >
             <FiArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-2xl !font-bold">Cập nhật sản phẩm</h1>
@@ -320,7 +255,10 @@ export default function UpdateProduct() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-1">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium mb-1"
+                  >
                     Tên sản phẩm
                   </label>
                   <input
@@ -336,7 +274,10 @@ export default function UpdateProduct() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="sku" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="sku"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Mã SKU
                     </label>
                     <input
@@ -350,7 +291,10 @@ export default function UpdateProduct() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="brand" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="brand"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Thương hiệu
                     </label>
                     <select
@@ -362,7 +306,11 @@ export default function UpdateProduct() {
                     >
                       <option value="">Chọn thương hiệu</option>
                       {brands.map((brand) => (
-                        <option key={brand.id} value={brand.name} className="text-gray-800">
+                        <option
+                          key={brand.id}
+                          value={brand.name}
+                          className="text-gray-800"
+                        >
                           {brand.name}
                         </option>
                       ))}
@@ -372,7 +320,10 @@ export default function UpdateProduct() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="category"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Danh mục
                     </label>
                     <select
@@ -385,14 +336,21 @@ export default function UpdateProduct() {
                     >
                       <option value="">Chọn danh mục</option>
                       {categories.map((category) => (
-                        <option key={category.id} value={category.id} className="text-gray-800">
+                        <option
+                          key={category.id}
+                          value={category.id}
+                          className="text-gray-800"
+                        >
                           {category.name}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="subCategory" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="subCategory"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Danh mục phụ
                     </label>
                     <input
@@ -413,28 +371,44 @@ export default function UpdateProduct() {
                 <div className="flex space-x-4">
                   <button
                     type="button"
-                    className={`pb-2 px-1 ${activeTab === "general" ? "border-b-2 border-blue-500 font-medium" : ""}`}
+                    className={`pb-2 px-1 ${
+                      activeTab === "general"
+                        ? "border-b-2 border-blue-500 font-medium"
+                        : ""
+                    }`}
                     onClick={() => setActiveTab("general")}
                   >
                     Thông tin chung
                   </button>
                   <button
                     type="button"
-                    className={`pb-2 px-1 ${activeTab === "variants" ? "border-b-2 border-blue-500 font-medium" : ""}`}
+                    className={`pb-2 px-1 ${
+                      activeTab === "variants"
+                        ? "border-b-2 border-blue-500 font-medium"
+                        : ""
+                    }`}
                     onClick={() => setActiveTab("variants")}
                   >
                     Biến thể
                   </button>
                   <button
                     type="button"
-                    className={`pb-2 px-1 ${activeTab === "description" ? "border-b-2 border-blue-500 font-medium" : ""}`}
+                    className={`pb-2 px-1 ${
+                      activeTab === "description"
+                        ? "border-b-2 border-blue-500 font-medium"
+                        : ""
+                    }`}
                     onClick={() => setActiveTab("description")}
                   >
                     Mô tả
                   </button>
                   <button
                     type="button"
-                    className={`pb-2 px-1 ${activeTab === "medical" ? "border-b-2 border-blue-500 font-medium" : ""}`}
+                    className={`pb-2 px-1 ${
+                      activeTab === "medical"
+                        ? "border-b-2 border-blue-500 font-medium"
+                        : ""
+                    }`}
                     onClick={() => setActiveTab("medical")}
                   >
                     Thông tin y tế
@@ -442,11 +416,16 @@ export default function UpdateProduct() {
                 </div>
               </div>
 
-              <div style={{ display: activeTab === "general" ? "block" : "none" }}>
+              <div
+                style={{ display: activeTab === "general" ? "block" : "none" }}
+              >
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="basePrice" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="basePrice"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Giá gốc (VNĐ)
                       </label>
                       <input
@@ -461,7 +440,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="salePrice" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="salePrice"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Giá bán (VNĐ)
                       </label>
                       <input
@@ -476,7 +458,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="cost" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="cost"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Giá vốn (VNĐ)
                       </label>
                       <input
@@ -494,7 +479,10 @@ export default function UpdateProduct() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="discountType" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="discountType"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Loại giảm giá
                       </label>
                       <select
@@ -513,7 +501,10 @@ export default function UpdateProduct() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="discountValue" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="discountValue"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Giá trị giảm
                       </label>
                       <input
@@ -527,7 +518,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="maxDiscountAmount" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="maxDiscountAmount"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Giảm giá tối đa (VNĐ)
                       </label>
                       <input
@@ -544,7 +538,10 @@ export default function UpdateProduct() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="stockTotal" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="stockTotal"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Tổng số lượng
                       </label>
                       <input
@@ -559,7 +556,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="lowStockThreshold" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="lowStockThreshold"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Ngưỡng cảnh báo hết hàng
                       </label>
                       <input
@@ -573,7 +573,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="priceRange" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="priceRange"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Phân khúc giá
                       </label>
                       <select
@@ -607,7 +610,10 @@ export default function UpdateProduct() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="origin" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="origin"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Xuất xứ
                       </label>
                       <input
@@ -620,7 +626,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="manufacturerName" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="manufacturerName"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Nhà sản xuất
                       </label>
                       <input
@@ -633,7 +642,10 @@ export default function UpdateProduct() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="weight" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="weight"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Trọng lượng
                       </label>
                       <select
@@ -664,7 +676,10 @@ export default function UpdateProduct() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="targeted" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="targeted"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Đối tượng
                       </label>
                       <select
@@ -683,7 +698,10 @@ export default function UpdateProduct() {
                         <option value="Trẻ em" className="text-gray-800">
                           Trẻ em
                         </option>
-                        <option value="Người cao tuổi" className="text-gray-800">
+                        <option
+                          value="Người cao tuổi"
+                          className="text-gray-800"
+                        >
                           Người cao tuổi
                         </option>
                         <option value="Mọi đối tượng" className="text-gray-800">
@@ -692,7 +710,10 @@ export default function UpdateProduct() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="supplierId" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="supplierId"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Nhà cung cấp
                       </label>
                       <select
@@ -704,14 +725,21 @@ export default function UpdateProduct() {
                       >
                         <option value="">Chọn nhà cung cấp</option>
                         {suppliers.map((supplier) => (
-                          <option key={supplier.id} value={supplier.id} className="text-gray-800">
+                          <option
+                            key={supplier.id}
+                            value={supplier.id}
+                            className="text-gray-800"
+                          >
                             {supplier.name}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="status" className="block text-sm font-medium mb-1">
+                      <label
+                        htmlFor="status"
+                        className="block text-sm font-medium mb-1"
+                      >
                         Trạng thái
                       </label>
                       <select
@@ -736,7 +764,9 @@ export default function UpdateProduct() {
                 </div>
               </div>
 
-              <div style={{ display: activeTab === "variants" ? "block" : "none" }}>
+              <div
+                style={{ display: activeTab === "variants" ? "block" : "none" }}
+              >
                 <div className="space-y-4">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium">Biến thể sản phẩm</h3>
@@ -776,7 +806,13 @@ export default function UpdateProduct() {
                               <input
                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
                                 value={variant.name}
-                                onChange={(e) => updateVariant(variant.id, "name", e.target.value)}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
                                 placeholder="Tên biến thể"
                               />
                             </td>
@@ -784,7 +820,13 @@ export default function UpdateProduct() {
                               <input
                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
                                 value={variant.sku}
-                                onChange={(e) => updateVariant(variant.id, "sku", e.target.value)}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "sku",
+                                    e.target.value
+                                  )
+                                }
                                 placeholder="SKU"
                               />
                             </td>
@@ -793,7 +835,13 @@ export default function UpdateProduct() {
                                 type="number"
                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
                                 value={variant.price}
-                                onChange={(e) => updateVariant(variant.id, "price", e.target.value)}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "price",
+                                    e.target.value
+                                  )
+                                }
                                 min="0"
                               />
                             </td>
@@ -802,7 +850,13 @@ export default function UpdateProduct() {
                                 type="number"
                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-md"
                                 value={variant.stock}
-                                onChange={(e) => updateVariant(variant.id, "stock", e.target.value)}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "stock",
+                                    e.target.value
+                                  )
+                                }
                                 min="0"
                               />
                             </td>
@@ -823,10 +877,17 @@ export default function UpdateProduct() {
                 </div>
               </div>
 
-              <div style={{ display: activeTab === "description" ? "block" : "none" }}>
+              <div
+                style={{
+                  display: activeTab === "description" ? "block" : "none",
+                }}
+              >
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="description" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Mô tả sản phẩm
                     </label>
                     <div className="border rounded-md">
@@ -834,7 +895,12 @@ export default function UpdateProduct() {
                         apiKey="95zzat4zdhk63cbyepm9apkvb89bqply9apvsjwh88a454sw"
                         onInit={(evt, editor) => (editorRef.current = editor)}
                         value={formData.description}
-                        onEditorChange={(content) => setFormData((prev) => ({ ...prev, description: content }))}
+                        onEditorChange={(content) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            description: content,
+                          }))
+                        }
                         init={{
                           height: 400,
                           menubar: true,
@@ -872,10 +938,15 @@ export default function UpdateProduct() {
                 </div>
               </div>
 
-              <div style={{ display: activeTab === "medical" ? "block" : "none" }}>
+              <div
+                style={{ display: activeTab === "medical" ? "block" : "none" }}
+              >
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="ingredients" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="ingredients"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Thành phần
                     </label>
                     <textarea
@@ -890,7 +961,10 @@ export default function UpdateProduct() {
                   </div>
 
                   <div>
-                    <label htmlFor="dosage" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="dosage"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Liều dùng
                     </label>
                     <textarea
@@ -905,7 +979,10 @@ export default function UpdateProduct() {
                   </div>
 
                   <div>
-                    <label htmlFor="warnings" className="block text-sm font-medium mb-1">
+                    <label
+                      htmlFor="warnings"
+                      className="block text-sm font-medium mb-1"
+                    >
                       Cảnh báo
                     </label>
                     <textarea
@@ -928,7 +1005,10 @@ export default function UpdateProduct() {
                       onChange={handleInputChange}
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="requiresPrescription" className="text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="requiresPrescription"
+                      className="text-sm font-medium text-gray-700"
+                    >
                       Yêu cầu đơn thuốc
                     </label>
                   </div>
@@ -942,7 +1022,10 @@ export default function UpdateProduct() {
               <h3 className="text-lg font-medium mb-4">Trạng thái sản phẩm</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="status-sidebar" className="block text-sm font-medium cursor-pointer">
+                  <label
+                    htmlFor="status-sidebar"
+                    className="block text-sm font-medium cursor-pointer"
+                  >
                     Trạng thái
                   </label>
                   <select
@@ -965,7 +1048,10 @@ export default function UpdateProduct() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label htmlFor="isFeatured" className="block text-sm font-medium cursor-pointer">
+                  <label
+                    htmlFor="isFeatured"
+                    className="block text-sm font-medium cursor-pointer"
+                  >
                     Sản phẩm nổi bật
                   </label>
                   <input
@@ -979,7 +1065,10 @@ export default function UpdateProduct() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label htmlFor="isPopular" className="block text-sm font-medium cursor-pointer">
+                  <label
+                    htmlFor="isPopular"
+                    className="block text-sm font-medium cursor-pointer"
+                  >
                     Sản phẩm phổ biến
                   </label>
                   <input
@@ -999,8 +1088,15 @@ export default function UpdateProduct() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   {images.map((image) => (
-                    <div key={image.id} className="relative border rounded-md overflow-hidden">
-                      <img src={image.url || "/placeholder.svg"} alt={image.alt} className="w-full h-32 object-cover" />
+                    <div
+                      key={image.id}
+                      className="relative border rounded-md overflow-hidden"
+                    >
+                      <img
+                        src={image.url || "/placeholder.svg"}
+                        alt={image.alt}
+                        className="w-full h-32 object-cover"
+                      />
                       <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
                         <div className="flex justify-end">
                           <button
@@ -1014,7 +1110,11 @@ export default function UpdateProduct() {
                         <button
                           type="button"
                           onClick={() => setPrimaryImage(image.id)}
-                          className={`w-full mt-auto py-1 bg-gray-200 text-gray-800 text-sm rounded-md ${image.isPrimary ? "cursor-not-allowed" : "cursor-pointer"}`}
+                          className={`w-full mt-auto py-1 bg-gray-200 text-gray-800 text-sm rounded-md ${
+                            image.isPrimary
+                              ? "cursor-not-allowed"
+                              : "cursor-pointer"
+                          }`}
                           disabled={image.isPrimary}
                         >
                           {image.isPrimary ? "Ảnh chính" : "Đặt làm ảnh chính"}
@@ -1023,13 +1123,20 @@ export default function UpdateProduct() {
                     </div>
                   ))}
                   <div className="border border-dashed rounded-md flex items-center justify-center h-32">
-                    <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center p-4">
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer flex flex-col items-center p-4"
+                    >
                       {isUploading ? (
-                        <span className="text-sm text-gray-500">Đang tải ảnh...</span>
+                        <span className="text-sm text-gray-500">
+                          Đang tải ảnh...
+                        </span>
                       ) : (
                         <>
                           <FiImage className="h-8 w-8 text-gray-400 mb-2" />
-                          <span className="text-sm text-gray-500 text-center">Tải lên hình ảnh</span>
+                          <span className="text-sm text-gray-500 text-center">
+                            Tải lên hình ảnh
+                          </span>
                         </>
                       )}
                       <input
@@ -1061,11 +1168,14 @@ export default function UpdateProduct() {
           >
             Hủy
           </button>
-          <button type="submit" className="px-4 py-2 bg-blue-600 !text-white rounded-md hover:bg-blue-700 !ml-2 cursor-pointer">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 !text-white rounded-md hover:bg-blue-700 !ml-2 cursor-pointer"
+          >
             Cập nhật sản phẩm
           </button>
         </div>
       </form>
     </div>
-  )
+  );
 }

@@ -6,9 +6,9 @@ import com.hoanghocdev.dolaspharmacy.dto.request.ProductUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.VariantRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ProductResponse;
 import com.hoanghocdev.dolaspharmacy.entity.*;
+import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
-import com.hoanghocdev.dolaspharmacy.mapper.ImageMapper;
 import com.hoanghocdev.dolaspharmacy.mapper.ProductMapper;
 import com.hoanghocdev.dolaspharmacy.mapper.VariantMapper;
 import com.hoanghocdev.dolaspharmacy.repository.*;
@@ -21,12 +21,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -103,7 +99,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(category);
         product.setSupplier(supplier);
         product.setVariants(null);
-        product.setSlug(SlugUtils.toSlug(product.getProductName()) );
+        product.setSlug(SlugUtils.toSlug(product.getProductName()));
         product = productRepository.save(product);
 
         List<Variant> variants = creationRequest.getVariants().stream().map(variantMapper::toVariant).toList();
@@ -159,7 +155,7 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(brand);
         product.setCategory(category);
         product.setSupplier(supplier);
-        product.setSlug(SlugUtils.toSlug(product.getProductName()) );
+        product.setSlug(SlugUtils.toSlug(product.getProductName()));
         product = productRepository.save(product);
 
         List<String> variantIds = product.getVariants().stream().map(Variant::getId).toList();
@@ -175,10 +171,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(String id) {
-        if(!productRepository.existsById(id)) {
-            throw new AppException(ErrorCode.DATA_NOT_FOUND);
-        }
-        promotionRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        product.setProductStatus(ProductStatus.INACTIVE);
+        productRepository.deleteById(id);
     }
 
     @Override
