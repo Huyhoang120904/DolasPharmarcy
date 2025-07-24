@@ -36,7 +36,6 @@ A comprehensive pharmacy management system designed to streamline operations for
 - Advanced variant management system
 - Category-based organization
 - Real-time inventory tracking
-- Low stock alerts and notifications
 
 ### 🛒 **Order Processing**
 
@@ -49,7 +48,6 @@ A comprehensive pharmacy management system designed to streamline operations for
 
 - **VnPay payment gateway** integration
 - Secure payment processing
-- Transaction history tracking
 
 ### 📧 **Communication**
 
@@ -65,7 +63,6 @@ A comprehensive pharmacy management system designed to streamline operations for
 
 - Customer profile management
 - Purchase history tracking
-- Prescription management
 - Review and rating system
 
 ### 📊 **Analytics & Reporting**
