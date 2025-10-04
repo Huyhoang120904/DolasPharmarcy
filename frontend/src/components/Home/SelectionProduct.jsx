@@ -54,8 +54,6 @@ const SelectionProduct = ({ name }) => {
 
   if (loading) return <div>Loading...</div>;
 
-  console.log(`active`, active);
-
   return (
     <div className="my-14 px-4">
       <Link to="/product">

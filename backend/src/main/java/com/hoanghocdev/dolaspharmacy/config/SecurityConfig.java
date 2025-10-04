@@ -37,7 +37,7 @@ public class SecurityConfig {
 
     static String[] PUBLIC_POST_ENDPOINTS = {
             "/auth/**", "/users/me/**",
-            "/products/search/**","/users/me/**","/payments/create"
+            "/products/search**","/users/me/**","/payments/create"
     };
 
     static String[] PUBLIC_DELETE_ENDPOINTS = {
@@ -48,6 +48,8 @@ public class SecurityConfig {
     static String[] ADMIN_ENDPOINTS = {
             "/roles/**", "/permissions/**", "/users/**"
     };
+
+
 
     static String[] PERSONAL_ENDPOINTS = {
             "/cart/**", "/favourite/**",
@@ -65,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll()
+                        .requestMatchers("/ws/**").permitAll() // web socket server
                         .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer

@@ -109,8 +109,6 @@ public class VnPayServiceImpl {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = VnPayConfig.vnp_PayUrl + "?" + queryUrl;
 
-        order.setOrderStatus(OrderStatus.PAID);
-
         return PaymentResponse.builder()
                 .status("00")
                 .message("Success")

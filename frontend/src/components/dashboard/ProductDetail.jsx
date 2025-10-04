@@ -19,8 +19,6 @@ const ProductDetail = () => {
     fetchProduct();
   }, [slug]);
 
-  console.log(product);
-
   if (loading) {
     return (
       <div className="flex justify-center items-center w-full h-screen bg-gray-100">

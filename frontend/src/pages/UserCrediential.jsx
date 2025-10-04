@@ -76,8 +76,6 @@ function UserCrediential({ loginPage }) {
       },
     };
 
-    console.log(userData);
-
     const result = await register(userData);
     if (!result.success) {
       message.error(result.error || "Đăng ký thất bại");

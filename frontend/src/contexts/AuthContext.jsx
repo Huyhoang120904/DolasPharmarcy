@@ -45,8 +45,6 @@ export const AuthProvider = ({ children }) => {
 
       const tokenResponse = await AuthService.register(userData);
 
-      console.log(tokenResponse);
-
       // Store token in localStorage
       localStorage.setItem("token", tokenResponse.result.token);
 

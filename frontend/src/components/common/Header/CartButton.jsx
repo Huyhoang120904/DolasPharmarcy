@@ -6,7 +6,7 @@ import { useCart } from "../../../contexts/CartContext";
 import CartItem from "./CartItem";
 
 export default function CartButton() {
-  const { cart, removeItemFromCart, cartLoading } = useCart();
+  const { cart, cartLoading } = useCart();
 
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
@@ -14,7 +14,7 @@ export default function CartButton() {
   if (Array.isArray(cart)) {
     items = cart.map((item) => ({
       key: item.id,
-      label: <CartItem item={item} removeItemFromCart={removeItemFromCart} />,
+      label: <CartItem item={item} />,
     }));
   }
 

@@ -93,8 +93,6 @@ const Product = ({ promotion = false }) => {
       }
 
       case "brandName": {
-        console.log(e.length === 0);
-
         if (e.length === 0) {
           setFilter({ ...filter, [queryParam]: null });
         }
@@ -103,7 +101,6 @@ const Product = ({ promotion = false }) => {
       }
 
       case "targetName": {
-        console.log(e.length === 0);
         if (e.length === 0) {
           setFilter({ ...filter, [queryParam]: null });
         }
@@ -155,8 +152,6 @@ const Product = ({ promotion = false }) => {
   function handleAddToCart(item) {
     addToCart(item);
 
-    console.log(item);
-
     api.success({
       message: "Thêm giỏ hàng thành công",
       description: `${item.product.productName} được thêm vào giỏ hàng thành công!`,
@@ -177,7 +172,6 @@ const Product = ({ promotion = false }) => {
 
         const data = reponse.result;
         setProducts(data.content);
-
         setPagination({
           page: data.pageable.pageNumber,
           size: data.pageable.pageSize,
@@ -229,7 +223,7 @@ const Product = ({ promotion = false }) => {
     if (urlSearchQuery && urlSearchQuery !== filter.q) {
       setFilter((prev) => ({ ...prev, q: urlSearchQuery }));
     }
-  }, []);
+  }, [filter.q, searchParams]);
 
   // Update search params when filter changes
   useEffect(() => {
@@ -264,7 +258,7 @@ const Product = ({ promotion = false }) => {
   const sortArr = [
     { name: "Tên A-Z", order: "ASC", sort_name: "productName" },
     { name: "Tên Z-A", order: "DESC", sort_name: "productName" },
-    { name: "Hàng mới", order: "DESC", sort_name: "createdDate" },
+    { name: "Hàng mới", order: "DESC", sort_name: "createdAt" },
     {
       name: "Giá thấp đến cao",
       order: "ASC",

@@ -64,8 +64,6 @@ export const UserService = {
 
   addCartItem: async (cartItem) => {
     try {
-      console.log(`cartItem`, cartItem);
-
       const response = await request.post("/users/me/cartItems", cartItem, {
         headers: { Authorization: `Bearer ${getMyToken()}` },
       });
@@ -112,8 +110,6 @@ export const UserService = {
         phoneNumber: values.phoneNumber,
         name: values.name,
       };
-
-      console.log(`newAddress`, newAddress);
 
       // Send the updated user info to the API
       const response = await request.post("/users/me/addresses", newAddress, {

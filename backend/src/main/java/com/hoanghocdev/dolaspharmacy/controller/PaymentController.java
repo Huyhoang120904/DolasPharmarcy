@@ -3,6 +3,7 @@ package com.hoanghocdev.dolaspharmacy.controller;
 import com.hoanghocdev.dolaspharmacy.dto.request.PaymentRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ApiResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.PaymentResponse;
+import com.hoanghocdev.dolaspharmacy.service.OrderService;
 import com.hoanghocdev.dolaspharmacy.service.impl.VnPayServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ import java.io.IOException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentController {
     VnPayServiceImpl vnPayService;
+    OrderService orderService;
 
     @Value("${spring.security.cors_url}")
     @NonFinal
@@ -47,6 +49,8 @@ public class PaymentController {
 
             req.getParameterMap().entrySet().forEach(entry ->
                     log.info("request info: {} = {}", entry.getKey(), entry.getValue()));
+
+            orderService.payOrder(orderId);
 
             return ApiResponse.<PaymentResponse>builder()
                     .statusCode(HttpStatus.OK.value())

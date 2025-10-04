@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -7,6 +8,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,6 +54,9 @@ public class Product {
     @UpdateTimestamp
     LocalDateTime lastModifiedAt;
 
+    @Column(columnDefinition = "bigint default 0")
+    Long viewCount = 0L;
+
     @Enumerated(EnumType.STRING)
     ProductStatus productStatus;
 
@@ -60,6 +65,7 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "supplier_id")
+    @JsonManagedReference
     Supplier supplier;
 
     @ManyToOne
@@ -67,6 +73,7 @@ public class Product {
     Target target;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     List<Variant> variants;
 
     @ManyToOne(fetch = FetchType.EAGER)

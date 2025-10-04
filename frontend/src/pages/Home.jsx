@@ -21,9 +21,9 @@ const Home = () => {
       <div className="w-[70%]">
         <HealthBanner />
         <Category />
-        <Products name="Khuyến mãi hấp dẫn" />
-        <Products name="Sản phẩm mới" />
-        <Products name="Sản phẩm nổi bật" />
+        <Products name="Khuyến mãi hấp dẫn" productInfo="promotion" />
+        <Products name="Sản phẩm mới" productInfo="createdAt" />
+        <Products name="Sản phẩm nổi bật" productInfo="popular" />
         <SubBanner />
         <Description />
         <SelectionProduct name="Sản phẩm theo đối tượng" />

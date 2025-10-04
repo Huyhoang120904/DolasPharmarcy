@@ -9,7 +9,6 @@ function QnA() {
   const [form] = Form.useForm();
 
   const handleSubmit = (values) => {
-    console.log("Form submitted:", values);
     message.success("Câu hỏi của bạn đã được gửi thành công!");
     //api
 

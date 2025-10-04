@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -25,14 +26,15 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     Order order;
 
     public OrderItem calculateFinalPrice() {
-        if(this.variant.getProduct().getPromotion() != null &&
+        if (this.variant.getProduct().getPromotion() != null &&
                 this.variant.getProduct().getPromotion().getDiscountAmount() > 0) {
             this.finalPrice = this.quantity
                     * this.variant.getPrice()
-                    * (1 - this.variant.getProduct().getPromotion().getDiscountAmount()/100);
+                    * (1 - this.variant.getProduct().getPromotion().getDiscountAmount() / 100);
         } else {
             this.finalPrice = this.quantity * this.variant.getPrice();
         }

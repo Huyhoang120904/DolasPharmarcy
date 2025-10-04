@@ -20,6 +20,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -121,7 +123,7 @@ public class UserEntityController {
 
     //Checkout
     @PostMapping("/me/checkout")
-    public ApiResponse<OrderResponse> createOrderFromCart(@RequestBody @Valid OrderCreationRequest request) {
+    public ApiResponse<OrderResponse> createOrderFromCart(@RequestBody @Valid OrderCreationRequest request) throws IOException {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.createOrder(request))
                 .build();

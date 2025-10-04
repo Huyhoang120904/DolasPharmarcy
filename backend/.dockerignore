@@ -1,0 +1,36 @@
+# Maven/Gradle build output
+target/
+build/
+
+# IDEs and editors
+.idea/
+*.iml
+*.class
+*.log
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# Tests
+test/
+src/test/
+
+# Node/npm if used in frontend
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Env files
+*.env
+
+# Others
+*.swp

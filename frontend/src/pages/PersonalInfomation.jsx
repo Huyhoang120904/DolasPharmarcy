@@ -44,7 +44,7 @@ function PersonalInfomation() {
     } else {
       nav("/");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, nav]);
 
   const handleAddAddress = async (values) => {
     try {
@@ -73,7 +73,6 @@ function PersonalInfomation() {
     try {
       // Send the updated user info to the API
       const response = await UserService.deleteAddress(addressId);
-
       const updatedUser = await UserService.getMyInfo();
       setUserInfo(updatedUser.result);
 
@@ -101,6 +100,7 @@ function PersonalInfomation() {
         <Spin />
       </div>
     );
+
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <Card className="mb-6 shadow-md border-0 rounded-xl overflow-hidden">

@@ -88,7 +88,7 @@ public class UserEntityServiceImpl implements UserEntityService {
         userEntity = userEntityRepository.save(userEntity);
 
         UserDetail userDetail = userDetailMapper.toUserDetail(request.getUserDetail());
-        userDetail.setUserEntity(userEntity);
+
 
         userDetail = userDetailRepository.save(userDetail);
 

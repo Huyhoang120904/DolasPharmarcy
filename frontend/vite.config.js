@@ -10,4 +10,5 @@ export default defineConfig({
       ignored: ["**/json-server/**"],
     },
   },
+  define: { global: "window" },
 });

@@ -35,16 +35,16 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
 function Payment() {
-  const [currUser, setCurrUser] = useState({});
-  const [paymentMethod, setPaymentMethod] = useState("transfer");
+  const { user } = useAuth();
+  const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
   const [provinces, setProvices] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const [isFillingUserInfo, setIsFillingUserInfo] = useState(false);
   const { cart, emptyCart } = useCart();
-  const { user } = useAuth();
   const [form] = Form.useForm();
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState();
@@ -92,7 +92,7 @@ function Payment() {
           duration: 3,
         });
       });
-  }, []);
+  }, [api]);
 
   // Load districts when province changes
   useEffect(() => {
@@ -119,7 +119,15 @@ function Payment() {
           }
           // Reset ward selection when district changes
           setSelectedDistrict(null);
-          form.setFieldsValue({ district: undefined, ward: undefined });
+          if (!isFillingUserInfo) {
+            form.setFieldsValue({
+              address: {
+                ...form.getFieldValue("address"),
+                district: undefined,
+                ward: undefined,
+              },
+            });
+          }
         })
         .catch((error) => {
           console.error("Error fetching districts:", error);
@@ -133,7 +141,7 @@ function Payment() {
     } else {
       setDistricts([]);
     }
-  }, [selectedProvince]);
+  }, [selectedProvince, form, isFillingUserInfo, api]);
 
   // Load wards when district changes
   useEffect(() => {
@@ -146,7 +154,14 @@ function Payment() {
             label: ward.name,
           }));
           setWards(formattedWards);
-          form.setFieldsValue({ ward: undefined });
+          if (!isFillingUserInfo) {
+            form.setFieldsValue({
+              address: {
+                ...form.getFieldValue("address"),
+                ward: undefined,
+              },
+            });
+          }
         })
         .catch((error) => {
           console.error("Error fetching wards:", error);
@@ -160,20 +175,19 @@ function Payment() {
     } else {
       setWards([]);
     }
-  }, [selectedDistrict]);
+  }, [selectedDistrict, form, isFillingUserInfo, api]);
 
   function handleSubmit() {
     form.submit();
   }
 
   const fillUserInfo = () => {
+    setIsFillingUserInfo(true);
+
     // Find the best address to use (primary shipping address, or any shipping address, or first address)
     const primaryShippingAddress =
-      currUser.addresses?.find(
-        (addr) => addr.type === "shipping" && addr.isPrimary
-      ) ||
-      currUser.addresses?.find((addr) => addr.type === "shipping") ||
-      currUser.addresses?.[0];
+      user.userDetail.addresses?.find((addr) => addr.primary) ||
+      user.userDetail.addresses?.[0];
 
     if (!primaryShippingAddress) {
       api.warning({
@@ -181,29 +195,34 @@ function Payment() {
         description: "Không tìm thấy địa chỉ hợp lệ trong tài khoản của bạn.",
         duration: 2,
       });
+      setIsFillingUserInfo(false);
       return;
     }
 
-    const fullName = `${currUser.firstName || ""} ${
-      currUser.lastName || ""
-    }`.trim();
-
     // First, update the basic information
     form.setFieldsValue({
-      fullName: fullName || primaryShippingAddress.fullName,
-      phone: primaryShippingAddress.phone || currUser.phone,
-      email: currUser.email || "",
-      address: primaryShippingAddress.street || "",
-      notes: form.getFieldValue("notes"), // Preserve any existing notes
+      fullName: user.userDetail.fullName,
+      email: user.userDetail.email || "",
+      address: {
+        phoneNumber: primaryShippingAddress.phoneNumber || "",
+        address: primaryShippingAddress.address || "",
+      },
     });
 
     // Set province and handle cascading fields
-    const province = primaryShippingAddress.city;
+    const province = primaryShippingAddress.province;
     if (province) {
       // Find the province in the list
       const provinceItem = provinces.find((p) => p.value === province);
       if (provinceItem) {
-        form.setFieldsValue({ province });
+        // Set province in the correct nested structure
+        form.setFieldsValue({
+          address: {
+            ...form.getFieldValue("address"),
+            province: province,
+          },
+        });
+
         // Set the selected province to trigger district loading
         setSelectedProvince(provinceItem.id);
 
@@ -222,7 +241,12 @@ function Payment() {
               // Now set the district value after districts are loaded
               const district = primaryShippingAddress.state;
               if (district) {
-                form.setFieldsValue({ district });
+                form.setFieldsValue({
+                  address: {
+                    ...form.getFieldValue("address"),
+                    district: district,
+                  },
+                });
 
                 // Find district item to load wards
                 const districtItem = formattedDistricts.find(
@@ -248,7 +272,12 @@ function Payment() {
                         const ward = primaryShippingAddress.ward;
                         if (ward) {
                           setTimeout(() => {
-                            form.setFieldsValue({ ward });
+                            form.setFieldsValue({
+                              address: {
+                                ...form.getFieldValue("address"),
+                                ward: ward,
+                              },
+                            });
                           }, 100); // Small delay to ensure form updates properly
                         }
                       }
@@ -271,47 +300,60 @@ function Payment() {
       description: "Địa chỉ của bạn đã được điền vào form thanh toán.",
       duration: 2,
     });
+
+    // Reset the flag after a delay to ensure all async operations complete
+    setTimeout(() => {
+      setIsFillingUserInfo(false);
+    }, 500);
   };
 
   async function handleFinish() {
-    setLoading(true);
-    const values = form.getFieldsValue();
-    const orderItems = cart.map((cartItem) => {
-      return { variantId: cartItem.variant.id, quantity: cartItem.quantity };
-    });
-    const request = {
-      ...values,
-      orderItems: orderItems,
-      paymentMethod: paymentMethod,
-    };
+    try {
+      setLoading(true);
+      const values = form.getFieldsValue();
 
-    const response = await UserService.checkout(request);
-
-    if (response.code == 1000) {
-      emptyCart();
-    } else {
-      setLoading(false);
-      api.error({
-        message: "Lỗi xảy ra",
-        description: "Không thể tạo đơn hàng. Vui lòng liên hệ với hỗ trợ.",
-        duration: 2,
+      const orderItems = cart.map((cartItem) => {
+        return { variantId: cartItem.variant.id, quantity: cartItem.quantity };
       });
-      return;
-    }
 
-    const orderId = response.result.id;
+      const request = {
+        ...values,
+        orderItems: orderItems,
+        paymentMethod: paymentMethod,
+      };
 
-    if (response.result.paymentMethod === "E_BANKING") {
-      const createPaymentResponse = await PaymentService.checkout(orderId);
+      const response = await UserService.checkout(request);
 
-      if (createPaymentResponse.result.status === "00") {
-        if (request.paymentMethod === "E_BANKING") {
-          window.location.href = createPaymentResponse.result.url;
-        }
+      if (response.code !== 1000) {
+        setLoading(false);
+        api.error({
+          message: "Lỗi xảy ra",
+          description: "Không thể tạo đơn hàng. Vui lòng liên hệ với hỗ trợ.",
+          duration: 2,
+        });
+        return;
+      } else {
+        emptyCart();
       }
-    }
 
-    setLoading(false);
+      const orderId = response.result.id;
+
+      if (response.result.paymentMethod === "E_BANKING") {
+        const createPaymentResponse = await PaymentService.checkout(orderId);
+
+        if (createPaymentResponse.result.status === "00") {
+          if (request.paymentMethod === "E_BANKING") {
+            window.location.href = createPaymentResponse.result.url;
+          }
+        }
+      } else if (response.result.paymentMethod === "CASH_ON_DELIVERY") {
+        window.location.href = "/confirmation/" + orderId;
+      }
+    } catch (err) {
+      alert(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleFailed() {
@@ -354,7 +396,7 @@ function Payment() {
                 onFinish={handleFinish}
                 onFinishFailed={handleFailed}
                 initialValues={{
-                  deliveryTime: "08:00 - 12:00",
+                  receiveTime: "8:00 - 12:00",
                 }}
               >
                 <Row gutter={16}>
@@ -407,16 +449,12 @@ function Payment() {
                             .includes(input.toLowerCase())
                         }
                         options={provinces}
-                        onChange={(value, option) => {
+                        onChange={(value) => {
                           setSelectedProvince(
                             provinces.find(
-                              (province) => (province.name = value)
+                              (province) => (province.value = value)
                             ).id
                           );
-                          // form.setFieldsValue({
-                          //   district: undefined,
-                          //   ward: undefined,
-                          // });
                         }}
                       />
                     </Form.Item>
@@ -445,9 +483,14 @@ function Payment() {
                           setSelectedDistrict(
                             districts.find(
                               (district) => district.value === value
-                            ).id
+                            )?.id
                           );
-                          form.setFieldsValue({ ward: undefined });
+                          form.setFieldsValue({
+                            address: {
+                              ...form.getFieldValue("address"),
+                              ward: undefined,
+                            },
+                          });
                         }}
                       />
                     </Form.Item>
@@ -526,7 +569,7 @@ function Payment() {
                         },
                       ]}
                     >
-                      <Select defaultValue="8:00 - 12:00">
+                      <Select>
                         <Select.Option value="8:00 - 12:00">
                           08:00 - 12:00
                         </Select.Option>

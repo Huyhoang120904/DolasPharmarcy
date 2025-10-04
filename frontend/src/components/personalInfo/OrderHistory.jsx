@@ -49,6 +49,8 @@ function OrderHistory({ orders, loading }) {
     switch (status) {
       case "PENDING":
         return "gold";
+      case "PAID":
+        return "cyan";
       case "SHIPPING":
         return "geekblue";
       case "COMPLETED":
@@ -65,6 +67,8 @@ function OrderHistory({ orders, loading }) {
     switch (status) {
       case "PENDING":
         return "Chờ xử lý";
+      case "PAID":
+        return "Đã thanh toán";
       case "SHIPPING":
         return "Đang giao hàng";
       case "COMPLETED":
@@ -81,6 +85,8 @@ function OrderHistory({ orders, loading }) {
     switch (status) {
       case "PENDING":
         return <ClockCircleOutlined />;
+      case "PAID":
+        return <CheckCircleOutlined />;
       case "SHIPPING":
         return <SyncOutlined spin />;
       case "COMPLETED":
@@ -109,17 +115,17 @@ function OrderHistory({ orders, loading }) {
     },
     {
       title: "Ngày đặt",
-      dataIndex: "createdAt",
-      key: "createdAt",
+      dataIndex: "createAt",
+      key: "createAt",
       render: (_, record) => (
-        <Tooltip title={new Date(record.createdAt).toLocaleString()}>
+        <Tooltip title={new Date(record.createAt).toLocaleString()}>
           <div className="flex items-center">
             <ClockCircleOutlined className="mr-1 text-gray-500" />
-            <span>{formatDate(record.createdAt)}</span>
+            <span>{formatDate(record.createAt)}</span>
           </div>
         </Tooltip>
       ),
-      sorter: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      sorter: (a, b) => new Date(b.createAt) - new Date(a.createAt),
       defaultSortOrder: "descend",
       width: 230,
     },
@@ -128,8 +134,6 @@ function OrderHistory({ orders, loading }) {
       dataIndex: "items",
       key: "items",
       render: (_, record) => {
-        console.log(record);
-
         return (
           <Text className="ml-2 font-bold">
             {record?.orderItems.length} sản phẩm
@@ -164,12 +168,13 @@ function OrderHistory({ orders, loading }) {
         </Tag>
       ),
       filters: [
-        { text: "Chờ xử lý", value: "pending" },
-        { text: "Đang xử lý", value: "processing" },
-        { text: "Hoàn thành", value: "completed" },
-        { text: "Đã hủy", value: "cancelled" },
+        { text: "Chờ xử lý", value: "PENDING" },
+        { text: "Đã thanh toán", value: "PAID" },
+        { text: "Đang giao hàng", value: "SHIPPING" },
+        { text: "Hoàn thành", value: "COMPLETED" },
+        { text: "Đã hủy", value: "CANCELLED" },
       ],
-      onFilter: (value, record) => record.status === value,
+      onFilter: (value, record) => record.orderStatus === value,
       width: 150,
     },
     {
@@ -219,9 +224,11 @@ function OrderHistory({ orders, loading }) {
           className="shadow-sm order-history-table"
           rowClassName={(record) =>
             `cursor-pointer hover:bg-blue-50 transition-colors duration-200 ${
-              record.status === "completed"
+              record.orderStatus === "COMPLETED"
                 ? "bg-green-50"
-                : record.status === "cancelled"
+                : record.orderStatus === "PAID"
+                ? "bg-blue-50"
+                : record.orderStatus === "CANCELLED"
                 ? "bg-red-50"
                 : ""
             }`

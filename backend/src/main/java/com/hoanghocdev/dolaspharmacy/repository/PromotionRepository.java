@@ -14,6 +14,6 @@ import java.util.Optional;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, String> {
-    @Query(value = "SELECT * FROM Promotion WHERE promotion_type = :type AND start_date <= :date AND end_date >= :date ORDER BY discount_amount DESC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM promotion WHERE promotion_type = :type AND start_date <= :date AND end_date >= :date ORDER BY discount_amount DESC LIMIT 1", nativeQuery = true)
     Optional<Promotion> findActivePromotionByType(@Param("type") PromotionType promotionType, @Param("date") LocalDate date);
 }

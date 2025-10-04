@@ -5,8 +5,6 @@ import { EnvironmentOutlined } from "@ant-design/icons";
 const { Text, Paragraph } = Typography;
 
 function AddressCard({ address, onDelete, loading }) {
-  console.log(`addressId`, address.id);
-
   return (
     <Card
       className="h-full shadow-sm border border-gray-200 rounded-lg transition-all duration-300 hover:shadow-md"

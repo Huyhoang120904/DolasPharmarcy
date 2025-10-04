@@ -28,7 +28,7 @@ function OrderDetail({ confirm = false }) {
     setLoading(true);
     const fetchOrder = async () => {
       const orderResponse = await OrderService.getOrderById(orderId);
-      console.log(orderResponse.result.address);
+
       setOrder(orderResponse.result);
       setLoading(false);
     };
@@ -56,14 +56,16 @@ function OrderDetail({ confirm = false }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":
-        return "orange";
-      case "processing":
-        return "blue";
-      case "completed":
-        return "green";
-      case "cancelled":
-        return "red";
+      case "PENDING":
+        return "gold";
+      case "PAID":
+        return "cyan";
+      case "SHIPPING":
+        return "geekblue";
+      case "COMPLETED":
+        return "success";
+      case "CANCELLED":
+        return "error";
       default:
         return "default";
     }
@@ -82,13 +84,15 @@ function OrderDetail({ confirm = false }) {
 
   const getStatusText = (status) => {
     switch (status) {
-      case "pending":
+      case "PENDING":
         return "Chờ xử lý";
-      case "processing":
-        return "Đang xử lý";
-      case "completed":
+      case "PAID":
+        return "Đã thanh toán";
+      case "SHIPPING":
+        return "Đang giao hàng";
+      case "COMPLETED":
         return "Hoàn thành";
-      case "cancelled":
+      case "CANCELLED":
         return "Đã hủy";
       default:
         return status;
@@ -254,17 +258,17 @@ function OrderDetail({ confirm = false }) {
               {order?.address.phoneNumber}
             </Descriptions.Item>
             <Descriptions.Item label="Địa chỉ">
-              {order?.address.address}, {order?.address.district},
-              {order?.address.province}
+              {order?.address.address}, {order?.address.ward},{" "}
+              {order?.address.district}, {order?.address.province}
             </Descriptions.Item>
-            {order.deliveryDate && (
+            {order.receiveDate && (
               <Descriptions.Item label="Ngày giao hàng">
-                {formatDate(order.deliveryDate)}
+                {formatDate(order.receiveDate)}
               </Descriptions.Item>
             )}
-            {order.deliveryTime && (
+            {order.receiveTime && (
               <Descriptions.Item label="Giờ giao hàng">
-                {order.deliveryTime}
+                {order.receiveTime}
               </Descriptions.Item>
             )}
             <Descriptions.Item label="Phương thức thanh toán">
@@ -348,10 +352,10 @@ function OrderDetail({ confirm = false }) {
           </div>
           <div className="mt-4 md:mt-0">
             <Tag
-              color={getStatusColor(order.status)}
+              color={getStatusColor(order.orderStatus)}
               className="py-1.5 px-4 text-base rounded-full font-medium shadow-sm"
             >
-              {getStatusText(order.status)}
+              {getStatusText(order.orderStatus)}
             </Tag>
           </div>
         </div>
@@ -378,16 +382,16 @@ function OrderDetail({ confirm = false }) {
             <Text copyable>{order.id}</Text>
           </Descriptions.Item>
           <Descriptions.Item label="Ngày đặt hàng">
-            {formatDate(order.createdAt)}
+            {formatDate(order.createAt)}
           </Descriptions.Item>
-          {order.deliveryDate && (
+          {order.receiveDate && (
             <Descriptions.Item label="Ngày giao hàng">
-              {formatDate(order.deliveryDate)}
+              {formatDate(order.receiveDate)}
             </Descriptions.Item>
           )}
-          {order.deliveryTime && (
+          {order.receiveTime && (
             <Descriptions.Item label="Giờ giao hàng">
-              {order.deliveryTime}
+              {order.receiveTime}
             </Descriptions.Item>
           )}
           <Descriptions.Item label="Phương thức thanh toán">
@@ -416,7 +420,8 @@ function OrderDetail({ confirm = false }) {
               {order.fullName}
             </p>
             <p className="mb-3">
-              <strong className="text-green-700">Email:</strong> {order.email}
+              <strong className="text-green-700">Email:</strong>{" "}
+              {order.userDetail?.email || "N/A"}
             </p>
             <p className="mb-0">
               <strong className="text-green-700">Số điện thoại:</strong>{" "}
@@ -431,6 +436,10 @@ function OrderDetail({ confirm = false }) {
             <p className="mb-3">
               <strong className="text-green-700">Quận/Huyện:</strong>{" "}
               {order?.address.district}
+            </p>
+            <p className="mb-3">
+              <strong className="text-green-700">Phường/Xã:</strong>{" "}
+              {order?.address.ward}
             </p>
             <p className="mb-0">
               <strong className="text-green-700">Tỉnh/Thành phố:</strong>{" "}

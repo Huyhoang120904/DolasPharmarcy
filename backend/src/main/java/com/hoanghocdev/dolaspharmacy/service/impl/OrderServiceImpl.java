@@ -1,5 +1,7 @@
 package com.hoanghocdev.dolaspharmacy.service.impl;
 
+import com.hoanghocdev.dolaspharmacy.entity.notification.Notification;
+import com.hoanghocdev.dolaspharmacy.entity.notification.enums.NotificationType;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderCreationRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.OrderUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.OrderResponse;
@@ -10,24 +12,28 @@ import com.hoanghocdev.dolaspharmacy.entity.enums.PromotionType;
 import com.hoanghocdev.dolaspharmacy.exception.AppException;
 import com.hoanghocdev.dolaspharmacy.exception.ErrorCode;
 import com.hoanghocdev.dolaspharmacy.mapper.OrderMapper;
-import com.hoanghocdev.dolaspharmacy.repository.*;
+import com.hoanghocdev.dolaspharmacy.repository.OrderRepository;
+import com.hoanghocdev.dolaspharmacy.repository.UserDetailRepository;
+import com.hoanghocdev.dolaspharmacy.repository.VariantRepository;
 import com.hoanghocdev.dolaspharmacy.service.OrderService;
 import com.hoanghocdev.dolaspharmacy.service.PromotionService;
 import com.hoanghocdev.dolaspharmacy.service.UserEntityService;
+import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderServiceImpl implements OrderService {
     OrderMapper orderMapper;
     VariantRepository variantRepository;
@@ -35,11 +41,12 @@ public class OrderServiceImpl implements OrderService {
     UserDetailRepository userDetailRepository;
     UserEntityService userEntityService;
     PromotionService promotionService;
-    VnPayServiceImpl vnPayService;
-
+    EmailServiceImpl emailService;
+    KafkaTemplate<String,Object> kafkaTemplate;
 
     @Override
-    public OrderResponse createOrder(OrderCreationRequest request) {
+    @Transactional
+    public OrderResponse createOrder(OrderCreationRequest request) throws IOException {
         UserResponse userResponse = userEntityService.findMyInfo();
 
         UserDetail userDetail = userDetailRepository.findByUsername(userResponse.getUsername())
@@ -63,10 +70,25 @@ public class OrderServiceImpl implements OrderService {
         order.calculateTotal();
         applyHighestAvailableOrderPromotion(order);
         Order savedOrder = orderRepository.save(order);
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Notification orderNoti = Notification.builder()
+                .notificationType(NotificationType.CREATED)
+                .username(username)
+                .message("Đơn hàng của bạn đã được tạo với mã " + savedOrder.getId() + "!")
+                .build();
+
+        kafkaTemplate.send("ws-notification",  orderNoti);
+
+        emailService.sendOrderConfirmationMail(savedOrder);
+
+
         return orderMapper.toResponse(savedOrder);
     }
 
     @Override
+    @Transactional
     public OrderResponse updateOrder(String orderId, OrderUpdateRequest request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
@@ -78,6 +100,16 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
         return orderMapper.toResponse(order);
     }
+
+    @Override
+    public OrderResponse payOrder(String orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        order.setOrderStatus(OrderStatus.PAID);
+        order = orderRepository.save(order);
+        return orderMapper.toResponse(order);
+    }
+
 
     @Override
     public Page<OrderResponse> findOrderByPage(Pageable pageable) {
@@ -115,28 +147,28 @@ public class OrderServiceImpl implements OrderService {
         Promotion promotionFixed = promotionService.getHighestAvailablePromotionForOrderByPromotionType(PromotionType.FIXED_AMOUNT_ORDER).orElse(null);
         Promotion promotionPercentage = promotionService.getHighestAvailablePromotionForOrderByPromotionType(PromotionType.PERCENTAGE_ORDER).orElse(null);
         Promotion promotion = promotionFixed;
-        if (promotionFixed !=null && promotionPercentage !=null) {
-            if (promotionFixed.getDiscountAmount() >= promotionPercentage.getDiscountAmount()*order.getTotal()) {
+        if (promotionFixed != null && promotionPercentage != null) {
+            if (promotionFixed.getDiscountAmount() >= promotionPercentage.getDiscountAmount() * order.getTotal()) {
                 promotion = promotionFixed;
             } else {
                 promotion = promotionPercentage;
             }
         }
-        if (promotionFixed == null && promotionPercentage !=null) {
+        if (promotionFixed == null && promotionPercentage != null) {
             promotion = promotionPercentage;
         }
 
-        if ( promotionPercentage ==null && promotionFixed != null) {
+        if (promotionPercentage == null && promotionFixed != null) {
             promotion = promotionFixed;
         }
 
-        if (promotion !=null) {
+        if (promotion != null) {
             order.setPromotion(promotion);
             if (promotion.getPromotionType() == PromotionType.FIXED_AMOUNT_ORDER) {
                 order.setTotal(order.getTotal() - promotion.getDiscountAmount());
             }
             if (promotion.getPromotionType() == PromotionType.PERCENTAGE_ORDER) {
-                order.setTotal(order.getTotal() *(1- promotion.getDiscountAmount()/100));
+                order.setTotal(order.getTotal() * (1 - promotion.getDiscountAmount() / 100));
             }
         }
     }

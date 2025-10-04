@@ -1,9 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../../../contexts/CartContext";
 
-export default function CartItem({ item, removeItemFromCart }) {
+export default function CartItem({ item }) {
   const nav = useNavigate();
-
+  const { removeItemFromCart } = useCart();
   const hasDiscount = item.variant.product?.promotion ? true : false;
 
   const price = hasDiscount
@@ -40,7 +41,7 @@ export default function CartItem({ item, removeItemFromCart }) {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          removeItemFromCart(item.id);
+          removeItemFromCart(item.variant.id);
         }}
         className="text-red-500 hover:text-red-700 hover:cursor-pointer"
       >

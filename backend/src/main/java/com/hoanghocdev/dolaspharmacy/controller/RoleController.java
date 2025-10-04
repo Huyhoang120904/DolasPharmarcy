@@ -23,7 +23,7 @@ import java.util.Set;
 @Validated
 public class RoleController {
 
-    private final RoleService roleService;
+    RoleService roleService;
 
     @GetMapping
     public ApiResponse<Set<RoleReponse>> getRole(){

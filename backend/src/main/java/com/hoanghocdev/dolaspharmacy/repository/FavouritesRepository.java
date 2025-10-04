@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface FavouritesRepository  extends JpaRepository<Favourites, String> {
-    @Query("select f from Favourites f where f.userDetail.userEntity.username = :username")
+    @Query("select f from Favourites f join UserDetail ud on f.userDetail.id = ud.id join UserEntity ue on ud.id = ue.userDetail.id " +
+            "where ue.username = :username")
     Optional<Favourites> getFavouritesByUsername(@Param("username") String username);
 }

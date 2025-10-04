@@ -3,8 +3,6 @@ package com.hoanghocdev.dolaspharmacy.dto.response;
 import com.hoanghocdev.dolaspharmacy.entity.enums.ProductStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,4 +39,7 @@ public class ProductResponse {
     SupplierResponse supplier;
 
     List<VariantResponse> variants;
+
+    LocalDateTime createdAt;
+
 }

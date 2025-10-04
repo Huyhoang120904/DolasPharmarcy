@@ -11,10 +11,12 @@ import com.hoanghocdev.dolaspharmacy.repository.ProductRepository;
 import com.hoanghocdev.dolaspharmacy.service.FavouriteService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor

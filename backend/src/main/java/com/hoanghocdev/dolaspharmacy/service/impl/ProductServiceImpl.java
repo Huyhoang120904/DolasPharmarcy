@@ -30,19 +30,23 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     CategoryRepository categoryRepository;
-    PromotionRepository promotionRepository;
     SupplierRepository supplierRepository;
     ProductRepository productRepository;
     ProductMapper productMapper;
     VariantRepository variantRepository;
     VariantMapper variantMapper;
-    private final BrandRepository brandRepository;
-    private final TargetRepository targetRepository;
+    BrandRepository brandRepository;
+    TargetRepository targetRepository;
 
     @Override
     public ProductResponse findProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        product.setViewCount(product.getViewCount() + 1);
+
+        product = productRepository.save(product);
+
         return productMapper.toResponse(product);
     }
 

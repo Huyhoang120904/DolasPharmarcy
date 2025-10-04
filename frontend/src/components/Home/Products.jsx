@@ -3,19 +3,32 @@ import { Link } from "react-router-dom";
 import SingleProduct from "../common/SingleProduct";
 import { ProductService } from "../../api-services/ProductService";
 
-const Products = ({ name }) => {
+const Products = ({ name, productInfo }) => {
   const [products, setProducts] = useState([]);
   const [productIndex, setProductIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 5;
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await ProductService.getProducts();
+        let response;
+        if (productInfo === "promotion") {
+          response = await ProductService.searchProducts({
+            sort: "promotion.discountAmount,DESC",
+          });
+        } else if (productInfo === "createdAt") {
+          response = await ProductService.searchProducts({
+            sort: "createdAt,DESC",
+          });
+        } else if (productInfo === "popular") {
+          response = await ProductService.searchProducts({
+            sort: "viewCount,DESC",
+          });
+        } else {
+          response = await ProductService.getProducts();
+        }
         setProducts(response.result.content);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -26,7 +39,7 @@ const Products = ({ name }) => {
     };
 
     fetchProducts();
-  }, []);
+  }, [productInfo]);
 
   const handleProductNext = () => {
     if (productIndex + itemsPerPage < products.length) {

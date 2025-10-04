@@ -59,7 +59,7 @@ const SingleProduct = ({ product }) => {
   };
 
   function handleClick() {
-    nav(`/product-detail/${product.id}`);
+    nav(`/product-detail/${product.slug}`);
   }
 
   function handleAddToCartItem(item) {

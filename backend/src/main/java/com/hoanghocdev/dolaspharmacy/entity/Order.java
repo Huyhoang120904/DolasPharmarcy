@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hoanghocdev.dolaspharmacy.entity.enums.OrderStatus;
 import com.hoanghocdev.dolaspharmacy.entity.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -8,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,6 +46,7 @@ public class Order {
     UserDetail userDetail;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference
     List<OrderItem> orderItems;
 
     @OneToOne
@@ -57,12 +58,12 @@ public class Order {
     @UpdateTimestamp
     LocalDateTime lastModifiedAt;
 
-    public void calculateTotal(){
+    public void calculateTotal() {
         this.total = 0;
         if (!CollectionUtils.isEmpty(this.orderItems)) {
             double tmp = 0;
             for (OrderItem orderItem : this.orderItems) {
-                tmp+=orderItem.getFinalPrice();
+                tmp += orderItem.getFinalPrice();
             }
             this.total = tmp;
         }

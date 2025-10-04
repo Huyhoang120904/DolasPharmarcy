@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hoanghocdev.dolaspharmacy.entity.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,9 +26,6 @@ public class UserDetail {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @OneToOne
-    UserEntity userEntity;
-
     String email;
     String fullName;
     LocalDate dob;
@@ -38,6 +36,7 @@ public class UserDetail {
     Gender gender;
 
     @OneToMany(mappedBy = "userDetail")
+    @JsonManagedReference
     Set<Address> addresses;
 
     @OneToMany(fetch = FetchType.EAGER)

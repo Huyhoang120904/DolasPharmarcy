@@ -117,11 +117,9 @@ export default function AddProduct({ update = false }) {
       variants: variants,
     };
 
-    console.log(`variants`, variants);
-
     if (update) {
       const tmpRequest = { ...request, images: productId.images };
-      console.log(`request: `, tmpRequest);
+
       await ProductService.updateProduct(productId.id, request);
     } else {
       await ProductService.addProduct(request);
@@ -134,57 +132,6 @@ export default function AddProduct({ update = false }) {
 
   function toInitialValue(product) {
     if (!product) return {};
-
-    console.log({
-      id: product.id,
-      productName: product.productName,
-      sku: product.sku,
-      slug: product.slug,
-      origin: product.origin || "",
-      weight: product.weight || undefined,
-      manufacturerName: product.manufacturerName || "",
-      productStatus: product.productStatus || "ACTIVE",
-      requiresPrescription: product.requiresPrescription || false,
-      description: product.description || "",
-      ingredients: product.ingredients || "",
-      dosage: product.dosage || "",
-      warning: product.warning || "",
-
-      // Handle nested fields
-      brand: {
-        brandName: product.brand?.brandName,
-      },
-      categoryId: product.category?.id,
-      supplierId: product.supplier?.id,
-
-      // Handle target
-      target: product.target
-        ? {
-            targetName: product.target.targetName,
-          }
-        : undefined,
-
-      // Normalize promotion
-      promotion: {
-        promotionType: product.promotion?.promotionType || "PERCENTAGE_PRODUCT",
-        discountAmount: product.promotion?.discountAmount || 0,
-        startDate: product.promotion?.startDate,
-        endDate: product.promotion?.endDate,
-      },
-
-      // Variants
-      variants:
-        product.variants?.map((v) => ({
-          id: v.id,
-          name: v.name,
-          stock: v.stock,
-          unit: v.unit || "",
-          price: v.price,
-        })) || [],
-
-      // Images
-      images: product.images || [],
-    });
 
     return {
       id: product.id,
@@ -642,7 +589,6 @@ export default function AddProduct({ update = false }) {
                             form.setFieldsValue({
                               description: content,
                             });
-                            console.log("Editor content:", content);
                           }}
                           init={{
                             height: 400,

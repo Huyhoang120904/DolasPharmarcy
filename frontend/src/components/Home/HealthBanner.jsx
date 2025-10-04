@@ -11,7 +11,6 @@ const HealthBanner = () => {
   ];
 
   const goToSlide = (index) => {
-    console.log("Button clicked, switching to slide:", index);
     setCurrentSlide(index);
   };
 

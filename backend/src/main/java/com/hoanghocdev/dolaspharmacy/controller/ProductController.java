@@ -5,7 +5,6 @@ import com.hoanghocdev.dolaspharmacy.dto.request.ProductSearchRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.ProductUpdateRequest;
 import com.hoanghocdev.dolaspharmacy.dto.request.VariantRequest;
 import com.hoanghocdev.dolaspharmacy.dto.response.ApiResponse;
-import com.hoanghocdev.dolaspharmacy.dto.response.CloudinaryResponse;
 import com.hoanghocdev.dolaspharmacy.dto.response.ProductResponse;
 import com.hoanghocdev.dolaspharmacy.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,9 +17,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")

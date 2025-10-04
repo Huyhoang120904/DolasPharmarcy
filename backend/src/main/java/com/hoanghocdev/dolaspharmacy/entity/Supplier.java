@@ -1,5 +1,6 @@
 package com.hoanghocdev.dolaspharmacy.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -38,5 +39,6 @@ public class Supplier {
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "supplier")
+    @JsonBackReference
     List<Product> products;
 }

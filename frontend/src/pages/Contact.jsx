@@ -44,7 +44,6 @@ export default function Contact() {
   const [form] = Form.useForm();
 
   const handleSubmit = (values) => {
-    console.log("Form submitted:", values);
     message.success("Cảm ơn bạn đã liên hệ với chúng tôi!");
     form.resetFields();
   };

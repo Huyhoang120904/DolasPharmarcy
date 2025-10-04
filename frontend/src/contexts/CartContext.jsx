@@ -86,8 +86,6 @@ export const CartProvider = ({ children }) => {
       quantity: value,
     };
 
-    console.log(`updatedCart`, updatedCart);
-
     setCart(updatedCart);
   };
 
@@ -98,7 +96,7 @@ export const CartProvider = ({ children }) => {
     setCart(updatedCart);
   };
 
-  const emptyCart = (item) => {
+  const emptyCart = () => {
     setCart(initialCart);
   };
 
